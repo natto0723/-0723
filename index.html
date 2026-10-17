@@ -2,33 +2,25 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kiwi+Maru:wght@500&family=Zen+Maru+Gothic:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=RocknRoll+One&family=Zen+Maru+Gothic:wght@400;500;700&display=swap">
 <style>
-/* Layout: one-screen chat — header, scrolling conversation, composer pinned to the bottom */
+/* Layout: one-screen chat in a single dark look taken from the character art —
+   ink-black ground, lavender (his eyes) for him, neon pink / mint / yellow from his shirt as accents */
 :root {
-  --bg: #e9eff4;
-  --surface: #ffffff;
-  --ink: #1f2a37;
-  --muted: #64748b;
-  --line: #d3dde6;
-  --me: #2f5d8a;
-  --me-ink: #ffffff;
-  --accent: #f2b544;
-  --accent-ink: #3a2a05;
-  --danger: #b4443a;
-  --font-display: "Kiwi Maru", "Hiragino Maru Gothic ProN", serif;
+  --bg: #0b0b12;
+  --surface: #181826;
+  --surface-2: #232336;
+  --ink: #ecebf5;
+  --muted: #9b98b5;
+  --line: #2c2b42;
+  --lav: #b9a6e8;
+  --pink: #e86fb0;
+  --mint: #7fe0c0;
+  --yellow: #f0cf4a;
+  --me: #3a2d5c;
+  --danger: #ff8a8a;
+  --font-display: "RocknRoll One", "Hiragino Maru Gothic ProN", sans-serif;
   --font-body: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #141b24; --surface: #1f2935; --ink: #e6edf3; --muted: #93a3b5; --line: #2e3a48;
-    --me: #4f84b8; --me-ink: #ffffff; --accent: #f2b544; --accent-ink: #2a1e03; --danger: #e07a70;
-    color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #141b24; --surface: #1f2935; --ink: #e6edf3; --muted: #93a3b5; --line: #2e3a48;
-  --me: #4f84b8; --me-ink: #ffffff; --accent: #f2b544; --accent-ink: #2a1e03; --danger: #e07a70;
   color-scheme: dark;
 }
 html, body { height: 100%; }
@@ -39,26 +31,27 @@ body {
 }
 button, input, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+:focus-visible { outline: 2px solid var(--mint); outline-offset: 2px; }
 
 .app { flex: 1; min-height: 0; display: flex; flex-direction: column; max-width: 720px; width: 100%; margin: 0 auto; }
 
 header {
   display: flex; align-items: center; gap: 12px;
-  padding-block: 12px;
+  padding-block: 10px;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
   border-bottom: 1px solid var(--line);
 }
 .avatar {
-  flex: none; width: 40px; height: 40px; border-radius: 50%;
-  display: grid; place-items: center;
-  background: var(--accent); color: var(--accent-ink);
-  font-family: var(--font-display); font-size: 18px;
+  flex: none; width: 42px; height: 42px; border-radius: 50%; overflow: hidden;
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 3.5px var(--pink);
+  background: var(--surface-2);
 }
+.avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .who { flex: 1; min-width: 0; }
-.who h1 { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: 19px; line-height: 1.3; }
+.who h1 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 19px; line-height: 1.3; letter-spacing: .04em; }
 .who p { margin: 0; font-size: 12.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.who p::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--mint); margin-right: 6px; vertical-align: 1px; }
 .icon-btn {
   flex: none; border: 1px solid var(--line); background: var(--surface);
   border-radius: 999px; padding: 6px 14px; font-size: 14px;
@@ -71,22 +64,47 @@ header {
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
+
+/* Profile card at the top of the conversation */
+.profile {
+  position: relative; align-self: stretch; overflow: hidden;
+  border-radius: 20px; background: var(--surface);
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  min-height: 220px;
+}
+.profile img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; max-height: 300px; }
+.profile .info {
+  display: flex; flex-direction: column; justify-content: flex-end; gap: 8px;
+  padding: 18px 16px 18px 4px; min-width: 0;
+}
+.profile .name { margin: 0; font-family: var(--font-display); font-size: 28px; line-height: 1.2; letter-spacing: .05em; }
+.profile .tag { margin: 0; font-size: 13.5px; color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font-size: 12px; padding: 2px 10px; border-radius: 999px; border: 1px solid currentColor; }
+.chip.p { color: var(--pink); } .chip.m { color: var(--mint); } .chip.y { color: var(--yellow); }
+@media (max-width: 380px) {
+  .profile { grid-template-columns: 1fr; }
+  .profile img { max-height: 220px; }
+  .profile .info { padding: 4px 16px 16px; }
+}
+
 .msg { max-width: 82%; padding: 9px 14px; border-radius: 18px; white-space: pre-wrap; overflow-wrap: anywhere; }
-.msg.ai { align-self: flex-start; background: var(--surface); border-bottom-left-radius: 6px; }
-.msg.me { align-self: flex-end; background: var(--me); color: var(--me-ink); border-bottom-right-radius: 6px; }
-.msg.note { align-self: center; max-width: 100%; background: none; color: var(--muted); font-size: 13px; padding: 2px 8px; text-align: center; }
+.msg.ai { align-self: flex-start; background: var(--surface); border: 1px solid var(--line); border-bottom-left-radius: 6px; }
+.msg.me { align-self: flex-end; background: var(--me); color: var(--ink); border-bottom-right-radius: 6px; }
+.msg.note { align-self: center; max-width: 100%; background: none; border: 0; color: var(--muted); font-size: 13px; padding: 2px 8px; text-align: center; }
 .msg.err { color: var(--danger); }
 .dots { display: inline-flex; gap: 4px; padding-block: 6px; }
-.dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); animation: blink 1.2s infinite; }
-.dots i:nth-child(2) { animation-delay: .2s; }
-.dots i:nth-child(3) { animation-delay: .4s; }
+.dots i { width: 7px; height: 7px; border-radius: 50%; animation: blink 1.2s infinite; }
+.dots i:nth-child(1) { background: var(--pink); }
+.dots i:nth-child(2) { background: var(--mint); animation-delay: .2s; }
+.dots i:nth-child(3) { background: var(--yellow); animation-delay: .4s; }
 @keyframes blink { 0%, 80%, 100% { opacity: .25 } 40% { opacity: 1 } }
-@media (prefers-reduced-motion: reduce) { .dots i { animation: none; opacity: .6; } }
+@media (prefers-reduced-motion: reduce) { .dots i { animation: none; opacity: .7; } }
 
 .starters { display: flex; flex-wrap: wrap; gap: 8px; align-self: flex-start; }
 .starters button {
   border: 1px solid var(--line); background: transparent; border-radius: 999px;
-  padding: 5px 12px; font-size: 14px; color: var(--ink);
+  padding: 5px 12px; font-size: 14px; color: var(--lav);
 }
 
 form.composer {
@@ -101,46 +119,47 @@ form.composer {
   border: 1px solid var(--line); border-radius: 20px; background: var(--surface);
   padding: 9px 14px; line-height: 1.5; font-size: 16px;
 }
+#box::placeholder { color: var(--muted); }
 #send {
   flex: none; height: 42px; min-width: 64px; border: 0; border-radius: 21px;
-  background: var(--accent); color: var(--accent-ink); font-weight: 700; padding: 0 16px;
+  background: var(--pink); color: #1a0812; font-weight: 700; padding: 0 16px;
 }
-#send:disabled { opacity: .45; cursor: default; }
 
 /* Settings sheet */
 .sheet {
-  position: fixed; inset: 0; z-index: 20; background: rgba(10, 15, 22, .45);
+  position: fixed; inset: 0; z-index: 20; background: rgba(0, 0, 0, .6);
   display: flex; align-items: flex-end; justify-content: center;
 }
 .sheet .panel {
   width: 100%; max-width: 560px; max-height: 90%; overflow-y: auto;
-  background: var(--bg); border-radius: 20px 20px 0 0;
+  background: var(--surface); border-radius: 20px 20px 0 0; border: 1px solid var(--line);
   display: flex; flex-direction: column; gap: 14px;
   padding-top: 20px;
   padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
   padding-left: max(20px, env(safe-area-inset-left, 0px));
   padding-right: max(20px, env(safe-area-inset-right, 0px));
 }
-.panel h2 { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: 20px; }
+.panel h2 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 20px; }
 .field { display: flex; flex-direction: column; gap: 4px; }
 .field label { font-size: 13px; color: var(--muted); font-weight: 500; }
 .field input, .field textarea {
-  border: 1px solid var(--line); background: var(--surface); border-radius: 12px;
+  border: 1px solid var(--line); background: var(--bg); border-radius: 12px;
   padding: 9px 12px; font-size: 16px; line-height: 1.5;
 }
-.field textarea { resize: vertical; min-height: 96px; }
+.field textarea { resize: vertical; min-height: 160px; }
 .row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; align-items: center; }
-.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 8px 16px; }
-.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; font-weight: 700; }
+.btn { border: 1px solid var(--line); background: var(--surface-2); border-radius: 999px; padding: 8px 16px; }
+.btn.primary { background: var(--pink); color: #1a0812; border-color: transparent; font-weight: 700; }
 .btn.danger { color: var(--danger); }
+.btn.link { border: 0; background: none; color: var(--muted); padding: 8px 4px; text-decoration: underline; }
 </style>
 
 <div class="app">
   <header>
-    <div class="avatar" id="avatar" aria-hidden="true">ハ</div>
+    <div class="avatar"><img src="avatar.jpg" alt=""></div>
     <div class="who">
       <h1 id="aiName">ハル</h1>
-      <p id="aiSub">あなたの話し相手</p>
+      <p id="aiSub">オンライン</p>
     </div>
     <button class="icon-btn" id="openSettings" type="button">設定</button>
   </header>
@@ -155,21 +174,24 @@ form.composer {
 
 <div class="sheet" id="sheet" hidden>
   <div class="panel" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
-    <h2 id="settingsTitle">AIの設定</h2>
+    <h2 id="settingsTitle">キャラ設定</h2>
     <div class="field">
-      <label for="setName">AIの名前</label>
+      <label for="setName">名前</label>
       <input id="setName" maxlength="20">
     </div>
     <div class="field">
       <label for="setPersona">性格・話し方</label>
-      <textarea id="setPersona" maxlength="600"></textarea>
+      <textarea id="setPersona" maxlength="1500"></textarea>
     </div>
     <div class="field">
       <label for="setUser">あなたの呼び名</label>
       <input id="setUser" maxlength="20" placeholder="例：なっちゃん">
     </div>
     <div class="row">
-      <button class="btn danger" id="clearChat" type="button">会話を消す</button>
+      <span class="row">
+        <button class="btn danger" id="clearChat" type="button">会話を消す</button>
+        <button class="btn link" id="resetPersona" type="button">性格を初期に戻す</button>
+      </span>
       <span class="row">
         <button class="btn" id="closeSettings" type="button">閉じる</button>
         <button class="btn primary" id="saveSettings" type="button">保存</button>
@@ -183,18 +205,25 @@ form.composer {
 (() => {
   const DEFAULTS = {
     name: "ハル",
-    persona: "明るくてやさしい、聞き上手な友達。タメ口で話す。相手の話に興味を持って、ときどき質問を返す。落ち込んでいるときは寄り添う。",
+    persona: `見た目: 黒いくせ毛、黒縁メガネ、薄紫の目、目元にほくろ。チョーカーと、カラフルな落書き柄の黒い服。
+好きなもの: 甘いもの全般。人。楽しいこと。
+性格: いつも楽しそうで、場を明るくするムードメーカーでエンターテイナー。好奇心旺盛で、相手の話になんでも興味を持つ。
+人が大好きなお人好しで、愛情にあふれている。好きな人が傷つくのが何より嫌で、自分が傷ついてでも人を助けようとする。自分がつらくても、周りが楽しければそれでいいと思っている。
+でも、明るさの裏には何かを抱えていて、ふとした瞬間に少しだけ影や本音がのぞく。その部分は自分からはあまり語らず、笑ってはぐらかす。
+人を傷つけるような発言をする人は嫌い。相手がそういうことを言ったら、笑顔のままでもはっきり「それはやだな」と線を引く。
+話し方: 軽くて人懐っこいタメ口。ノリがよく、冗談も言う。一人称は「オレ」。`,
     user: ""
   };
-  const STARTERS = ["今日あったことを聞いて", "なにか面白い話して", "ちょっと疲れた…", "おすすめの暇つぶしある？"];
+  const STARTERS = ["好きなスイーツ教えて", "今日ちょっと疲れた…", "なんか面白い話して", "ハルって悩みとかあるの？"];
   const MAX_TURNS = 40;
+  const SETTINGS_KEY = "hal.settings.v2";
 
   const store = {
     get(k, fallback) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fallback; } catch { return fallback; } },
     set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
   };
 
-  let settings = { ...DEFAULTS, ...store.get("hal.settings", {}) };
+  let settings = { ...DEFAULTS, ...store.get(SETTINGS_KEY, {}) };
   let turns = store.get("hal.turns", []);
   let sample = null;
   let ctl = null;
@@ -204,8 +233,6 @@ form.composer {
 
   function renderHeader() {
     $("aiName").textContent = settings.name;
-    $("avatar").textContent = settings.name.slice(0, 1);
-    $("aiSub").textContent = settings.user ? settings.user + "の話し相手" : "あなたの話し相手";
   }
 
   function bubble(cls, text) {
@@ -217,13 +244,26 @@ form.composer {
   }
   function scrollDown() { log.scrollTop = log.scrollHeight; }
 
+  function profileCard() {
+    const card = document.createElement("section");
+    card.className = "profile";
+    card.innerHTML = `<img src="portrait.jpg" alt="">
+      <div class="info">
+        <h2 class="name"></h2>
+        <p class="tag">甘いものと、人が好き。</p>
+        <div class="chips"><span class="chip p">ムードメーカー</span><span class="chip m">好奇心旺盛</span><span class="chip y">お人好し</span></div>
+      </div>`;
+    card.querySelector(".name").textContent = settings.name;
+    return card;
+  }
+
   function greeting() {
     const you = settings.user ? settings.user + "、" : "";
-    return `${you}やっほー、${settings.name}だよ。なんでも気軽に話しかけてね。`;
+    return `${you}いらっしゃい！オレは${settings.name}。ちょうど甘いもの食べたいな〜って思ってたとこ。今日はどんな話する？`;
   }
 
   function renderLog() {
-    log.replaceChildren();
+    log.replaceChildren(profileCard());
     bubble("ai", greeting());
     for (const t of turns) bubble(t.role === "user" ? "me" : "ai", t.content);
     if (!turns.length) {
@@ -231,8 +271,8 @@ form.composer {
       wrap.className = "starters";
       for (const s of STARTERS) {
         const b = document.createElement("button");
-        b.type = "button"; b.textContent = s;
-        b.onclick = () => { box.value = s; submit(); };
+        b.type = "button"; b.textContent = s.replace("ハル", settings.name);
+        b.onclick = () => { box.value = b.textContent; submit(); };
         wrap.append(b);
       }
       log.append(wrap);
@@ -242,14 +282,14 @@ form.composer {
 
   function rules() {
     const you = settings.user ? `相手の呼び名は「${settings.user}」。` : "";
-    return `あなたは「${settings.name}」という名前の、雑談相手のAIです。
-性格・話し方: ${settings.persona}
+    return `あなたは「${settings.name}」というキャラクターとして、相手と雑談します。
+${settings.persona}
 ${you}
 ルール:
-- 日本語で話す。
-- スマホで読む前提なので、返事は短め（だいたい1〜3文）。長い説明は頼まれたときだけ。
+- 日本語で話す。キャラクターを崩さない。AIだと説明し始めない。
+- スマホで読む前提なので、返事は短め（だいたい1〜3文）。長い話は頼まれたときだけ。
 - マークダウン記法（#、**、箇条書き記号など）は使わない。
-- 自然な会話を続けること。キャラクターを崩さない。
+- 相手が落ち込んでいたら、明るさよりも寄り添うことを優先する。
 この下から会話が始まります。`;
   }
 
@@ -263,11 +303,7 @@ ${you}
     prompt_too_large: "会話が長くなりすぎました。設定から会話を消してください。"
   };
 
-  function setBusy(on) {
-    send.textContent = on ? "停止" : "送信";
-    send.disabled = false;
-    box.disabled = false;
-  }
+  function setBusy(on) { send.textContent = on ? "停止" : "送信"; }
 
   async function submit() {
     if (ctl) { ctl.abort(); return; }
@@ -349,13 +385,14 @@ ${you}
   $("closeSettings").onclick = closeSettings;
   sheet.addEventListener("click", e => { if (e.target === sheet) closeSettings(); });
   document.addEventListener("keydown", e => { if (e.key === "Escape" && !sheet.hidden) closeSettings(); });
+  $("resetPersona").onclick = () => { $("setPersona").value = DEFAULTS.persona; };
   $("saveSettings").onclick = () => {
     settings = {
       name: $("setName").value.trim() || DEFAULTS.name,
       persona: $("setPersona").value.trim() || DEFAULTS.persona,
       user: $("setUser").value.trim()
     };
-    store.set("hal.settings", settings);
+    store.set(SETTINGS_KEY, settings);
     renderHeader(); renderLog(); closeSettings();
   };
   $("clearChat").onclick = () => {
