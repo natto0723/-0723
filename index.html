@@ -1,0 +1,375 @@
+<title>ハルとおしゃべり</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kiwi+Maru:wght@500&family=Zen+Maru+Gothic:wght@400;500;700&display=swap">
+<style>
+/* Layout: one-screen chat — header, scrolling conversation, composer pinned to the bottom */
+:root {
+  --bg: #e9eff4;
+  --surface: #ffffff;
+  --ink: #1f2a37;
+  --muted: #64748b;
+  --line: #d3dde6;
+  --me: #2f5d8a;
+  --me-ink: #ffffff;
+  --accent: #f2b544;
+  --accent-ink: #3a2a05;
+  --danger: #b4443a;
+  --font-display: "Kiwi Maru", "Hiragino Maru Gothic ProN", serif;
+  --font-body: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141b24; --surface: #1f2935; --ink: #e6edf3; --muted: #93a3b5; --line: #2e3a48;
+    --me: #4f84b8; --me-ink: #ffffff; --accent: #f2b544; --accent-ink: #2a1e03; --danger: #e07a70;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141b24; --surface: #1f2935; --ink: #e6edf3; --muted: #93a3b5; --line: #2e3a48;
+  --me: #4f84b8; --me-ink: #ffffff; --accent: #f2b544; --accent-ink: #2a1e03; --danger: #e07a70;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.7;
+  display: flex; flex-direction: column;
+}
+button, input, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.app { flex: 1; min-height: 0; display: flex; flex-direction: column; max-width: 720px; width: 100%; margin: 0 auto; }
+
+header {
+  display: flex; align-items: center; gap: 12px;
+  padding-block: 12px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  border-bottom: 1px solid var(--line);
+}
+.avatar {
+  flex: none; width: 40px; height: 40px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--accent); color: var(--accent-ink);
+  font-family: var(--font-display); font-size: 18px;
+}
+.who { flex: 1; min-width: 0; }
+.who h1 { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: 19px; line-height: 1.3; }
+.who p { margin: 0; font-size: 12.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.icon-btn {
+  flex: none; border: 1px solid var(--line); background: var(--surface);
+  border-radius: 999px; padding: 6px 14px; font-size: 14px;
+}
+
+#log {
+  flex: 1; min-height: 0; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 10px;
+  padding-block: 16px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.msg { max-width: 82%; padding: 9px 14px; border-radius: 18px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.msg.ai { align-self: flex-start; background: var(--surface); border-bottom-left-radius: 6px; }
+.msg.me { align-self: flex-end; background: var(--me); color: var(--me-ink); border-bottom-right-radius: 6px; }
+.msg.note { align-self: center; max-width: 100%; background: none; color: var(--muted); font-size: 13px; padding: 2px 8px; text-align: center; }
+.msg.err { color: var(--danger); }
+.dots { display: inline-flex; gap: 4px; padding-block: 6px; }
+.dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); animation: blink 1.2s infinite; }
+.dots i:nth-child(2) { animation-delay: .2s; }
+.dots i:nth-child(3) { animation-delay: .4s; }
+@keyframes blink { 0%, 80%, 100% { opacity: .25 } 40% { opacity: 1 } }
+@media (prefers-reduced-motion: reduce) { .dots i { animation: none; opacity: .6; } }
+
+.starters { display: flex; flex-wrap: wrap; gap: 8px; align-self: flex-start; }
+.starters button {
+  border: 1px solid var(--line); background: transparent; border-radius: 999px;
+  padding: 5px 12px; font-size: 14px; color: var(--ink);
+}
+
+form.composer {
+  display: flex; gap: 8px; align-items: flex-end;
+  padding-block: 10px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  border-top: 1px solid var(--line);
+}
+#box {
+  flex: 1; min-width: 0; resize: none; max-height: 140px;
+  border: 1px solid var(--line); border-radius: 20px; background: var(--surface);
+  padding: 9px 14px; line-height: 1.5; font-size: 16px;
+}
+#send {
+  flex: none; height: 42px; min-width: 64px; border: 0; border-radius: 21px;
+  background: var(--accent); color: var(--accent-ink); font-weight: 700; padding: 0 16px;
+}
+#send:disabled { opacity: .45; cursor: default; }
+
+/* Settings sheet */
+.sheet {
+  position: fixed; inset: 0; z-index: 20; background: rgba(10, 15, 22, .45);
+  display: flex; align-items: flex-end; justify-content: center;
+}
+.sheet .panel {
+  width: 100%; max-width: 560px; max-height: 90%; overflow-y: auto;
+  background: var(--bg); border-radius: 20px 20px 0 0;
+  display: flex; flex-direction: column; gap: 14px;
+  padding-top: 20px;
+  padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(20px, env(safe-area-inset-left, 0px));
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
+}
+.panel h2 { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: 20px; }
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 500; }
+.field input, .field textarea {
+  border: 1px solid var(--line); background: var(--surface); border-radius: 12px;
+  padding: 9px 12px; font-size: 16px; line-height: 1.5;
+}
+.field textarea { resize: vertical; min-height: 96px; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; align-items: center; }
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 8px 16px; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; font-weight: 700; }
+.btn.danger { color: var(--danger); }
+</style>
+
+<div class="app">
+  <header>
+    <div class="avatar" id="avatar" aria-hidden="true">ハ</div>
+    <div class="who">
+      <h1 id="aiName">ハル</h1>
+      <p id="aiSub">あなたの話し相手</p>
+    </div>
+    <button class="icon-btn" id="openSettings" type="button">設定</button>
+  </header>
+
+  <div id="log" aria-live="polite"></div>
+
+  <form class="composer" id="composer">
+    <textarea id="box" rows="1" placeholder="メッセージを入力" aria-label="メッセージ"></textarea>
+    <button id="send" type="submit">送信</button>
+  </form>
+</div>
+
+<div class="sheet" id="sheet" hidden>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <h2 id="settingsTitle">AIの設定</h2>
+    <div class="field">
+      <label for="setName">AIの名前</label>
+      <input id="setName" maxlength="20">
+    </div>
+    <div class="field">
+      <label for="setPersona">性格・話し方</label>
+      <textarea id="setPersona" maxlength="600"></textarea>
+    </div>
+    <div class="field">
+      <label for="setUser">あなたの呼び名</label>
+      <input id="setUser" maxlength="20" placeholder="例：なっちゃん">
+    </div>
+    <div class="row">
+      <button class="btn danger" id="clearChat" type="button">会話を消す</button>
+      <span class="row">
+        <button class="btn" id="closeSettings" type="button">閉じる</button>
+        <button class="btn primary" id="saveSettings" type="button">保存</button>
+      </span>
+    </div>
+    <p class="msg note" id="clearConfirm" hidden>もう一度押すと会話をすべて消します</p>
+  </div>
+</div>
+
+<script>
+(() => {
+  const DEFAULTS = {
+    name: "ハル",
+    persona: "明るくてやさしい、聞き上手な友達。タメ口で話す。相手の話に興味を持って、ときどき質問を返す。落ち込んでいるときは寄り添う。",
+    user: ""
+  };
+  const STARTERS = ["今日あったことを聞いて", "なにか面白い話して", "ちょっと疲れた…", "おすすめの暇つぶしある？"];
+  const MAX_TURNS = 40;
+
+  const store = {
+    get(k, fallback) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fallback; } catch { return fallback; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+  };
+
+  let settings = { ...DEFAULTS, ...store.get("hal.settings", {}) };
+  let turns = store.get("hal.turns", []);
+  let sample = null;
+  let ctl = null;
+
+  const $ = id => document.getElementById(id);
+  const log = $("log"), box = $("box"), send = $("send");
+
+  function renderHeader() {
+    $("aiName").textContent = settings.name;
+    $("avatar").textContent = settings.name.slice(0, 1);
+    $("aiSub").textContent = settings.user ? settings.user + "の話し相手" : "あなたの話し相手";
+  }
+
+  function bubble(cls, text) {
+    const el = document.createElement("div");
+    el.className = "msg " + cls;
+    el.textContent = text;
+    log.append(el);
+    return el;
+  }
+  function scrollDown() { log.scrollTop = log.scrollHeight; }
+
+  function greeting() {
+    const you = settings.user ? settings.user + "、" : "";
+    return `${you}やっほー、${settings.name}だよ。なんでも気軽に話しかけてね。`;
+  }
+
+  function renderLog() {
+    log.replaceChildren();
+    bubble("ai", greeting());
+    for (const t of turns) bubble(t.role === "user" ? "me" : "ai", t.content);
+    if (!turns.length) {
+      const wrap = document.createElement("div");
+      wrap.className = "starters";
+      for (const s of STARTERS) {
+        const b = document.createElement("button");
+        b.type = "button"; b.textContent = s;
+        b.onclick = () => { box.value = s; submit(); };
+        wrap.append(b);
+      }
+      log.append(wrap);
+    }
+    scrollDown();
+  }
+
+  function rules() {
+    const you = settings.user ? `相手の呼び名は「${settings.user}」。` : "";
+    return `あなたは「${settings.name}」という名前の、雑談相手のAIです。
+性格・話し方: ${settings.persona}
+${you}
+ルール:
+- 日本語で話す。
+- スマホで読む前提なので、返事は短め（だいたい1〜3文）。長い説明は頼まれたときだけ。
+- マークダウン記法（#、**、箇条書き記号など）は使わない。
+- 自然な会話を続けること。キャラクターを崩さない。
+この下から会話が始まります。`;
+  }
+
+  const ERR = {
+    not_granted: "Claudeの使用が許可されていないため返事ができません。ページを開き直して許可してください。",
+    sampling_disabled: "このアカウントではClaudeを使えません。",
+    rate_limited: "少し話しすぎたみたい。しばらく待ってからもう一度送ってね。",
+    session_expired: "ログインが切れました。claude.aiにログインし直してください。",
+    refused: "その内容には答えられませんでした。話題を変えてみてね。",
+    empty_completion: "返事が空でした。言い方を変えて送ってみてね。",
+    prompt_too_large: "会話が長くなりすぎました。設定から会話を消してください。"
+  };
+
+  function setBusy(on) {
+    send.textContent = on ? "停止" : "送信";
+    send.disabled = false;
+    box.disabled = false;
+  }
+
+  async function submit() {
+    if (ctl) { ctl.abort(); return; }
+    const text = box.value.trim();
+    if (!text) return;
+    if (!sample) {
+      bubble("note err", "ここではAIとつながれません。claude.aiでこのページを開いてください。");
+      scrollDown();
+      return;
+    }
+    log.querySelector(".starters")?.remove();
+    box.value = ""; autosize();
+    turns.push({ role: "user", content: text });
+    store.set("hal.turns", turns);
+    bubble("me", text);
+
+    const out = bubble("ai", "");
+    out.innerHTML = '<span class="dots" aria-label="考え中"><i></i><i></i><i></i></span>';
+    scrollDown();
+
+    ctl = new AbortController();
+    setBusy(true);
+    const recent = turns.slice(-MAX_TURNS);
+    while (recent.length && recent[0].role !== "user") recent.shift();
+    try {
+      const { text: reply } = await sample([{ role: "user", content: rules() }, ...recent], {
+        cache: false,
+        modelTier: "quick",
+        signal: ctl.signal,
+        onText: ({ text }) => { out.textContent = text; scrollDown(); }
+      });
+      turns.push({ role: "assistant", content: reply });
+      store.set("hal.turns", turns);
+    } catch (e) {
+      const partial = e && e.text;
+      if (partial) {
+        out.textContent = partial;
+        turns.push({ role: "assistant", content: partial });
+        store.set("hal.turns", turns);
+      } else {
+        out.remove();
+      }
+      if (e && e.code !== "cancelled") {
+        bubble("note err", ERR[e.code] || "うまくつながりませんでした。もう一度送ってみてね。");
+      }
+    } finally {
+      ctl = null;
+      setBusy(false);
+      scrollDown();
+    }
+  }
+
+  function autosize() {
+    box.style.height = "auto";
+    box.style.height = Math.min(box.scrollHeight, 140) + "px";
+  }
+
+  $("composer").addEventListener("submit", e => { e.preventDefault(); submit(); });
+  box.addEventListener("input", autosize);
+  box.addEventListener("keydown", e => {
+    if (e.key === "Enter" && !e.shiftKey && !e.isComposing && window.matchMedia("(hover: hover)").matches) {
+      e.preventDefault(); submit();
+    }
+  });
+
+  // Settings
+  const sheet = $("sheet");
+  let clearArmed = false;
+  function openSettings() {
+    $("setName").value = settings.name;
+    $("setPersona").value = settings.persona;
+    $("setUser").value = settings.user;
+    clearArmed = false; $("clearConfirm").hidden = true;
+    sheet.hidden = false;
+    $("setName").focus();
+  }
+  function closeSettings() { sheet.hidden = true; $("openSettings").focus(); }
+  $("openSettings").onclick = openSettings;
+  $("closeSettings").onclick = closeSettings;
+  sheet.addEventListener("click", e => { if (e.target === sheet) closeSettings(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && !sheet.hidden) closeSettings(); });
+  $("saveSettings").onclick = () => {
+    settings = {
+      name: $("setName").value.trim() || DEFAULTS.name,
+      persona: $("setPersona").value.trim() || DEFAULTS.persona,
+      user: $("setUser").value.trim()
+    };
+    store.set("hal.settings", settings);
+    renderHeader(); renderLog(); closeSettings();
+  };
+  $("clearChat").onclick = () => {
+    if (!clearArmed) { clearArmed = true; $("clearConfirm").hidden = false; return; }
+    ctl?.abort();
+    turns = []; store.set("hal.turns", turns);
+    renderLog(); closeSettings();
+  };
+
+  renderHeader();
+  renderLog();
+
+  (async () => {
+    try { sample = window.claude ? await window.claude.use("sample") : null; } catch { sample = null; }
+  })();
+})();
+</script>
