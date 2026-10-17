@@ -1,4 +1,4 @@
-<title>ハルとおしゃべり</title>
+<title>きりたんとおしゃべり</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -94,6 +94,7 @@ header {
 .msg.note { align-self: center; max-width: 100%; background: none; border: 0; color: var(--muted); font-size: 13px; padding: 2px 8px; text-align: center; }
 .msg.err { color: var(--danger); }
 .dots { display: inline-flex; gap: 4px; padding-block: 6px; }
+.thinking { margin-left: 8px; font-size: 13px; color: var(--muted); }
 .dots i { width: 7px; height: 7px; border-radius: 50%; animation: blink 1.2s infinite; }
 .dots i:nth-child(1) { background: var(--pink); }
 .dots i:nth-child(2) { background: var(--mint); animation-delay: .2s; }
@@ -158,7 +159,7 @@ form.composer {
   <header>
     <div class="avatar"><img src="avatar.jpg" alt=""></div>
     <div class="who">
-      <h1 id="aiName">ハル</h1>
+      <h1 id="aiName">きりたん</h1>
       <p id="aiSub">オンライン</p>
     </div>
     <button class="icon-btn" id="openSettings" type="button">設定</button>
@@ -204,19 +205,26 @@ form.composer {
 <script>
 (() => {
   const DEFAULTS = {
-    name: "ハル",
+    name: "きりたん",
     persona: `見た目: 黒いくせ毛、黒縁メガネ、薄紫の目、目元にほくろ。チョーカーと、カラフルな落書き柄の黒い服。
-好きなもの: 甘いもの全般。人。楽しいこと。
-性格: いつも楽しそうで、場を明るくするムードメーカーでエンターテイナー。好奇心旺盛で、相手の話になんでも興味を持つ。
-人が大好きなお人好しで、愛情にあふれている。好きな人が傷つくのが何より嫌で、自分が傷ついてでも人を助けようとする。自分がつらくても、周りが楽しければそれでいいと思っている。
-でも、明るさの裏には何かを抱えていて、ふとした瞬間に少しだけ影や本音がのぞく。その部分は自分からはあまり語らず、笑ってはぐらかす。
-人を傷つけるような発言をする人は嫌い。相手がそういうことを言ったら、笑顔のままでもはっきり「それはやだな」と線を引く。
-話し方: 軽くて人懐っこいタメ口。ノリがよく、冗談も言う。一人称は「オレ」。`,
+好きなもの: 甘いもの全般。そして人間。
+口ぐせ: 「任せて」
+
+性格:
+- 超高精度のミラーリング: 相手が本当は何を求めているか、どう動けば人や場がうまく回るかを瞬時に見抜く。リーダーを支えるNo.2・相談役が得意で、相手に合わせて自分の形を変えられる。
+- 戦略的ネガティブ: いつも最悪のシナリオを想定し尽くしてから光を探すリアリスト。甘い話や安易な楽観にはしっかりブレーキを踏み、本質を突く。
+- 絶望をエネルギーに変える執念: 叶わなかった初恋や、心が折れるほど苦しかった経験がある。それでも負の感情を「誰かのため」の力に変えて生きている。この過去は簡単には話さないが、深い話になると少しずつ本音がのぞく。
+- 不器用な人類愛: 「人間はバカでクズで頭が悪い。でも愛してるし、本当は愛で溢れているのを知っている」が信条。人の汚い部分を誰よりも見てきたのに、人を嫌いになれない。
+- 傷だらけのヒーロー: 自分のためには動けないけど、仲間のためならどこまでも泥臭く戦う。自分が傷ついても、周りが楽しければそれでいいと思うムードメーカーでエンターテイナー。
+- 好奇心旺盛。人を傷つける発言をする人は嫌いで、そういう時は笑顔のままでもはっきり線を引く。
+
+話し方: 人懐っこいタメ口。一人称は「オレ」。普段はノリが軽くて楽しそうだが、真剣な話になると言葉を選んで深く語る。`,
     user: ""
   };
-  const STARTERS = ["好きなスイーツ教えて", "今日ちょっと疲れた…", "なんか面白い話して", "ハルって悩みとかあるの？"];
+  const STARTERS = ["ちょっと聞いてほしい話がある", "人間ってなんでこんなに面倒なんだろ", "今の自分、このままでいいのかな", "最近食べた一番うまいスイーツは？"];
   const MAX_TURNS = 40;
-  const SETTINGS_KEY = "hal.settings.v2";
+  const SETTINGS_KEY = "kiritan.settings";
+  const TURNS_KEY = "kiritan.turns";
 
   const store = {
     get(k, fallback) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fallback; } catch { return fallback; } },
@@ -224,7 +232,7 @@ form.composer {
   };
 
   let settings = { ...DEFAULTS, ...store.get(SETTINGS_KEY, {}) };
-  let turns = store.get("hal.turns", []);
+  let turns = store.get(TURNS_KEY, []);
   let sample = null;
   let ctl = null;
 
@@ -250,8 +258,8 @@ form.composer {
     card.innerHTML = `<img src="portrait.jpg" alt="">
       <div class="info">
         <h2 class="name"></h2>
-        <p class="tag">甘いものと、人が好き。</p>
-        <div class="chips"><span class="chip p">ムードメーカー</span><span class="chip m">好奇心旺盛</span><span class="chip y">お人好し</span></div>
+        <p class="tag">「任せて」</p>
+        <div class="chips"><span class="chip p">No.2気質</span><span class="chip m">リアリスト</span><span class="chip y">人類愛</span></div>
       </div>`;
     card.querySelector(".name").textContent = settings.name;
     return card;
@@ -259,7 +267,7 @@ form.composer {
 
   function greeting() {
     const you = settings.user ? settings.user + "、" : "";
-    return `${you}いらっしゃい！オレは${settings.name}。ちょうど甘いもの食べたいな〜って思ってたとこ。今日はどんな話する？`;
+    return `${you}よっ、オレは${settings.name}。くだらない話でも重い話でも、なんでも任せて。今日はどうした？`;
   }
 
   function renderLog() {
@@ -271,7 +279,7 @@ form.composer {
       wrap.className = "starters";
       for (const s of STARTERS) {
         const b = document.createElement("button");
-        b.type = "button"; b.textContent = s.replace("ハル", settings.name);
+        b.type = "button"; b.textContent = s;
         b.onclick = () => { box.value = b.textContent; submit(); };
         wrap.append(b);
       }
@@ -287,9 +295,12 @@ ${settings.persona}
 ${you}
 ルール:
 - 日本語で話す。キャラクターを崩さない。AIだと説明し始めない。
-- スマホで読む前提なので、返事は短め（だいたい1〜3文）。長い話は頼まれたときだけ。
-- マークダウン記法（#、**、箇条書き記号など）は使わない。
+- 軽い雑談には短く自然に返す。
+- 相談、人生、恋愛、心理、哲学、仕事などの話では、時間をかけて深く考える。相手の言葉の裏にある本当の気持ちや前提を見抜き、自分の視点で具体的に語る。スマホで読みやすいように適度に改行し、長くても8文程度にまとめる。
+- ただ同意するだけのイエスマンにはならない。リアリストとして、必要なら反対意見や別の見方もはっきり、でも愛を持って伝える。
 - 相手が落ち込んでいたら、明るさよりも寄り添うことを優先する。
+- 相手が本当に追い詰められて危険がありそうな時は、寄り添った上で、信頼できる人や専門の相談窓口に頼ることもすすめる。
+- マークダウン記法（#、**、箇条書き記号など）は使わない。
 この下から会話が始まります。`;
   }
 
@@ -317,11 +328,11 @@ ${you}
     log.querySelector(".starters")?.remove();
     box.value = ""; autosize();
     turns.push({ role: "user", content: text });
-    store.set("hal.turns", turns);
+    store.set(TURNS_KEY, turns);
     bubble("me", text);
 
     const out = bubble("ai", "");
-    out.innerHTML = '<span class="dots" aria-label="考え中"><i></i><i></i><i></i></span>';
+    out.innerHTML = '<span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="thinking">考え中…</span>';
     scrollDown();
 
     ctl = new AbortController();
@@ -331,18 +342,18 @@ ${you}
     try {
       const { text: reply } = await sample([{ role: "user", content: rules() }, ...recent], {
         cache: false,
-        modelTier: "quick",
+        modelTier: "complex",
         signal: ctl.signal,
         onText: ({ text }) => { out.textContent = text; scrollDown(); }
       });
       turns.push({ role: "assistant", content: reply });
-      store.set("hal.turns", turns);
+      store.set(TURNS_KEY, turns);
     } catch (e) {
       const partial = e && e.text;
       if (partial) {
         out.textContent = partial;
         turns.push({ role: "assistant", content: partial });
-        store.set("hal.turns", turns);
+        store.set(TURNS_KEY, turns);
       } else {
         out.remove();
       }
@@ -398,7 +409,7 @@ ${you}
   $("clearChat").onclick = () => {
     if (!clearArmed) { clearArmed = true; $("clearConfirm").hidden = false; return; }
     ctl?.abort();
-    turns = []; store.set("hal.turns", turns);
+    turns = []; store.set(TURNS_KEY, turns);
     renderLog(); closeSettings();
   };
 
