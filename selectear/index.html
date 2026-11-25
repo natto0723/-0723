@@ -68,8 +68,10 @@ canvas#fx { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 40; p
 .chip-btn[aria-pressed="false"] { color: var(--dim); }
 
 /* ---------- home: picture ---------- */
-.stage { position: absolute; left: 0; top: 0; }
+.stage { position: absolute; left: 0; top: 0; transition: left .4s ease; }
 .stage img { display: block; width: 100%; height: 100%; -webkit-user-drag: none; }
+.stage .expr { position: absolute; inset: 0; opacity: 0; transition: opacity .35s ease; pointer-events: none; }
+.stage .expr.on { opacity: 1; }
 .hot { position: absolute; border: 0; padding: 0; background: transparent; cursor: pointer; border-radius: 40%; }
 .talkhint { position: absolute; z-index: 3; left: max(14px, env(safe-area-inset-left, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); padding: 8px 14px; border-radius: 999px; background: rgba(10, 8, 16, .72); border: 1px solid rgba(155, 92, 255, .6); font-size: 13px; font-weight: 700; white-space: nowrap; box-shadow: 0 0 14px rgba(155, 92, 255, .45); animation: blink 2.2s ease-in-out infinite; pointer-events: none; }
 .sb2 .talkhint { border-color: rgba(255, 110, 200, .7); box-shadow: 0 0 14px rgba(255, 110, 200, .45); }
@@ -224,6 +226,7 @@ input[type=range] { width: 150px; accent-color: var(--violet); }
 <section class="scene sb" id="standby" aria-label="ホーム（風野 桐嗚）">
   <div class="stage" data-ratio="1.7768" data-focus="30" data-menu="74.5,38,20.5,7.4,1.8">
     <img src="img/home_kiritou.webp" alt="風野 桐嗚のホーム画面">
+    <img class="expr" id="exprImg" alt="" aria-hidden="true">
     <button class="hot" type="button" aria-label="風野 桐嗚に話しかける" style="left:2%;top:4%;width:62%;height:76%"></button>
   </div>
   <nav class="hmenu" aria-label="メインメニュー"></nav>
@@ -450,6 +453,7 @@ input[type=range] { width: 150px; accent-color: var(--violet); }
     for (const s of SCENES) $(s).classList.toggle("on", s === id);
     scene = id; $("homeHud").hidden = !isHome(); closeHamb();
     if (isHome()) fit();
+    if (id === "standby") preloadFaces();
     syncMusic();
   }
   function syncMusic() {
@@ -501,12 +505,12 @@ input[type=range] { width: 150px; accent-color: var(--violet); }
   $("coinPlus").addEventListener("click", () => { audio(); decide(); openSoon("shop"); });
 
   /* home picture covers the screen; buttons sit on the right side of the picture */
-  let fitW = 0, fitH = 0;
+  let fitW = 0, fitH = 0, faceFocus = null;
   function fit() {
     const Wd = innerWidth, Hd = innerHeight; fitW = Wd; fitH = Hd;
     for (const sec of document.querySelectorAll(".sb")) {
       const s = sec.querySelector(".stage");
-      const r = +s.dataset.ratio, f = +s.dataset.focus / 100;
+      const r = +s.dataset.ratio, f = (sec.id === "standby" && faceFocus != null ? faceFocus : +s.dataset.focus) / 100;
       let w = Wd, h = Wd / r; if (h < Hd) { h = Hd; w = Hd * r; }
       s.style.width = w + "px"; s.style.height = h + "px";
       const left = Math.min(0, Math.max(-(w - Wd), Wd / 2 - w * f));
@@ -596,6 +600,7 @@ input[type=range] { width: 150px; accent-color: var(--violet); }
 - 舞台は、雨の降り続く崩壊したネオン都市。今は雨の夜景が見える部屋で、プレイヤーを待っていた。
 ルール:
 - 日本語で、ゲームの会話ウィンドウに収まるように1〜3文、全体で100文字くらいまでで返す。
+- 返事の一番最初に、その返事での表情を次のどれか1つだけ角かっこで付ける: [normal]ふつう [wave]手を振る・あいさつ [joy]大喜び・ワクワク [pout]すねる・ちょっと不満 [angry]怒る・ムッとする [sad]しょんぼり・切ない [cry]号泣 [panic]焦る・困る [shy]照れる・ごまかす。例:「[joy]え、パフェ！？行く行く！」
 - キャラクターを崩さない。AIだと説明しない。マークダウンや絵文字は使わない。
 - 屑っぽさは冗談の範囲にとどめる。相手を本気で傷つけたり、危険なことや違法なことをすすめたりしない。
 - 相手が本当に落ち込んでいる時は、軽口より寄り添うことを優先する。命に関わりそうな時は、信頼できる人や専門の相談窓口に頼るよう優しくすすめる。
@@ -613,17 +618,18 @@ input[type=range] { width: 150px; accent-color: var(--violet); }
     prompt_too_large: "会話が長くなりすぎました。設定のオプションから記録を消してね。"
   };
 
+  // "@face text": switches 桐嗚's picture while the line is shown (faces: wave joy pout angry sad cry panic shy, normal)
   const GREET = [
-    ["お、来た来た！", "待ってたんだよ〜！ねえ今日なにする？ガチャ？ガチャだよね？"],
-    ["……あ、ごめん。ちょっとぼーっとしてた。", "雨の音聞いてると眠くなるんだよね。……でも来てくれてうれしい。"],
-    ["聞いて聞いて！", "さっき新作のパフェ見つけてさ！もう最高だった……！", "あ、ゲームの話だった？ごめんごめん笑"],
-    ["うわ〜〜〜昨日のガチャ全部Cだったんだけど！！", "……まあいっか！今日はいける気がする！"],
-    ["やっほー。", "予定？決めてないよ。決めない方が楽しくない？"]
+    ["@wave お、来た来た！", "@joy 待ってたんだよ〜！ねえ今日なにする？ガチャ？ガチャだよね？"],
+    ["@panic ……あ、ごめん。ちょっとぼーっとしてた。", "@normal 雨の音聞いてると眠くなるんだよね。……でも来てくれてうれしい。"],
+    ["@joy 聞いて聞いて！", "@joy さっき新作のパフェ見つけてさ！もう最高だった……！", "@shy あ、ゲームの話だった？ごめんごめん笑"],
+    ["@cry うわ〜〜〜昨日のガチャ全部Cだったんだけど！！", "@wave ……まあいっか！今日はいける気がする！"],
+    ["@wave やっほー。", "@pout 予定？決めてないよ。決めない方が楽しくない？"]
   ];
   const TOPICS = {
-    "今日の運勢": () => { const r = Math.random(); const tier = r < .1 ? ["……え、大吉！？", "やばいやばい！今日Sランク来るって！！絶対来る！！"] : r < .45 ? ["吉！", "いいじゃんいいじゃん、Aくらいなら全然あるよ！"] : r < .8 ? ["小吉〜。", "Bでも勝てばいいんだよ、勝てば！楽しんだもん勝ち！"] : ["…………凶。", "うそでしょ……", "いや、逆に燃えてきた。Cで勝ったらかっこよくない？"]; return ["よーし、占っちゃお！", ...tier]; },
-    "おすすめのキャラ": () => pick([["麗皇！", "全然倒れないの。半分の確率で生き返るとかずるくない？笑"], ["星南はね〜……", "仲間がやられるほど強くなるの。ちょっと切ないけど、そこがいい。"], ["チョウ・ヤン！", "顔こわいけど、めっちゃ頼りになるよ。……たぶん優しい。たぶん。"], ["結菜ちゃん！", "回復してくれるし、推しにはとことん甘いの。わかる〜ってなる。"], ["遠藤くん！", "透明になって後ろから！みたいなの、ロマンあるよね〜！"], ["え、俺？", "イカサマと無敵の人！最後に全部ひっくり返すの、気持ちいいよ〜！"]]),
-    "甘いもの": () => pick([["甘いもの！？", "パフェ、クレープ、マカロン……あ〜〜全部食べたい！"], ["ねえ、今度ケーキおごってよ。", "……え、俺が払う流れ？いや〜今月ピンチでさ笑"], ["疲れたときは糖分だよ、糖分。", "……って言い訳してまた食べちゃう。"]]),
+    "今日の運勢": () => { const r = Math.random(); const tier = r < .1 ? ["@panic ……え、大吉！？", "@joy やばいやばい！今日Sランク来るって！！絶対来る！！"] : r < .45 ? ["@wave 吉！", "@joy いいじゃんいいじゃん、Aくらいなら全然あるよ！"] : r < .8 ? ["@normal 小吉〜。", "@pout Bでも勝てばいいんだよ、勝てば！楽しんだもん勝ち！"] : ["@sad …………凶。", "@cry うそでしょ……", "@angry いや、逆に燃えてきた。Cで勝ったらかっこよくない？"]; return ["@wave よーし、占っちゃお！", ...tier]; },
+    "おすすめのキャラ": () => pick([["@joy 麗皇！", "@wave 全然倒れないの。半分の確率で生き返るとかずるくない？笑"], ["@normal 星南はね〜……", "@sad 仲間がやられるほど強くなるの。ちょっと切ないけど、そこがいい。"], ["@joy チョウ・ヤン！", "@panic 顔こわいけど、めっちゃ頼りになるよ。……たぶん優しい。たぶん。"], ["@joy 結菜ちゃん！", "@wave 回復してくれるし、推しにはとことん甘いの。わかる〜ってなる。"], ["@joy 遠藤くん！", "@pout 透明になって後ろから！みたいなの、ロマンあるよね〜！"], ["@shy え、俺？", "@joy イカサマと無敵の人！最後に全部ひっくり返すの、気持ちいいよ〜！"]]),
+    "甘いもの": () => pick([["@joy 甘いもの！？", "@joy パフェ、クレープ、マカロン……あ〜〜全部食べたい！"], ["@wave ねえ、今度ケーキおごってよ。", "@panic ……え、俺が払う流れ？いや〜今月ピンチでさ笑"], ["@pout 疲れたときは糖分だよ、糖分。", "@shy ……って言い訳してまた食べちゃう。"]]),
     "またね": null
   };
   const GREET2 = [
@@ -640,6 +646,25 @@ input[type=range] { width: 150px; accent-color: var(--violet); }
     "またね": null
   };
 
+  /* 桐嗚's expressions (not in the gallery) */
+  const FACES = { wave: A("img/kiritou_wave.webp"), joy: A("img/kiritou_joy.webp"), pout: A("img/kiritou_pout.webp"), angry: A("img/kiritou_angry.webp"), sad: A("img/kiritou_sad.webp"), cry: A("img/kiritou_cry.webp"), panic: A("img/kiritou_panic.webp"), shy: A("img/kiritou_shy.webp") };
+  let facesLoaded = false, face = "normal";
+  // where his face is in each picture (% from the left), so a narrow phone screen keeps it in view
+  const FACE_X = { normal: 30, wave: 36, joy: 34, pout: 38, angry: 30, sad: 34, cry: 34, panic: 40, shy: 44 };
+  function refocus(f) { const x = talking ? (FACE_X[f] ?? 30) : null; if (x !== faceFocus) { faceFocus = x; fit(); } }
+  function preloadFaces() { if (facesLoaded) return; facesLoaded = true; for (const k in FACES) { const im = new Image(); im.src = FACES[k]; } }
+  function setFace(f) {
+    const el = $("exprImg");
+    if (who === "kiritou") refocus(FACES[f] ? f : "normal");
+    if (who !== "kiritou" || !FACES[f]) { face = "normal"; el.classList.remove("on"); return; }
+    if (f === face && el.classList.contains("on")) return;
+    face = f;
+    const go = () => { if (face === f) el.classList.add("on"); };
+    if (el.getAttribute("src") !== FACES[f]) { el.classList.remove("on"); el.onload = go; el.src = FACES[f]; if (el.complete) go(); } else go();
+  }
+  // "@joy text" -> [face, text]
+  const splitFace = line => { const m = /^@(\w+)\s*/.exec(line); return m ? [m[1], line.slice(m[0].length)] : [null, line]; };
+
   let who = "kiritou", T = TOPICS, BYE = [], lines = [], li = 0, typing = false, full = "", timer = 0, talking = false, after = null, free = false, ctl = null;
   function openTalk() {
     if (talking) return; talking = true; closeHamb();
@@ -647,18 +672,18 @@ input[type=range] { width: 150px; accent-color: var(--violet); }
     const pink = scene === "standby2"; who = pink ? "miyu" : "kiritou";
     $("talk").classList.toggle("pink", pink); $("talkName").textContent = pink ? "実優" : "風野 桐嗚";
     T = pink ? TOPICS2 : TOPICS;
-    BYE = pink ? ["えーっ！もう行っちゃうの！？", "……しょうがないなぁ。次はもっといっぱい遊ぼうね！ばいばーい！"] : ["えー、もう行っちゃうの？", "……うん、また遊ぼ！絶対ね！"];
+    BYE = pink ? ["えーっ！もう行っちゃうの！？", "……しょうがないなぁ。次はもっといっぱい遊ぼうね！ばいばーい！"] : ["@sad えー、もう行っちゃうの？", "@wave ……うん、また遊ぼ！絶対ね！"];
     $("talk").classList.add("on"); audio(); tone(880, .08, "sine", .08); tone(1320, .12, "sine", .06, .06);
     say(pick(pink ? GREET2 : GREET), showChoices);
   }
   function closeTalk() {
     if (ctl) { ctl.abort(); ctl = null; }
-    talking = false; free = false; $("talk").classList.remove("on"); $("choices").replaceChildren(); $("chatbar").hidden = true; clearInterval(timer);
+    talking = false; free = false; setFace("normal"); refocus("normal"); $("talk").classList.remove("on"); $("choices").replaceChildren(); $("chatbar").hidden = true; clearInterval(timer);
     for (const s of document.querySelectorAll(".sb")) s.classList.remove("talking");
   }
   function say(arr, then) { lines = arr; li = 0; after = then; $("choices").replaceChildren(); typeLine(); }
   function typeLine() {
-    full = lines[li]; const el = $("ttext"); el.textContent = ""; $("tnext").hidden = true; typing = true; let k = 0; clearInterval(timer);
+    const [f, txt] = splitFace(lines[li]); if (f) setFace(f); full = txt; const el = $("ttext"); el.textContent = ""; $("tnext").hidden = true; typing = true; let k = 0; clearInterval(timer);
     if (reduce) { el.textContent = full; typing = false; $("tnext").hidden = false; return; }
     timer = setInterval(() => { el.textContent = full.slice(0, ++k); if (k % 2) sfx.type(); if (k >= full.length) { clearInterval(timer); typing = false; $("tnext").hidden = false; } }, st.speed);
   }
@@ -684,9 +709,16 @@ input[type=range] { width: 150px; accent-color: var(--violet); }
     box.firstChild.focus();
   }
   function startFree() {
-    free = true; $("choices").replaceChildren(); clearInterval(timer); typing = false; $("tnext").hidden = true;
+    free = true; $("choices").replaceChildren(); clearInterval(timer); typing = false; $("tnext").hidden = true; setFace("wave");
     $("ttext").textContent = pick(["なになに？なんでも話してよ！", "お、話そ話そ！今日どうだった？", "聞くよ〜。甘いものの話ならもっと聞く笑"]);
     $("chatbar").hidden = false; $("chatIn").value = ""; $("chatIn").focus();
+  }
+  // "[joy]text" -> face + text; while the tag is still streaming in, show nothing yet
+  function parseTagged(t) {
+    const s0 = t.replace(/^\s+/, "");
+    if (s0.startsWith("[") && !s0.includes("]")) return { face: null, text: "" };
+    const m = /^\[(\w+)\]\s*/.exec(s0);
+    return m ? { face: m[1], text: s0.slice(m[0].length) } : { face: null, text: t };
   }
   async function sendFree(text) {
     if (!sample) { $("ttext").textContent = "自由会話は claude.ai でこのページを開いたときに使えます。"; return; }
@@ -698,10 +730,10 @@ input[type=range] { width: 150px; accent-color: var(--violet); }
     $("chatSend").disabled = true; $("chatIn").value = "";
     ctl = new AbortController();
     try {
-      const { text: reply } = await sample(input, { cache: false, modelTier: "default", signal: ctl.signal, onText: ({ text: t }) => { out.textContent = t; out.scrollTop = out.scrollHeight; } });
-      out.textContent = reply; turns.push({ role: "assistant", content: reply });
+      const { text: reply } = await sample(input, { cache: false, modelTier: "default", signal: ctl.signal, onText: ({ text: t }) => { const v = parseTagged(t); if (v.face) setFace(v.face); out.textContent = v.text; out.scrollTop = out.scrollHeight; } });
+      const v = parseTagged(reply); if (v.face) setFace(v.face); out.textContent = v.text; turns.push({ role: "assistant", content: reply });
     } catch (e) {
-      if (e && e.text) { out.textContent = e.text; turns.push({ role: "assistant", content: e.text }); }
+      if (e && e.text) { out.textContent = parseTagged(e.text).text; turns.push({ role: "assistant", content: e.text }); }
       else { turns.pop(); if (e && e.code !== "cancelled") out.textContent = ERR[e && e.code] || "うまくつながらなかったみたい。もう一回送ってみて。"; }
       if (e && e.code === "not_granted") sample = null;
     } finally {
