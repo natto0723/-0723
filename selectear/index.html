@@ -1,4 +1,5 @@
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>SELECTEAR</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,7 +27,8 @@
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { height: 100%; margin: 0; }
-body { background: var(--bg); color: var(--ink); font-family: var(--font-body); overflow: hidden; user-select: none; -webkit-user-select: none; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); overflow: hidden; user-select: none; -webkit-user-select: none; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; -webkit-touch-callout: none; overscroll-behavior: none; }
+button, .unit, .gc, .scene { touch-action: manipulation; }
 button { font: inherit; color: inherit; }
 button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 
@@ -44,14 +46,13 @@ canvas#fx { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 40; p
 .eyebrow { font-family: var(--font-latin); letter-spacing: .45em; font-size: 12px; color: var(--dim); margin: 0; }
 
 /* ---------- title ---------- */
-#title .col { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; text-align: center; }
 .logo { font-family: var(--font-latin); font-weight: 800; letter-spacing: .1em; margin: 0; line-height: 1.05; position: relative; font-size: clamp(42px, 14vw, 96px); }
 .logo::before, .logo::after { content: attr(data-t); position: absolute; inset: 0; opacity: 0; pointer-events: none; }
 .logo::before { color: #ff4fd8; animation: gl1 5s infinite; }
 .logo::after { color: #4fe3ff; animation: gl2 5s infinite; }
 @keyframes gl1 { 0%, 92%, 100% { opacity: 0; transform: none; } 93% { opacity: .8; transform: translate(-4px, 1px); } 96% { opacity: .8; transform: translate(3px, -1px); } }
 @keyframes gl2 { 0%, 93%, 100% { opacity: 0; transform: none; } 94% { opacity: .8; transform: translate(4px, -1px); } 97% { opacity: .8; transform: translate(-3px, 1px); } }
-.hero { width: 100%; max-width: 640px; border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 0 60px rgba(155, 92, 255, .55); animation: float 5s ease-in-out infinite alternate; }
+.hero { width: auto; max-width: min(640px, 100%); max-height: 48vh; object-fit: contain; border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 0 60px rgba(155, 92, 255, .55); animation: float 5s ease-in-out infinite alternate; }
 @keyframes float { from { transform: translateY(-6px); } to { transform: translateY(6px) scale(1.015); } }
 .press { font-family: var(--font-num); font-weight: 700; letter-spacing: .5em; padding-left: .5em; font-size: 15px; color: #fff; text-shadow: 0 0 8px var(--violet), 0 0 22px var(--violet); animation: blink 1.4s infinite; }
 .press small { display: block; margin-top: 8px; font: 700 12px/1 var(--font-body); letter-spacing: .3em; color: var(--dim); text-shadow: none; }
@@ -107,7 +108,7 @@ canvas#fx { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 40; p
 .btn:hover { transform: translateX(4px); box-shadow: 0 0 22px rgba(155, 92, 255, .55); }
 .btn.primary { border-left-color: var(--ice); background: linear-gradient(90deg, rgba(79, 140, 255, .45), rgba(155, 92, 255, .35)); box-shadow: 0 0 22px rgba(79, 140, 255, .35); }
 .btn:disabled { opacity: .4; cursor: default; transform: none; box-shadow: none; }
-.panel { position: fixed; inset: 0; z-index: 60; display: none; align-items: center; justify-content: center; padding: 20px; background: rgba(3, 2, 10, .8); backdrop-filter: blur(6px); }
+.panel { position: fixed; inset: 0; z-index: 60; display: none; align-items: center; justify-content: center; padding: 20px; background: rgba(3, 2, 10, .8); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
 .panel.on { display: flex; animation: sceneIn .3s; }
 .card-box { width: min(560px, 100%); max-height: 100%; overflow-y: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 20px; box-shadow: 0 0 60px rgba(155, 92, 255, .35); }
 .card-box h3 { font: 800 16px var(--font-latin); letter-spacing: .25em; margin: 0 0 14px; color: var(--ice); }
@@ -151,13 +152,15 @@ input[type=range] { width: 150px; accent-color: var(--violet); }
 .rank.C { color: var(--dim); border-color: var(--dim); }
 
 /* ---------- scout (gacha) ---------- */
-#scout .col, #reward .col, #result .col { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; text-align: center; overflow-y: auto; }
+#scout .col, #reward .col, #result .col, #title .col { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 16px; text-align: center; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.col > :first-child { margin-top: auto; }
+.col > :last-child { margin-bottom: auto; }
 .h2 { font: 800 clamp(26px, 7vw, 42px)/1.1 var(--font-latin); letter-spacing: .1em; margin: 0; }
 .scout-row { display: grid; grid-template-columns: repeat(3, minmax(0, 170px)); gap: 10px; width: 100%; justify-content: center; }
 .sc { perspective: 900px; aspect-ratio: 5 / 8; max-width: 100%; }
-.sc-in { position: relative; width: 100%; height: 100%; transition: transform .6s cubic-bezier(.3, 1.4, .5, 1); transform-style: preserve-3d; }
+.sc-in { position: relative; width: 100%; height: 100%; transition: transform .6s cubic-bezier(.3, 1.4, .5, 1); -webkit-transform-style: preserve-3d; transform-style: preserve-3d; }
 .sc.open .sc-in { transform: rotateY(180deg); }
-.sc-back, .sc-front { position: absolute; inset: 0; border-radius: 12px; backface-visibility: hidden; border: 1px solid var(--line); overflow: hidden; }
+.sc-back, .sc-front { position: absolute; inset: 0; border-radius: 12px; -webkit-backface-visibility: hidden; backface-visibility: hidden; border: 1px solid var(--line); overflow: hidden; }
 .sc-back { background: repeating-linear-gradient(45deg, #140d2a 0 8px, #1b1238 8px 16px); display: grid; place-items: center; font: 800 14px var(--font-latin); letter-spacing: .2em; color: var(--violet); box-shadow: inset 0 0 30px rgba(155, 92, 255, .4); }
 .sc-front { transform: rotateY(180deg); background: #0d0a1c; display: flex; flex-direction: column; text-align: left; }
 .sc-front .face { flex: 1; }
@@ -174,7 +177,9 @@ input[type=range] { width: 150px; accent-color: var(--violet); }
 #battle.on { display: flex; flex-direction: column; }
 #battle .bgimg { filter: blur(14px) brightness(.28) saturate(1.4); }
 .bhead { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: calc(10px + env(safe-area-inset-top, 0px)) max(14px, env(safe-area-inset-right, 0px)) 6px max(14px, env(safe-area-inset-left, 0px)); }
-.bhead .area { font: 700 12px var(--font-body); color: var(--dim); }
+.bhead .area { font: 700 12px var(--font-body); color: var(--dim); min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bhead > div:last-child { flex: none; }
+.bhead .rnd, .icon-btn { white-space: nowrap; }
 .bhead .area b { font: 800 13px var(--font-latin); letter-spacing: .12em; color: var(--ice); margin-right: 8px; }
 .bhead .rnd { font: 700 12px var(--font-num); letter-spacing: .15em; color: var(--ice); }
 .icon-btn { border: 1px solid var(--line); background: rgba(10, 8, 16, .7); border-radius: 8px; padding: 6px 10px; font: 700 12px var(--font-body); cursor: pointer; }
@@ -184,7 +189,7 @@ input[type=range] { width: 150px; accent-color: var(--violet); }
 .order span.e { border-color: rgba(255, 93, 115, .5); }
 .order span.now { color: #fff; background: rgba(155, 92, 255, .5); border-color: #fff; }
 .order span.gone { opacity: .3; text-decoration: line-through; }
-.field { position: relative; flex: 1; display: flex; flex-direction: column; justify-content: space-around; gap: 6px; padding: 4px max(10px, env(safe-area-inset-right, 0px)) 4px max(10px, env(safe-area-inset-left, 0px)); min-height: 0; }
+.field { position: relative; flex: 1; display: flex; flex-direction: column; justify-content: center; gap: clamp(6px, 3vh, 36px); padding: 4px max(10px, env(safe-area-inset-right, 0px)) 4px max(10px, env(safe-area-inset-left, 0px)); min-height: 0; }
 .side { display: flex; justify-content: center; gap: 8px; }
 .unit { position: relative; width: min(31vw, 150px); border-radius: 12px; background: rgba(13, 10, 26, .9); border: 1px solid rgba(255, 255, 255, .14); overflow: hidden; transition: transform .2s, box-shadow .2s, opacity .3s; cursor: default; padding: 0; text-align: left; }
 .unit .face { height: clamp(58px, 11vh, 96px); }
@@ -224,7 +229,9 @@ input[type=range] { width: 150px; accent-color: var(--violet); }
 .endbtn { padding: 10px 18px; border-radius: 10px; border: 1px solid var(--ice); background: linear-gradient(90deg, rgba(79, 140, 255, .5), rgba(155, 92, 255, .5)); font: 800 13px var(--font-latin); letter-spacing: .12em; cursor: pointer; }
 .endbtn:disabled { opacity: .35; cursor: default; }
 .hint { font-size: 12px; color: var(--gold); text-align: center; min-height: 1.4em; margin-bottom: 4px; }
-.hand { display: flex; gap: 8px; overflow-x: auto; padding: 4px 2px 2px; scrollbar-width: thin; min-height: 128px; }
+.hand { display: flex; gap: 8px; overflow-x: auto; padding: 4px 2px 2px; scrollbar-width: thin; min-height: 128px; -webkit-overflow-scrolling: touch; }
+.hand > :first-child { margin-left: auto; }
+.hand > :last-child { margin-right: auto; }
 .hand.wait { opacity: .55; }
 .gc { flex: none; width: 96px; height: 124px; border-radius: 10px; padding: 0; border: 1px solid var(--line); background: linear-gradient(160deg, #1b1338, #0b0818); position: relative; text-align: left; cursor: pointer; transition: transform .15s, box-shadow .15s; overflow: hidden; }
 .gc::before { content: ""; position: absolute; inset: 0 0 auto; height: 4px; background: var(--k); }
@@ -246,6 +253,90 @@ input[type=range] { width: 150px; accent-color: var(--violet); }
 .stats-list { font: 700 13px/1.9 var(--font-num); color: var(--dim); }
 .stats-list b { color: var(--ink); }
 
+/* PC: keep the battle in a centered column and make units and cards larger */
+.bhead, .order { padding-left: max(14px, calc((100% - 1080px) / 2)); padding-right: max(14px, calc((100% - 1080px) / 2)); }
+.dock > * { max-width: 1080px; margin-left: auto; margin-right: auto; }
+@media (min-width: 900px) and (min-height: 700px) {
+  .unit { width: 180px; }
+  .unit .face { height: clamp(90px, 14vh, 140px); }
+  .unit .nm { font-size: 15px; }
+  .gc { width: 112px; height: 142px; }
+  .gc .ct { font-size: 11.5px; }
+  .hand { min-height: 150px; }
+  .vs { font-size: 13px; }
+}
+@media (min-width: 1200px) and (min-height: 900px) {
+  .unit { width: 220px; }
+  .unit .face { height: 170px; }
+  .unit .face .gl { font-size: 54px; }
+  .unit .nm { font-size: 17px; }
+  .stats { font-size: 13px; }
+  .gc { width: 128px; height: 164px; }
+  .gc .cn { font-size: 15px; }
+  .gc .ct { font-size: 12.5px; }
+  .hand { min-height: 172px; }
+}
+/* phone held upright: compact everything so both teams and the hand fit */
+@media (max-width: 600px) and (orientation: portrait) {
+  .bhead { padding-bottom: 2px; }
+  .unit .face { height: clamp(38px, 7.5vh, 90px); }
+  .unit .info { padding: 4px 6px 6px; gap: 3px; }
+  .unit .nm { font-size: 12px; }
+  .tags { flex-wrap: nowrap; overflow: hidden; }
+  .tags span { white-space: nowrap; }
+  .vs { min-height: 2.6em; font-size: 11px; }
+  .dock { padding-top: 4px; }
+  .dockbar { margin-bottom: 2px; }
+  .gems .pips { display: none; }
+  .endbtn { padding: 9px 14px; }
+  .hint { font-size: 11px; margin-bottom: 2px; }
+  .hand { min-height: 112px; }
+  .gc { width: 90px; height: 108px; }
+  .gc .cn { padding-top: 8px; font-size: 12px; }
+  .gc .ct { padding-top: 4px; font-size: 10px; }
+}
+/* short screens (iPhone SE, 1366x768 laptops) */
+@media (max-height: 700px) and (orientation: portrait) {
+  .unit .face { height: 34px; }
+  .unit .face .gl { font-size: 22px; }
+  .field { gap: 4px; }
+  .hand { min-height: 106px; }
+  .gc { height: 102px; }
+}
+@media (max-height: 700px) and (min-width: 700px) and (orientation: landscape) and (min-height: 541px) {
+  .unit .face { height: 52px; }
+  .field { gap: 6px; }
+  .hand { min-height: 120px; }
+  .gc { height: 116px; }
+}
+@media (max-width: 400px) { .bhead .area b { display: block; } .icon-btn { padding: 6px 8px; } }
+/* phone held sideways: field on the left, cards on the right */
+@media (orientation: landscape) and (max-height: 540px) {
+  #battle.on { display: grid; grid-template-columns: minmax(0, 1fr) min(40vw, 340px); grid-template-rows: auto auto minmax(0, 1fr); }
+  #battle .bhead, #battle .order { grid-column: 1 / -1; }
+  .bhead { padding-top: calc(4px + env(safe-area-inset-top, 0px)); padding-bottom: 2px; }
+  .field { grid-column: 1; grid-row: 3; gap: 2px; padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px)); }
+  .unit { width: min(17vw, 150px); }
+  .unit .face { height: 34px; }
+  .unit .face .gl { font-size: 20px; }
+  .unit .info { padding: 3px 6px 5px; gap: 3px; }
+  .vs { min-height: 2.6em; font-size: 11px; }
+  .dock { grid-column: 2; grid-row: 3; display: flex; flex-direction: column; min-height: 0; border-top: 0; border-left: 1px solid var(--line); padding: 4px max(10px, env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) 10px; }
+  .dockbar { flex-wrap: wrap; gap: 4px 8px; }
+  .pile { order: 3; width: 100%; }
+  .hint { font-size: 11px; text-align: left; }
+  .hand { flex: 1; min-height: 0; flex-wrap: wrap; align-content: flex-start; overflow-x: hidden; overflow-y: auto; }
+  .hand > :first-child, .hand > :last-child { margin-left: 0; margin-right: 0; }
+  .gc { width: calc(50% - 4px); height: 96px; }
+  .gc .ct { font-size: 10px; padding-top: 3px; }
+  .scout-row { grid-template-columns: repeat(3, minmax(0, 100px)); }
+  #scout .col, #reward .col, #result .col, #title .col { gap: 8px; }
+  #scoutNote { display: none; }
+  #resImg { max-height: 30vh; width: auto !important; }
+  .h2 { font-size: 24px; }
+  .hero { max-height: 40vh; }
+  .logo { font-size: 40px; }
+}
 @media (prefers-reduced-motion: reduce) {
   .hero, .press, .logo::before, .logo::after, .sb .stage, .spin, .sbar i, .talkhint, .tnext, .unit.tgt { animation: none !important; }
 }
@@ -469,6 +560,13 @@ input[type=range] { width: 150px; accent-color: var(--violet); }
 <script>
 (() => {
   "use strict";
+  /* standalone build: assets embedded once in window.__ASSETS; the published version loads files */
+  const ASSETS = window.__ASSETS || null;
+  const A = p => (ASSETS && ASSETS[p]) || p;
+  if (ASSETS) for (const el of document.querySelectorAll("[src], [style*='url(']")) {
+    if (el.hasAttribute("src")) el.setAttribute("src", A(el.getAttribute("src")));
+    const st0 = el.getAttribute("style"); if (st0 && st0.includes("url(")) el.setAttribute("style", st0.replace(/url\((img\/[^)]+)\)/g, (m, q) => `url(${A(q)})`));
+  }
   const $ = id => document.getElementById(id);
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const rnd = n => Math.floor(Math.random() * n);
@@ -484,7 +582,7 @@ input[type=range] { width: 150px; accent-color: var(--violet); }
      DATA — characters, enemies, cards
      ========================================================= */
   const CHARS = {
-    kiritou: { name: "風野 桐嗚", short: "桐嗚", hp: 14, atk: 3, c: "#9b5cff", gl: "桐", img: "img/g7.webp", pos: "50% 22%",
+    kiritou: { name: "風野 桐嗚", short: "桐嗚", hp: 14, atk: 3, c: "#9b5cff", gl: "桐", img: A("img/g7.webp"), pos: "50% 22%",
       abil: [["イカサマ", "手番開始時40%で◆+1・1枚ドロー"], ["無敵", "倒れるダメージを1度だけHP1で耐える"], ["逆転", "味方で最後の1人になるとATK+3"]] },
     reo: { name: "麗皇", short: "麗皇", hp: 16, atk: 3, c: "#f2c14e", gl: "麗",
       abil: [["不倒", "倒れたとき50%の確率でHP半分で復活（1回）"]] },
@@ -499,21 +597,21 @@ input[type=range] { width: 150px; accent-color: var(--violet); }
     rukai: { name: "琉海", short: "琉海", hp: 14, atk: 3, c: "#ff6ec8", gl: "琉",
       abil: [["逆鱗", "3回ダメージを受けると激昂しATK+3"]] }
   };
-  const MIYU = { name: "実優", c: "#ff6ec8", gl: "実", img: "img/home_miyu.webp", pos: "18% 30%" };
+  const MIYU = { name: "実優", c: "#ff6ec8", gl: "実", img: A("img/home_miyu.webp"), pos: "18% 30%" };
   const RANKS = { S: { hp: 1.3, atk: 2, w: 10 }, A: { hp: 1.15, atk: 1, w: 25 }, B: { hp: 1, atk: 0, w: 35 }, C: { hp: .9, atk: 0, w: 30 } };
   const rollRank = () => { let r = rnd(100); for (const k of ["S", "A", "B", "C"]) { if (r < RANKS[k].w) return k; r -= RANKS[k].w; } return "C"; };
 
   const ENEMIES = {
-    drone: { name: "警備ドローン", hp: 9, atk: 2, gl: "◉", c: "#ff9b5c", ai: "rand", note: "ランダムな相手を攻撃" },
-    android: { name: "廃棄アンドロイド", hp: 14, atk: 3, armor: 1, gl: "⌬", c: "#ff5d73", ai: "low", note: "装甲1・弱った相手を狙う" },
-    wraith: { name: "ネオン・レイス", hp: 11, atk: 4, gl: "☍", c: "#d05cff", ai: "low", note: "弱った相手を狙う" },
-    medic: { name: "修復ユニット", hp: 10, atk: 1, gl: "✚", c: "#5fd0ff", ai: "medic", note: "傷ついた仲間を4回復" },
-    core: { name: "オーバーロード・コア", hp: 36, atk: 4, gl: "✸", c: "#ff3d6e", ai: "boss", note: "3回に1回、全体に2ダメージ" }
+    drone: { name: "警備ドローン", hp: 9, atk: 2, gl: "◉", c: "#ff9b5c", ai: "rand", note: "ランダム攻撃" },
+    android: { name: "廃棄アンドロイド", hp: 14, atk: 3, armor: 1, gl: "⌬", c: "#ff5d73", ai: "low", note: "装甲1・弱者狙い" },
+    wraith: { name: "ネオン・レイス", hp: 11, atk: 4, gl: "☍", c: "#d05cff", ai: "low", note: "弱者狙い" },
+    medic: { name: "修復ユニット", hp: 10, atk: 1, gl: "✚", c: "#5fd0ff", ai: "medic", note: "仲間を修復" },
+    core: { name: "オーバーロード・コア", hp: 36, atk: 4, gl: "✸", c: "#ff3d6e", ai: "boss", note: "3回に1回 全体攻撃" }
   };
   const AREAS = [
-    { name: "第7区 廃ネオン街", en: "AREA 1", foes: ["drone", "android", "drone"], bg: "img/g2.webp" },
-    { name: "第3区 沈んだ高架", en: "AREA 2", foes: ["wraith", "medic", "android"], bg: "img/g3.webp" },
-    { name: "中央塔 コア区画", en: "AREA 3", foes: ["drone", "core", "medic"], bg: "img/g4.webp" }
+    { name: "第7区 廃ネオン街", en: "AREA 1", foes: ["drone", "android", "drone"], bg: A("img/g2.webp") },
+    { name: "第3区 沈んだ高架", en: "AREA 2", foes: ["wraith", "medic", "android"], bg: A("img/g3.webp") },
+    { name: "中央塔 コア区画", en: "AREA 3", foes: ["drone", "core", "medic"], bg: A("img/g4.webp") }
   ];
 
   // tgt: enemy | ally | none. Attack values use the active unit's ATK.
@@ -574,7 +672,7 @@ input[type=range] { width: 150px; accent-color: var(--violet); }
 
   /* Miyu BGM (from the home screen), fades in and out */
   const BGM = (() => {
-    const el = new Audio("miyu_bgm.mp3"); el.loop = true; el.preload = "none";
+    const el = new Audio(A("miyu_bgm.mp3")); el.loop = true; el.preload = "none";
     let on = false, t = 0;
     function fade(v, sec) { clearInterval(t); const from = el.volume, steps = 20; let i = 0; t = setInterval(() => { i++; el.volume = Math.min(1, Math.max(0, from + (v - from) * i / steps)); if (i >= steps) { clearInterval(t); if (v === 0) el.pause(); } }, sec * 1000 / steps); }
     return {
@@ -642,7 +740,7 @@ input[type=range] { width: 150px; accent-color: var(--violet); }
 
   let started = false;
   $("title").addEventListener("click", e => {
-    if (started) return; started = true; audio(); sfx.title(); buzz(30); flash(); burst(e.clientX, e.clientY, 60);
+    if (started) return; started = true; audio(); if (home === "standby2" && bgmOn) BGM.start(); sfx.title(); buzz(30); flash(); burst(e.clientX, e.clientY, 60);
     setTimeout(() => { show(home); started = false; }, reduce ? 0 : 350);
   });
   for (const b of document.querySelectorAll("[data-swap]")) b.addEventListener("click", e => {
@@ -697,7 +795,7 @@ input[type=range] { width: 150px; accent-color: var(--violet); }
 
   /* data / dex */
   const faceHTML = (o, extra = "") => `<div class="face" style="--c:${o.c}">${o.img ? `<img src="${o.img}" alt="" style="object-position:${o.pos || "50% 30%"}">` : `<span class="gl">${o.gl}</span>`}${extra}</div>`;
-  const GALLERY = ["img/g1.webp", "img/g2.webp", "img/g3.webp", "img/g4.webp", "img/g5.webp", "img/g6.webp", "img/g7.webp", "img/home_title.webp", "img/home_kiritou.webp", "img/home_miyu.webp"];
+  const GALLERY = [A("img/g1.webp"), A("img/g2.webp"), A("img/g3.webp"), A("img/g4.webp"), A("img/g5.webp"), A("img/g6.webp"), A("img/g7.webp"), A("img/home_title.webp"), A("img/home_kiritou.webp"), A("img/home_miyu.webp")];
   function openData(tab) { renderData(tab); openPanel("p-data"); }
   for (const t of document.querySelectorAll("[data-tab]")) t.addEventListener("click", () => { sfx.move(); renderData(t.dataset.tab); });
   function renderData(tab) {
@@ -1036,6 +1134,8 @@ input[type=range] { width: 150px; accent-color: var(--violet); }
     $("hint").textContent = hint;
   }
 
+  $("hand").addEventListener("wheel", e => { const h = $("hand"); if (h.scrollWidth > h.clientWidth && Math.abs(e.deltaY) > Math.abs(e.deltaX)) { h.scrollLeft += e.deltaY; e.preventDefault(); } }, { passive: false });
+
   /* end of battle */
   async function finish(win) {
     const my = B; B.active = null; B.endTurn = null; render();
@@ -1069,9 +1169,9 @@ input[type=range] { width: 150px; accent-color: var(--violet); }
   function showResult(win, run) {
     $("resEyebrow").textContent = win ? "ALL AREAS CLEAR" : `${AREAS[run.area].en} — ${AREAS[run.area].name}`;
     $("resTitle").textContent = win ? "TO BE CONTINUED" : "GAME OVER";
-    $("resImg").src = win ? "img/g6.webp" : "img/g7.webp";
+    $("resImg").src = win ? A("img/g6.webp") : A("img/g7.webp");
     $("resText").textContent = win ? "中央塔のコアを停止させた。……続きは本編で！" : "チームは全滅した。編成を変えて、もう一度。";
-    $("resultBg").style.backgroundImage = `url(${win ? "img/g5.webp" : "img/g3.webp"})`;
+    $("resultBg").style.backgroundImage = `url(${win ? A("img/g5.webp") : A("img/g3.webp")})`;
     show("result");
   }
   $("resHome").addEventListener("click", () => { sfx.back(); B = null; show(home); });
