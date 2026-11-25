@@ -12,7 +12,7 @@ OUT = ROOT / "dist" / "selectear.html"
 MIME = {".webp": "image/webp", ".mp3": "audio/mpeg"}
 
 page = (SRC / "index.html").read_text(encoding="utf-8")
-paths = sorted(set(re.findall(r"img/[a-z0-9_]+\.webp|miyu_bgm\.mp3", page)))
+paths = sorted(set(re.findall(r"img/[a-z0-9_]+\.webp|[a-z_]+\.mp3", page)))
 assets = {}
 for rel in paths:
     f = SRC / rel
