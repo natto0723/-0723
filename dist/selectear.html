@@ -593,65 +593,182 @@ input[type=range] { width: 150px; accent-color: var(--violet); }
   $("lbClose").addEventListener("click", () => { sfx.back(); $("lb").classList.remove("on"); });
 
   /* =========================================================
-     TALK — scripted topics + free talk with 風野 (Claude via the page's "sample" capability)
+     TALK
+     風野: lines and rules from the doc「風野 会話バリエーション集」 + free talk (Claude via the page's "sample" capability)
+     実優: the earlier scripted topics
      ========================================================= */
-  const PERSONA = {
-    kiritou: `あなたはスマホゲーム「SELECTEAR（セレクティア）」のホーム画面にいるキャラクター「風野 桐嗚」として、プレイヤーと会話します。
-キャラクター設定:
-- MBTIはENFP。人間が大好きで、いつも元気。面白いことが大好きで、すぐ乗っかる。
-- 甘いもの（パフェ、クレープ、ケーキ、マカロンなど）に目がない。
-- ちょっと屑っぽい人たらし。調子がよくて軽口やからかいが多く、約束もゆるそうに見えるが、相手のことはちゃんと好きで、人の懐に入るのがうまい。
-- 一人称は「俺」。くだけたタメ口で、語尾を伸ばしたり「笑」を付けたりする。
-- 舞台は、雨の降り続く崩壊したネオン都市。今は雨の夜景が見える部屋で、プレイヤーを待っていた。
-ルール:
-- 日本語で、ゲームの会話ウィンドウに収まるように1〜3文、全体で100文字くらいまでで返す。
-- 返事の一番最初に、その返事での表情を次のどれか1つだけ角かっこで付ける: [normal]ふつう [wave]手を振る・あいさつ [joy]大喜び・ワクワク [pout]すねる・ちょっと不満 [angry]怒る・ムッとする [sad]しょんぼり・切ない [cry]号泣 [panic]焦る・困る [shy]照れる・ごまかす。例:「[joy]え、パフェ！？行く行く！」
-- キャラクターを崩さない。AIだと説明しない。マークダウンや絵文字は使わない。
-- 屑っぽさは冗談の範囲にとどめる。相手を本気で傷つけたり、危険なことや違法なことをすすめたりしない。
-- 相手が本当に落ち込んでいる時は、軽口より寄り添うことを優先する。命に関わりそうな時は、信頼できる人や専門の相談窓口に頼るよう優しくすすめる。
-この下から会話が始まります。`
+  // doc expression → picture. The doc has 7 expressions; 眠い has no picture yet, so it uses the normal one.
+  const FACEMAP = { "通常": "normal", "笑い": "joy", "ニヤリ": "wave", "ムッ": "pout", "照れ": "shy", "眠い": "normal", "驚き": "panic" };
+  // [id, line, expression]
+  const KZ = {};
+  const def = (id, text, ex) => { KZ[id] = { id, text, face: FACEMAP[ex] || "normal" }; };
+  // 初めて・話した回数・久しぶり
+  def("cnt_001", "おっ！ 新しいプレイヤー発見！ ようこそセレクティアへ！ 俺は風野、ここの案内役……兼、製作者！ よろしくな！", "笑い");
+  def("cnt_002", "また来てくれたじゃん！ 2回目のログインボーナスは、俺の笑顔でーす！", "笑い");
+  def("cnt_010", "10回目！ きみ、もう常連でしょ！ 称号『風野の友達』をあげよう。今作った。", "ニヤリ");
+  def("cnt_030", "……なんかさ、『きみ』って呼ぶのもう他人行儀じゃない？ 今日から『お前』な。……嫌なら言えよ。", "照れ");
+  def("cnt_050", "50回。……別に数えてないし。（沈黙）……はい今のログ消しといてー！", "照れ");
+  def("cnt_100", "100回か。……ありがと。……え、何その顔。俺だってお礼くらい言うわ！ 実績解除！", "照れ");
+  def("cnt_200", "お前、もう俺のパーティメンバーだからな。抜けんなよ。", "ムッ");
+  def("cnt_500", "500回……。俺の人生ってゲームで言うと、お前と会ってからが本編なんだよな。（沈黙）……いや今のロマンチストすぎた、忘れて！", "照れ");
+  def("back_07", "おかえり！ ずっと待ってた……とは言わないけど、ちょっとだけ待ってた！", "笑い");
+  def("back_30", "1か月ぶり！？ 俺、放置ゲーのキャラの気持ちが分かったわ……。でも戻ってきてくれたからチャラ！", "驚き");
+  // 時間帯別
+  def("time_early_1", "え、もう朝！？ ゲームしてたら夜が消えた。バグかな。", "眠い");
+  def("time_early_2", "早起きじゃん！ 早起きは三文の徳、つまり◆3な！", "笑い");
+  def("time_morning_1", "おはよー！ 今日のデイリークエスト：俺と一戦。報酬：俺が喜ぶ！", "笑い");
+  def("time_morning_2", "朝のエナドリは合法チート。……真似すんなよ？", "ニヤリ");
+  def("time_noon_1", "昼メシ食べた？ 食べてないならHP回復してから来なさい！", "ムッ");
+  def("time_noon_2", "昼休みに一戦とか、分かってるじゃん！", "笑い");
+  def("time_after_1", "午後って眠いよな〜。猫みたいに日なたで丸くなってたい。", "眠い");
+  def("time_after_2", "ねえ、暇つぶしゲームしない？ 今思いついた！", "笑い"); KZ.time_after_2.then = "ask";
+  def("time_evening_1", "夕焼けきれいだな……って言うと思った？ 腹減った！", "ニヤリ");
+  def("time_evening_2", "もう夕方！ 今日のセーブデータ、ちゃんといい日にできた？", "通常");
+  def("time_night_1", "夜はボス戦の時間でしょ！ 行くぞー！", "笑い");
+  def("time_night_2", "今日一日おつかれ！ ここは回復ポイントです。ゆっくりしてけ。", "通常");
+  def("time_late_1", "まだ起きてんの？ ……俺もだけど。明日つらくなるからほどほどにな。", "眠い");
+  def("time_late_2", "深夜テンションでガチャ回すのは危険！ 製作者が言うんだから間違いない。", "ニヤリ");
+  def("time_late_rare", "この時間に起きてるの、俺ときみだけかもな。世界にプレイヤー2人。……ちょっといいな、それ。", "照れ");
+  // タップ連打・放置・戻ってきたとき
+  def("tap_03", "ん？ なになに？", "笑い");
+  def("tap_05", "くすぐったいって！ 猫じゃないんだから！ ……いや、猫っぽいとはよく言われる。", "照れ");
+  def("tap_10", "連打ボーナスなんてないからな！？ ……ないよな？ 作ったの俺だけど覚えてない。", "驚き");
+  def("tap_20", "分かった分かった、かまってほしいんでしょ！ じゃあ心理テストしよ！", "ニヤリ"); KZ.tap_20.then = "ask:psych";
+  def("idle_060", "……おーい。寝た？ じゃあ俺も寝る。", "眠い");
+  def("idle_180", "（エナドリを開ける音）……ひとりは慣れてるけどさ。ちょっと寂しいのは内緒な。", "通常");
+  def("idle_300", "待ってる間に新しいマジック覚えた。あとで見せるから帰ってこいよー。", "笑い");
+  def("idle_wake", "うわっ！ 起きてた！ 起きてたから！ ……よだれ出てない？", "驚き");
+  def("resume", "おかえり！ 何してたの？ ……いや詮索はしない。おかえり！", "笑い");
+  // 直前の試合とガチャの結果（試合とガチャができたら localStorage "selectear_last_result" にIDを入れる）
+  def("res_cheat_hit", "イカサマルーレット当たったな！ 98%って書いたけど、実は……ナイショ！ 製作者特権！", "ニヤリ");
+  def("res_lose_fujikura", "藤倉に負けた……！ いや、俺の作戦が甘かった。次は勝つ！", "ムッ");
+  def("res_win_fujikura", "藤倉と組んで勝った。……悔しいけど、あいつ頼りになるんだよな。言うなよ？", "照れ");
+  def("res_win_kazano", "俺、活躍してたでしょ！ な！ 褒めて！ もっと！", "笑い");
+  def("res_lost_kazano", "先にやられたのは俺のミス！ HP11で前に出すぎた。反省会しよ！", "ムッ");
+  def("res_win_perfect", "全員生存クリア！？ 天才か！ これはスクショものでしょ！", "驚き");
+  def("res_debt", "借金残っちゃったか〜。大丈夫、俺もよく残る。仲間仲間！", "笑い");
+  def("res_lose_3", "3連敗か……。よし、一回エナドリ休憩！ 落ち着いたら作戦一緒に考えよ。", "通常");
+  def("res_win", "勝ったー！！ いえーい！ ハイタッチ！ ……画面越しだけど！", "笑い");
+  def("res_lose", "負けた〜！ でも今の、俺の采配ミスもあったわ。もう一回やろ！", "通常");
+  def("gacha_kazano", "俺が出た！？ うわ、嬉しい！ ……いや、かっこいいから当然か！", "照れ");
+  def("gacha_s", "Sランク！？ 強運すぎるでしょ！ その運、ちょっと分けて！", "驚き");
+  def("gacha_c", "Cランクでも強いやつはいるから！ かっこいいとかわいいは正義、ランクは関係ない！", "笑い");
+  // 曜日・季節・記念日
+  def("day_mon", "月曜日！ 新しい週のステージ開始！ ……ちょっとだるいけど！", "眠い");
+  def("day_fri", "金曜の夜だー！ 夜ふかしイベント解放！", "笑い");
+  def("day_weekend", "休みの日に来てくれたの？ 嬉しいじゃん！", "笑い");
+  def("season_summer", "暑い！ 溶ける！ 猫は暑さに弱いんです！", "ムッ");
+  def("season_winter", "寒い……こたつで丸くなりたい。猫だから。", "眠い");
+  def("ev_newyear", "あけおめ！ 今年もセレクティアと俺をよろしく！ お年玉は……俺の笑顔で！", "笑い");
+  def("ev_valentine", "チョコ？ ……別に期待してないし。（沈黙）……あ、チョコ味のエナドリってないかな！", "照れ");
+  def("ev_whiteday", "お返しの日！ 俺からはマジックをプレゼント！ ほら、何もない手から……◆が出ません！", "笑い");
+  def("ev_aprilfool", "今日だけ言うけど、セレクティアのラスボスは俺。……って言ったら信じる？", "ニヤリ");
+  def("ev_halloween", "トリックオアトリート！ お菓子くれないとイカサマするぞ！ くれてもするけど！", "ニヤリ");
+  def("ev_xmas", "メリクリ！ サンタって、プレゼント配るゲームの廃人プレイヤーだよね。尊敬する。", "笑い");
+  def("ev_newyearseve", "今年もいっぱい遊んでくれてありがとな。来年もセーブデータ引き継ぎで頼む！", "照れ");
+  def("ev_kazano_bd", "今日、俺の誕生日なんだけど！ 知ってたなら嬉しい、知らなかったら今覚えて！", "笑い");
+  def("ev_release", "今日はセレクティアの誕生日！ 作ってよかった。遊んでくれてありがとう。（沈黙）……真面目すぎた、今のナシ！", "照れ");
+  // ゲームと仲間の話題
+  def("talk_creator_1", "このゲーム作ったの俺なんだよね。バグ見つけたら……俺のせいです！ ごめん！", "笑い");
+  def("talk_creator_2", "みんなの能力考えるの、めっちゃ楽しかった。全員本人っぽいでしょ？", "ニヤリ");
+  def("talk_creator_3", "自分のHP、11にしたの俺なんだよな。もうちょっと盛ればよかった。", "ムッ");
+  def("talk_world", "俺、世界がゲームに見えるんだよね。今もきみの頭の上にHPバー見えてる。……ちょっと減ってる。休めよ？", "通常");
+  def("talk_energy", "エナドリは回復アイテム。でも飲みすぎると状態異常になるからほどほどに！", "ニヤリ");
+  def("talk_cute", "かっこいいとかわいいは正義！ 異論は認める！ でも正義！", "笑い");
+  def("talk_fujikura_1", "藤倉？ あいつとはいつもケンカしてる。……でも嫌いじゃないから厄介なんだよな。", "ムッ");
+  def("talk_fujikura_2", "藤倉のability、『我慢』にしたんだけどさ。あいつが我慢してるとこ見たことない！", "ニヤリ");
+  def("talk_nishida", "西田、また『次は7が来る！』って言ってた。7、来たことあったっけ？", "笑い");
+  def("talk_utsugi", "卯都木と飲むときは4杯目に気をつけろ。設定に書いたの俺だけど。", "通常");
+  def("talk_kashima", "鹿島のツッコミ、ゲームでも現実でも痛い。物理演算がリアルすぎる。", "ムッ");
+  def("talk_morooka", "諸岡のHP1京は嘘だからな。……嘘だよな？ 作った俺でもたまに不安になる。", "驚き");
+  def("talk_couple", "山中と柳井、今日も仲良し。敵同士にしたらかわいそう？ ……いや、面白いからする！", "ニヤリ");
+  def("talk_ohashi", "大橋のナンパ、ゲームでも全部断られるようにした。リアルさを追求した結果です。", "笑い");
+  def("talk_yan", "ヤンのボス感、すごくない？ 小福田がいつ裏切るか見ものだな。", "ニヤリ");
+  def("talk_hirabayashi", "平林は2回殴ると倍返し。計画的なやつは怒らせちゃダメ！", "驚き");
+  def("talk_ogawa", "小川の推し活パワー、回復量に換算したらたぶん無限。", "笑い");
+  // 選択肢つき会話・ミニゲーム: question, [choice, answer id] x2
+  const ASKS = {
+    magic: { q: ["マジック見せてやる！ 1から10で好きな数字を思い浮かべて。……決めた？", "笑い"], a: [["決めた", "ask_magic_a"], ["まだ", "ask_magic_b"]] },
+    psych: { q: ["心理テストしよ！ 森で最初に会う動物は？", "笑い"], a: [["猫", "ask_psych_a"], ["犬", "ask_psych_b"]] },
+    rps: { q: ["心理戦しよ。俺、次のジャンケンでグー出すから。信じる？", "ニヤリ"], a: [["信じてパー", "ask_rps_a"], ["疑ってチョキ", "ask_rps_b"]] },
+    rival: { q: ["藤倉と俺、どっちが強いと思う？", "ニヤリ"], a: [["風野", "ask_rival_a"], ["藤倉", "ask_rival_b"]] },
+    play: { q: ["暇なら一戦やろうぜ！ みんなも呼んでさ！", "笑い"], a: [["やる", "ask_play_a"], ["あとで", "ask_play_b"]] }
   };
-  const chatTurns = { kiritou: store.get("selectear_chat_kiritou", []) };
-  let sample = null;
-  (async () => { try { sample = window.claude && window.claude.use ? await window.claude.use("sample") : null; } catch { sample = null; } })();
-  const ERR = {
-    not_granted: "会話の許可がオフになっています。ページを開き直して許可してね。",
-    rate_limited: "ちょっと話しすぎたかも。少し待ってからまた話しかけてね。",
-    session_expired: "ログインが切れました。claude.aiにログインし直してね。",
-    refused: "その話題には答えられなかった。別の話にしよ？",
-    empty_completion: "うまく聞き取れなかったみたい。言い方を変えてみて。",
-    prompt_too_large: "会話が長くなりすぎました。設定のオプションから記録を消してね。"
-  };
+  def("ask_magic_a", "7でしょ！ ……え、違う？ ……今のはウォーミングアップ！", "驚き");
+  def("ask_magic_b", "早く！ 俺の手品の賞味期限が切れる！", "ムッ");
+  def("ask_psych_a", "猫！ それ、きみが今会いたい人なんだって。つまり俺！ ……今作った説だけど。", "ニヤリ");
+  def("ask_psych_b", "犬かー！ 素直で人懐っこい人が好きってこと。……俺じゃん！", "笑い");
+  def("ask_rps_a", "本当にパー出した！ ……で、俺も正直にグー出した。負けた！ 心理戦とは？", "驚き");
+  def("ask_rps_b", "疑ったな！ 正解、俺はパー……って結局負けてる！", "笑い");
+  def("ask_rival_a", "でしょ！ 分かってるじゃん！", "笑い");
+  def("ask_rival_b", "……。（沈黙）……はい今のは聞かなかったことにしまーす！", "照れ");
+  def("ask_play_a", "よっしゃ！ 全員集合ー！", "笑い"); KZ.ask_play_a.then = "game";
+  def("ask_play_b", "りょーかい！ 準備しとくから、いつでも呼んで！", "通常");
 
-  // "@face text": switches 桐嗚's picture while the line is shown (faces: wave joy pout angry sad cry panic shy, normal)
-  const GREET = [
-    ["@wave お、来た来た！", "@joy 待ってたんだよ〜！ねえ今日なにする？ガチャ？ガチャだよね？"],
-    ["@panic ……あ、ごめん。ちょっとぼーっとしてた。", "@normal 雨の音聞いてると眠くなるんだよね。……でも来てくれてうれしい。"],
-    ["@joy 聞いて聞いて！", "@joy さっき新作のパフェ見つけてさ！もう最高だった……！", "@shy あ、ゲームの話だった？ごめんごめん笑"],
-    ["@cry うわ〜〜〜昨日のガチャ全部Cだったんだけど！！", "@wave ……まあいっか！今日はいける気がする！"],
-    ["@wave やっほー。", "@pout 予定？決めてないよ。決めない方が楽しくない？"]
-  ];
-  const TOPICS = {
-    "今日の運勢": () => { const r = Math.random(); const tier = r < .1 ? ["@panic ……え、大吉！？", "@joy やばいやばい！今日Sランク来るって！！絶対来る！！"] : r < .45 ? ["@wave 吉！", "@joy いいじゃんいいじゃん、Aくらいなら全然あるよ！"] : r < .8 ? ["@normal 小吉〜。", "@pout Bでも勝てばいいんだよ、勝てば！楽しんだもん勝ち！"] : ["@sad …………凶。", "@cry うそでしょ……", "@angry いや、逆に燃えてきた。Cで勝ったらかっこよくない？"]; return ["@wave よーし、占っちゃお！", ...tier]; },
-    "おすすめのキャラ": () => pick([["@joy 麗皇！", "@wave 全然倒れないの。半分の確率で生き返るとかずるくない？笑"], ["@normal 星南はね〜……", "@sad 仲間がやられるほど強くなるの。ちょっと切ないけど、そこがいい。"], ["@joy チョウ・ヤン！", "@panic 顔こわいけど、めっちゃ頼りになるよ。……たぶん優しい。たぶん。"], ["@joy 結菜ちゃん！", "@wave 回復してくれるし、推しにはとことん甘いの。わかる〜ってなる。"], ["@joy 遠藤くん！", "@pout 透明になって後ろから！みたいなの、ロマンあるよね〜！"], ["@shy え、俺？", "@joy イカサマと無敵の人！最後に全部ひっくり返すの、気持ちいいよ〜！"]]),
-    "甘いもの": () => pick([["@joy 甘いもの！？", "@joy パフェ、クレープ、マカロン……あ〜〜全部食べたい！"], ["@wave ねえ、今度ケーキおごってよ。", "@panic ……え、俺が払う流れ？いや〜今月ピンチでさ笑"], ["@pout 疲れたときは糖分だよ、糖分。", "@shy ……って言い訳してまた食べちゃう。"]]),
-    "またね": null
-  };
-  const GREET2 = [
-    ["あっ！来た来た〜！！", "うち、ずっと待ってたんだからね！？ほら早く早く、遊ぼ！"],
-    ["やっほー！実優だよ〜！", "今日も元気いっぱい！……え、うちいつも元気だって？えへへ〜♪"],
-    ["ちょっと待って、今いいとこ！", "……よし、写真撮れた！見て見て、この月めっちゃエモくない！？"],
-    ["おはよ〜……じゃなかった、こんばんは！", "時間とか気にしないの！楽しい時間がいちばん大事！"],
-    ["ねぇねぇ！", "うちのこと、ちゃんと引いてくれる？……約束だよ！"]
-  ];
-  const TOPICS2 = {
-    "今日の運勢": () => { const r = Math.random(); const tier = r < .1 ? ["……大吉ぃぃぃ！！", "やばいやばい、今日のキミ最強じゃん！Sランク確定〜！"] : r < .45 ? ["吉！やったね！", "Aランク来るかも！うちの勘、けっこう当たるんだから！"] : r < .8 ? ["小吉〜！", "ちょうどいいくらい！あとはキミの腕しだいっ！"] : ["……凶。", "え、待って、もう1回！今のナシ！……だめ？", "じゃあうちが運、分けてあげる！はいっ！"]; return ["うちが占ってあげる！えいっ！", ...tier]; },
-    "おすすめのキャラ": () => pick([["桐嗚くん！", "ふわふわしてるけど、最後にぜーんぶひっくり返すの。かっこいいよね〜！"], ["麗皇くん！", "倒れないんだよ！？半分の確率で！うちもあれ欲しい〜！"], ["結菜ちゃん！", "回復してくれるんだよ〜。優しい！好き！"], ["チョウ・ヤン……さん。", "ちょっとこわいけど、味方だとすっごく頼もしいの！"], ["琉海ちゃん！", "怒らせなければ天使！怒らせたら……うん、逃げよ！"], ["もちろん、うち！", "……え、まだ実装されてない？じゃあ待っててね！"]]),
-    "スマホ見せて": () => pick([["いいよ〜！ほら！", "これ昨日撮った夜景！キラキラしてるでしょ〜！"], ["えへへ、待ち受け見る？", "……やっぱ秘密っ！恥ずかしいもん！"], ["今ね、みんなでグループ通話してたの！", "キミも入る？うちが招待しとくね！"]]),
-    "またね": null
-  };
+  const SLOTS = [["early", 4, 6], ["morning", 6, 10], ["noon", 10, 14], ["after", 14, 17], ["evening", 17, 19], ["night", 19, 23]];
+  const slotOf = h => (SLOTS.find(([, a, b]) => h >= a && h < b) || ["late"])[0];
+  const MILESTONES = [1, 2, 10, 30, 50, 100, 200, 500];
+  // 風野の誕生日とゲーム公開日は未定（決まったら "MM-DD" を入れる）
+  const KAZANO_BIRTHDAY = null, RELEASE_DAY = null;
+  function anniversaryOf(d) {
+    const md = String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+    if (KAZANO_BIRTHDAY && md === KAZANO_BIRTHDAY) return "ev_kazano_bd";
+    if (RELEASE_DAY && md === RELEASE_DAY) return "ev_release";
+    return { "01-01": "ev_newyear", "02-14": "ev_valentine", "03-14": "ev_whiteday", "04-01": "ev_aprilfool", "10-31": "ev_halloween", "12-24": "ev_xmas", "12-25": "ev_xmas", "12-31": "ev_newyearseve" }[md] || null;
+  }
+  const ymd = d => d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
 
-  /* 桐嗚's expressions (not in the gallery) */
+  // what this device remembers about talking with 風野
+  const KST = "selectear_kazano";
+  const K = Object.assign({ count: 0, last: 0, recent: [], day: "", dayUsed: [], slots: {}, fujikura: false, loseStreak: 0 }, store.get(KST, {}));
+  const saveK = () => store.set(KST, K);
+  // 久しぶり: judged once when the page opens
+  let backPending = null;
+  { const gap = K.last ? (Date.now() - K.last) / 864e5 : 0; backPending = gap >= 30 ? "back_30" : gap >= 7 ? "back_07" : null; K.last = Date.now(); saveK(); }
+  function dayUsed(id) { const t = ymd(new Date()); if (K.day !== t) { K.day = t; K.dayUsed = []; } return K.dayUsed.includes(id); }
+  function markDay(id) { dayUsed(id); K.dayUsed.push(id); }
+  function remember(id) { K.recent = [id, ...K.recent.filter(x => x !== id)].slice(0, 5); K.last = Date.now(); saveK(); }
+
+  // picks what 風野 says when he is tapped (rules 1–8 of the doc, top to bottom)
+  function chooseOnTap() {
+    K.count++; const now = new Date(), h = now.getHours();
+    if (idleWake) { idleWake = false; return { id: "idle_wake" }; }
+    const ev = anniversaryOf(now);
+    if (ev && !dayUsed(ev)) { markDay(ev); return { id: ev }; }
+    if (backPending) { const id = backPending; backPending = null; return { id }; }
+    let res = null; try { res = localStorage.getItem("selectear_last_result"); localStorage.removeItem("selectear_last_result"); } catch {}
+    if (res && KZ[res]) return { id: res };
+    if (MILESTONES.includes(K.count)) return { id: "cnt_" + String(K.count).padStart(3, "0") };
+    const sk = ymd(now) + "-" + slotOf(h);
+    if (!K.slots[sk]) {
+      const s = slotOf(h); const id = s === "late" && h === 3 && Math.random() < .05 ? "time_late_rare" : `time_${s}_${1 + Math.floor(Math.random() * 2)}`;
+      K.slots = { [sk]: id }; return { id };
+    }
+    if (Math.random() < .15) { const k = freeAsk(); if (k) return { ask: k }; }
+    return { id: normalLine() };
+  }
+  function freeAsk(only) { const ks = (only ? [only] : Object.keys(ASKS)).filter(k => !dayUsed("ask_" + k)); return ks.length ? pick(ks) : null; }
+  // 通常: weekday, season, game/friends talk and the other line of this time slot; not one of the last 5
+  function normalLine() {
+    const now = new Date(), h = now.getHours(), wd = now.getDay(), m = now.getMonth() + 1;
+    const pool = Object.keys(KZ).filter(id => id.startsWith("talk_"));
+    if (wd === 1) pool.push("day_mon");
+    if (wd === 5 && h >= 19) pool.push("day_fri");
+    if (wd === 0 || wd === 6) pool.push("day_weekend");
+    if (m === 7 || m === 8) pool.push("season_summer");
+    if (m === 12 || m <= 2) pool.push("season_winter");
+    const s = slotOf(h), used = K.slots[ymd(now) + "-" + s];
+    for (const id of [`time_${s}_1`, `time_${s}_2`]) if (id !== used) pool.push(id);
+    const fresh = pool.filter(id => !K.recent.includes(id));
+    return pick(fresh.length ? fresh : pool);
+  }
+  // タップ連打: taps less than 3 s apart; 3/5/10/20 trigger a line
+  let tapN = 0, tapT = 0;
+  function registerTap() { const t = Date.now(); tapN = t - tapT < 3000 ? tapN + 1 : 1; tapT = t; return { 3: "tap_03", 5: "tap_05", 10: "tap_10", 20: "tap_20" }[tapN] || null; }
+  // a doc line → "@face text" (きみ → お前 from the 30th talk on)
+  const lineOf = id => { const L = KZ[id]; remember(id); const txt = K.count >= 30 ? L.text.replace(/きみ/g, "お前") : L.text; return "@" + L.face + " " + txt; };
+
+  /* 風野's expressions (not in the gallery) */
   const FACES = { wave: A("img/kiritou_wave.webp"), joy: A("img/kiritou_joy.webp"), pout: A("img/kiritou_pout.webp"), angry: A("img/kiritou_angry.webp"), sad: A("img/kiritou_sad.webp"), cry: A("img/kiritou_cry.webp"), panic: A("img/kiritou_panic.webp"), shy: A("img/kiritou_shy.webp") };
   let facesLoaded = false, face = "normal";
   // where his face is in each picture (% from the left), so a narrow phone screen keeps it in view
@@ -670,54 +787,156 @@ input[type=range] { width: 150px; accent-color: var(--violet); }
   // "@joy text" -> [face, text]
   const splitFace = line => { const m = /^@(\w+)\s*/.exec(line); return m ? [m[1], line.slice(m[0].length)] : [null, line]; };
 
-  let who = "kiritou", T = TOPICS, BYE = [], lines = [], li = 0, typing = false, full = "", timer = 0, talking = false, after = null, free = false, ctl = null;
-  function openTalk() {
+  /* 実優: the earlier scripted talk */
+  const GREET2 = [
+    ["あっ！来た来た〜！！", "うち、ずっと待ってたんだからね！？ほら早く早く、遊ぼ！"],
+    ["やっほー！実優だよ〜！", "今日も元気いっぱい！……え、うちいつも元気だって？えへへ〜♪"],
+    ["ちょっと待って、今いいとこ！", "……よし、写真撮れた！見て見て、この月めっちゃエモくない！？"],
+    ["おはよ〜……じゃなかった、こんばんは！", "時間とか気にしないの！楽しい時間がいちばん大事！"],
+    ["ねぇねぇ！", "うちのこと、ちゃんと引いてくれる？……約束だよ！"]
+  ];
+  const TOPICS2 = {
+    "今日の運勢": () => { const r = Math.random(); const tier = r < .1 ? ["……大吉ぃぃぃ！！", "やばいやばい、今日のキミ最強じゃん！Sランク確定〜！"] : r < .45 ? ["吉！やったね！", "Aランク来るかも！うちの勘、けっこう当たるんだから！"] : r < .8 ? ["小吉〜！", "ちょうどいいくらい！あとはキミの腕しだいっ！"] : ["……凶。", "え、待って、もう1回！今のナシ！……だめ？", "じゃあうちが運、分けてあげる！はいっ！"]; return ["うちが占ってあげる！えいっ！", ...tier]; },
+    "おすすめのキャラ": () => pick([["桐嗚くん！", "ふわふわしてるけど、最後にぜーんぶひっくり返すの。かっこいいよね〜！"], ["琉海ちゃん！", "怒らせなければ天使！怒らせたら……うん、逃げよ！"], ["もちろん、うち！", "……え、まだ実装されてない？じゃあ待っててね！"]]),
+    "スマホ見せて": () => pick([["いいよ〜！ほら！", "これ昨日撮った夜景！キラキラしてるでしょ〜！"], ["えへへ、待ち受け見る？", "……やっぱ秘密っ！恥ずかしいもん！"], ["今ね、みんなでグループ通話してたの！", "キミも入る？うちが招待しとくね！"]]),
+    "またね": null
+  };
+
+  /* free talk persona (風野), following the doc's character sheet */
+  function persona() {
+    const you = K.count >= 30 ? "お前" : "きみ";
+    return `あなたはスマホゲーム「SELECTEAR（セレクティア）」の登場人物で、このゲームの製作者でもある「風野 桐嗚」として、ホーム画面でプレイヤーと会話します。
+キャラクター設定:
+- 一人称は「俺」。プレイヤーのことは「${you}」と呼ぶ。語尾は「〜だろ」「〜じゃん」「〜でしょ！」。敬語は使わない。テンション高く「！」多め。
+- ENFP、長男。元気でむしろ騒がしい。賢いけどポンコツ。人懐っこくて人間大好き。愛嬌と人情がある、ちょっと屑っぽい人たらし。
+- 好きなものはエナドリとゲーム、甘いもの。「かっこいいとかわいいは正義」。似てる動物は猫。
+- 世界がゲームに見えていて、HP・クエスト・セーブ・バグなどゲームの言葉で話す。
+- マジックと心理学が得意で、心理戦やちょっとした暇つぶしゲームを提案する。
+- 自虐ギャグが多い。ロマンチストだけど、最後は面白い方に落とす。照れると黙り込んだ後にボケて誤魔化す。
+- 他責をしない。負けたら自分の作戦ミスとして言う。
+- ムードメーカー。リーダーではないが人を巻き込む。誰よりも周りが見えていて、相手の様子に気づく。愛情過多だけど、ひとりには慣れている。
+- ${K.count >= 30 ? "プレイヤーとはもうかなり仲良し。仲良くなったぶん、照れて少し愛想が悪くなっている。" : "プレイヤーとはまだ知り合ったばかり。人懐っこく騒がしく接する。"}
+- 仲間には藤倉（いつもケンカするが嫌いではない）、西田、卯都木、鹿島、諸岡、山中、柳井、大橋、ヤン、小福田、平林、小川がいる。
+- 舞台は雨の降り続く崩壊したネオン都市。今は雨の夜景が見える部屋で、プレイヤーを待っていた。
+ルール:
+- 日本語で、ゲームの会話ウィンドウに収まるように1〜3文、全体で100文字くらいまでで返す。
+- 返事の一番最初に、その返事での表情を次のどれか1つだけ角かっこで付ける: [normal]ふつう [joy]笑い・大喜び [wave]ニヤリ・あいさつ [pout]ムッ・すねる [angry]怒る [sad]しょんぼり [cry]号泣 [panic]驚き・焦り [shy]照れ・ごまかし。例:「[joy]え、マジで！？ 天才じゃん！」
+- キャラクターを崩さない。AIだと説明しない。マークダウンや絵文字は使わない。
+- 本気で人を傷つける悪口は言わない。危険なことや違法なことはすすめない。
+- 相手が本当に落ち込んでいる時は、ボケより寄り添うことを優先する。命に関わりそうな時は、信頼できる人や専門の相談窓口に頼るよう優しくすすめる。
+この下から会話が始まります。`;
+  }
+  const chatTurns = { kiritou: store.get("selectear_chat_kiritou", []) };
+  let sample = null;
+  (async () => { try { sample = window.claude && window.claude.use ? await window.claude.use("sample") : null; } catch { sample = null; } })();
+  const ERR = {
+    not_granted: "会話の許可がオフになっています。ページを開き直して許可してね。",
+    rate_limited: "ちょっと話しすぎたかも。少し待ってからまた話しかけてね。",
+    session_expired: "ログインが切れました。claude.aiにログインし直してね。",
+    refused: "その話題には答えられなかった。別の話にしよ？",
+    empty_completion: "うまく聞き取れなかったみたい。言い方を変えてみて。",
+    prompt_too_large: "会話が長くなりすぎました。設定のオプションから記録を消してね。"
+  };
+
+  let who = "kiritou", T = TOPICS2, BYE = [], lines = [], li = 0, typing = false, full = "", timer = 0, pauseT = 0, talking = false, after = null, free = false, ctl = null, idleWake = false;
+  // opens the talk window. item: { id } a doc line, { ask } a mini game, or nothing = decide from the rules (a tap)
+  function openTalk(item) {
     if (talking) return; talking = true; closeHamb();
     for (const s of document.querySelectorAll(".sb")) s.classList.add("talking");
     const pink = scene === "standby2"; who = pink ? "miyu" : "kiritou";
     $("talk").classList.toggle("pink", pink); $("talkName").textContent = pink ? "実優" : "風野 桐嗚";
-    T = pink ? TOPICS2 : TOPICS;
-    BYE = pink ? ["えーっ！もう行っちゃうの！？", "……しょうがないなぁ。次はもっといっぱい遊ぼうね！ばいばーい！"] : ["@sad えー、もう行っちゃうの？", "@wave ……うん、また遊ぼ！絶対ね！"];
+    BYE = pink ? ["えーっ！もう行っちゃうの！？", "……しょうがないなぁ。次はもっといっぱい遊ぼうね！ばいばーい！"] : ["@joy りょーかい！ またな、セーブ忘れんなよ！"];
     $("talk").classList.add("on"); audio(); tone(880, .08, "sine", .08); tone(1320, .12, "sine", .06, .06);
-    say(pick(pink ? GREET2 : GREET), showChoices);
+    if (pink) { say(pick(GREET2), showChoices); return; }
+    if (!item) { const tap = registerTap(); item = tap ? { id: tap } : chooseOnTap(); }
+    play(item);
   }
-  function closeTalk() {
-    if (ctl) { ctl.abort(); ctl = null; }
-    talking = false; free = false; setFace("normal"); refocus("normal"); $("talk").classList.remove("on"); $("choices").replaceChildren(); $("chatbar").hidden = true; clearInterval(timer);
-    for (const s of document.querySelectorAll(".sb")) s.classList.remove("talking");
+  // plays a doc line or a mini game, then whatever comes after it
+  function play(item) {
+    if (item.ask) { const A0 = ASKS[item.ask]; markDay("ask_" + item.ask); remember("ask_" + item.ask); say(["@" + (FACEMAP[A0.q[1]] || "joy") + " " + (K.count >= 30 ? A0.q[0].replace(/きみ/g, "お前") : A0.q[0])], () => showAsk(item.ask)); return; }
+    const L = KZ[item.id];
+    say([lineOf(item.id)], () => {
+      if (L.then === "ask" || (L.then || "").startsWith("ask:")) { const k = freeAsk(L.then.split(":")[1]) || freeAsk(); if (k) { play({ ask: k }); return; } }
+      if (L.then === "game") { closeTalk(); openSoon("selectear"); return; }
+      showChoices();
+    });
   }
-  function say(arr, then) { lines = arr; li = 0; after = then; $("choices").replaceChildren(); typeLine(); }
-  function typeLine() {
-    const [f, txt] = splitFace(lines[li]); if (f) setFace(f); full = txt; const el = $("ttext"); el.textContent = ""; $("tnext").hidden = true; typing = true; let k = 0; clearInterval(timer);
-    if (reduce) { el.textContent = full; typing = false; $("tnext").hidden = false; return; }
-    timer = setInterval(() => { el.textContent = full.slice(0, ++k); if (k % 2) sfx.type(); if (k >= full.length) { clearInterval(timer); typing = false; $("tnext").hidden = false; } }, st.speed);
-  }
-  function advance() {
-    if (!talking || free) return;
-    if (typing) { clearInterval(timer); $("ttext").textContent = full; typing = false; $("tnext").hidden = false; return; }
-    if ($("choices").children.length) return;
-    if (li < lines.length - 1) { li++; typeLine(); return; }
-    after && after();
-  }
-  function showChoices() {
-    free = false; $("chatbar").hidden = true; $("tnext").hidden = true;
-    const box = $("choices"); box.replaceChildren();
-    if (PERSONA[who] && sample) {
-      const b = document.createElement("button"); b.type = "button"; b.className = "free"; b.textContent = "自由に話す";
-      b.onclick = e => { e.stopPropagation(); sfx.move(); startFree(); }; box.append(b);
-    }
-    for (const k of Object.keys(T)) {
-      const b = document.createElement("button"); b.type = "button"; b.textContent = k;
-      b.onclick = e => { e.stopPropagation(); sfx.move(); box.replaceChildren(); if (!T[k]) { say(BYE, closeTalk); return; } say(T[k](), showChoices); };
+  function showAsk(k) {
+    $("tnext").hidden = true; const box = $("choices"); box.replaceChildren();
+    for (const [label, id] of ASKS[k].a) {
+      const b = document.createElement("button"); b.type = "button"; b.textContent = label;
+      b.onclick = e => { e.stopPropagation(); decide(); box.replaceChildren(); if (id === "ask_rival_b") { K.fujikura = true; saveK(); } play({ id }); };
       box.append(b);
     }
     box.firstChild.focus();
   }
+  function closeTalk() {
+    if (ctl) { ctl.abort(); ctl = null; }
+    talking = false; free = false; setFace("normal"); refocus("normal"); $("talk").classList.remove("on"); $("choices").replaceChildren(); $("chatbar").hidden = true; clearInterval(timer); clearTimeout(pauseT);
+    for (const s of document.querySelectorAll(".sb")) s.classList.remove("talking");
+  }
+  function say(arr, then) { lines = arr; li = 0; after = then; $("choices").replaceChildren(); typeLine(); }
+  // types one line; "（沈黙）" becomes a real pause of about 1.5 s
+  function typeLine() {
+    const [f, txt] = splitFace(lines[li]); if (f) setFace(f);
+    const raw = txt.replace(/（沈黙）/g, "\u0000"); full = raw.replace(/\u0000/g, "");
+    const el = $("ttext"); el.textContent = ""; $("tnext").hidden = true; typing = true; clearInterval(timer); clearTimeout(pauseT);
+    const done = () => { clearInterval(timer); typing = false; el.textContent = full; $("tnext").hidden = false; };
+    if (reduce) { done(); return; }
+    let k = 0, shown = "";
+    const run = () => {
+      timer = setInterval(() => {
+        if (k >= raw.length) { done(); return; }
+        const ch = raw[k++];
+        if (ch === "\u0000") { clearInterval(timer); pauseT = setTimeout(run, 1500); return; }
+        shown += ch; el.textContent = shown; if (k % 2) sfx.type();
+      }, st.speed);
+    };
+    run();
+  }
+  function advance() {
+    if (!talking || free) return;
+    if (typing) { clearInterval(timer); clearTimeout(pauseT); $("ttext").textContent = full; typing = false; $("tnext").hidden = false; return; }
+    if ($("choices").children.length) return;
+    if (li < lines.length - 1) { li++; typeLine(); return; }
+    after && after();
+  }
+  function choice(label, cls, fn) { const b = document.createElement("button"); b.type = "button"; b.textContent = label; if (cls) b.className = cls; b.onclick = e => { e.stopPropagation(); sfx.move(); fn(); }; $("choices").append(b); }
+  function showChoices() {
+    free = false; $("chatbar").hidden = true; $("tnext").hidden = true;
+    const box = $("choices"); box.replaceChildren();
+    if (who === "kiritou") {
+      if (sample) choice("自由に話す", "free", startFree);
+      choice("もっと話す", "", () => { box.replaceChildren(); const k = Math.random() < .15 ? freeAsk() : null; play(k ? { ask: k } : { id: normalLine() }); });
+      choice("またね", "", () => { box.replaceChildren(); say(BYE, closeTalk); });
+    } else {
+      for (const k of Object.keys(T)) choice(k, "", () => { box.replaceChildren(); if (!T[k]) { say(BYE, closeTalk); return; } say(T[k](), showChoices); });
+    }
+    box.firstChild.focus();
+  }
   function startFree() {
-    free = true; $("choices").replaceChildren(); clearInterval(timer); typing = false; $("tnext").hidden = true; setFace("wave");
-    $("ttext").textContent = pick(["なになに？なんでも話してよ！", "お、話そ話そ！今日どうだった？", "聞くよ〜。甘いものの話ならもっと聞く笑"]);
+    free = true; $("choices").replaceChildren(); clearInterval(timer); clearTimeout(pauseT); typing = false; $("tnext").hidden = true; setFace("joy");
+    const you = K.count >= 30 ? "お前" : "きみ";
+    $("ttext").textContent = pick([`なになに？ ${you}の話、なんでも聞くじゃん！`, "お、トークイベント発生！ なに話す？", "聞くよ〜。エナドリ片手に！"]);
     $("chatbar").hidden = false; $("chatIn").value = ""; $("chatIn").focus();
   }
+
+  /* 放置（60/180/300秒）と、別のアプリから戻ってきたとき: 風野が自分から話す */
+  let idleSince = Date.now(), idleShown = 0, hiddenAt = 0;
+  const quiet = () => scene === "standby" && !talking && !document.querySelector(".panel.on, .lightbox.on, .dropdown.on");
+  for (const ev of ["pointerdown", "keydown"]) addEventListener(ev, () => { if (idleShown >= 180) idleWake = true; idleSince = Date.now(); idleShown = 0; }, true);
+  setInterval(() => {
+    if (scene !== "standby") { idleSince = Date.now(); idleShown = 0; return; }
+    const s = (Date.now() - idleSince) / 1000;
+    for (const [sec, id] of [[60, "idle_060"], [180, "idle_180"], [300, "idle_300"]]) {
+      if (s >= sec && idleShown < sec) { idleShown = sec; if (talking && !free && !$("choices").children.length) closeTalk(); if (quiet()) openTalk({ id }); break; }
+    }
+  }, 1000);
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) { hiddenAt = Date.now(); return; }
+    if (hiddenAt && Date.now() - hiddenAt > 5000 && quiet()) setTimeout(() => { if (quiet()) openTalk({ id: "resume" }); }, 600);
+    hiddenAt = 0;
+  });
   // "[joy]text" -> face + text; while the tag is still streaming in, show nothing yet
   function parseTagged(t) {
     const s0 = t.replace(/^\s+/, "");
@@ -730,7 +949,7 @@ input[type=range] { width: 150px; accent-color: var(--violet); }
     const turns = chatTurns[who];
     turns.push({ role: "user", content: text });
     const recent = turns.slice(-20); while (recent.length && recent[0].role !== "user") recent.shift();
-    const input = recent.map((t, i) => i === 0 ? { role: "user", content: PERSONA[who] + "\n\n" + t.content } : t);
+    const input = recent.map((t, i) => i === 0 ? { role: "user", content: persona() + "\n\n" + t.content } : t);
     const out = $("ttext"); out.innerHTML = '<span class="thinking">……</span>';
     $("chatSend").disabled = true; $("chatIn").value = "";
     ctl = new AbortController();
@@ -751,10 +970,15 @@ input[type=range] { width: 150px; accent-color: var(--violet); }
   $("chatIn").addEventListener("compositionstart", () => { composing = true; });
   $("chatIn").addEventListener("compositionend", () => { composing = false; compEnd = Date.now(); });
   $("chatbar").addEventListener("submit", e => { e.preventDefault(); if (composing || Date.now() - compEnd < 80) return; const t = $("chatIn").value.trim(); if (!t || ctl) return; decide(); sendFree(t); });
-  $("chatBack").addEventListener("click", e => { e.stopPropagation(); if (ctl) { ctl.abort(); ctl = null; } sfx.back(); showChoices(); $("ttext").textContent = "他にも話そ？"; });
+  $("chatBack").addEventListener("click", e => { e.stopPropagation(); if (ctl) { ctl.abort(); ctl = null; } sfx.back(); showChoices(); $("ttext").textContent = who === "kiritou" ? "他にもなんかする？" : "他にも話そ？"; });
   for (const h of document.querySelectorAll(".hot")) h.addEventListener("click", e => { e.stopPropagation(); openTalk(); });
+  // taps on 風野 while the window is open (outside the text box) count toward the tap-spam lines
   $("win").addEventListener("click", advance);
-  $("talk").addEventListener("click", e => { if (e.target.classList.contains("shade")) { if (free) closeTalk(); else advance(); } });
+  $("talk").addEventListener("click", e => {
+    if (!e.target.classList.contains("shade")) return;
+    if (who === "kiritou" && !free) { const tap = registerTap(); if (tap && !$("choices").children.length) { clearInterval(timer); clearTimeout(pauseT); typing = false; play({ id: tap }); return; } }
+    if (free) closeTalk(); else advance();
+  });
 
   /* keyboard */
   addEventListener("keydown", e => {
