@@ -124,6 +124,20 @@ button:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
 .card b { font-size: 12px; line-height: 1.25; }
 .card p { margin: 0; font-size: 9.5px; line-height: 1.45; color: var(--silver); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; }
 .hand .empty { flex: none; width: 100%; text-align: center; font-size: 12px; color: var(--muted); padding: 30px 0; }
+.handhead { align-items: center; }
+.handhead .r { display: flex; align-items: center; gap: 8px; }
+.stbtn { display: inline-flex; align-items: center; gap: 6px; max-width: 46vw; padding: 4px 10px 4px 8px; border-radius: 999px; font: 700 11px var(--font-num); letter-spacing: .04em; color: var(--white); border-color: rgba(176, 92, 255, .6); box-shadow: 0 0 10px rgba(176, 92, 255, .25); }
+.stbtn span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stbtn .eq { display: inline-flex; align-items: flex-end; gap: 2px; height: 12px; flex: none; }
+.stbtn .eq i { width: 3px; background: var(--purple); border-radius: 1px; height: 30%; }
+.stbtn.on .eq i { animation: eq .9s ease-in-out infinite; } .stbtn.on .eq i:nth-child(2) { animation-delay: .2s; } .stbtn.on .eq i:nth-child(3) { animation-delay: .4s; }
+@keyframes eq { 50% { height: 100%; } }
+.stpop { position: fixed; z-index: 75; right: max(10px, env(safe-area-inset-right, 0px)); bottom: calc(var(--bot) + 16px); width: min(300px, calc(100vw - 20px)); padding: 12px; border-radius: 14px; background: rgba(14, 10, 24, .97); border: 1.5px solid var(--purple); box-shadow: 0 0 24px rgba(176, 92, 255, .35); display: grid; gap: 8px; }
+.stpop h3 { margin: 0; font: 700 12px var(--font-num); letter-spacing: .2em; color: var(--silver); display: flex; justify-content: space-between; align-items: center; }
+.stpop .tr { display: flex; align-items: center; gap: 8px; text-align: left; padding: 9px 10px; font-size: 13px; font-weight: 700; }
+.stpop .tr small { margin-left: auto; font: 600 10px var(--font-num); color: var(--muted); }
+.stpop .tr[aria-pressed="true"] { border-color: var(--purple); background: rgba(176, 92, 255, .18); }
+.stpop .row3 { display: flex; align-items: center; gap: 8px; font-size: 12px; } .stpop input { flex: 1; accent-color: var(--purple); }
 .peek { position: fixed; z-index: 60; width: 180px; padding: 14px 12px 12px; border-radius: 14px; pointer-events: none; background: linear-gradient(165deg, color-mix(in srgb, var(--kc) 35%, #1a1426), #0f0b17 75%); border: 2px solid var(--kc); box-shadow: 0 10px 30px rgba(0, 0, 0, .6), 0 0 20px color-mix(in srgb, var(--kc) 60%, transparent); }
 .peek b { display: block; font-size: 15px; margin-bottom: 6px; } .peek p { margin: 0; font-size: 12px; line-height: 1.6; color: var(--silver); } .peek small { display: block; margin-top: 6px; font-size: 11px; color: var(--muted); }
 
@@ -276,7 +290,7 @@ button:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
     </div>
     <div class="dock">
       <div class="act" id="act"></div>
-      <div class="handwrap"><div class="handhead"><span id="handTitle">HAND</span><span id="deckInfo"></span></div><div class="hand" id="hand" aria-label="手札（ホイールかスワイプで送る）"></div></div>
+      <div class="handwrap"><div class="handhead"><span id="handTitle">HAND</span><span class="r"><span id="deckInfo"></span><button type="button" class="stbtn" id="stBtn" aria-label="サウンドトラック"><span class="eq"><i></i><i></i><i></i></span><span id="stName">BGM</span></button></span></div><div class="hand" id="hand" aria-label="手札（ホイールかスワイプで送る）"></div></div>
     </div>
   </div>
 </div>
@@ -298,6 +312,11 @@ button:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
 </aside>
 <div class="fxl" id="fx"></div>
 <div class="peek" id="peek" hidden></div>
+<div class="stpop" id="stPop" hidden role="dialog" aria-label="サウンドトラック">
+  <h3>SOUNDTRACK <button type="button" id="stClose">閉じる</button></h3>
+  <div id="stList" style="display:grid;gap:6px"></div>
+  <div class="row3"><button type="button" id="stPlay">⏸ 止める</button><span>BGM</span><input type="range" id="bgmVol" min="0" max="100" step="5"></div>
+</div>
 
 <script>
 "use strict";
@@ -1268,6 +1287,38 @@ const SFX = {
 };
 const sfx = (k, a) => { try { SFX[k] && SFX[k](a); } catch {} };
 
+/* ---------- battle BGM (soundtrack) ---------- */
+const TRACKS = [
+  { id: "37564", name: "37564", src: "bgm_37564.mp3" },
+  { id: "relative", name: "Relative brilliance", src: "bgm_relative.mp3" }
+];
+PREF.bgm = PREF.bgm ?? 55; PREF.track = TRACKS.some(t => t.id === PREF.track) ? PREF.track : TRACKS[0].id; PREF.bgmOn = PREF.bgmOn ?? true;
+const BGM = new Audio(); BGM.loop = true; BGM.preload = "auto";
+let bgmWanted = false;
+const trackOf = id => TRACKS.find(t => t.id === id) || TRACKS[0];
+function bgmVolume() { BGM.volume = Math.max(0, Math.min(1, PREF.bgm / 100 * .6)); }
+function bgmPlay() {
+  bgmWanted = true; if (!PREF.bgmOn) return renderST();
+  const t = trackOf(PREF.track);
+  if (!BGM.src.endsWith(t.src)) BGM.src = t.src;
+  bgmVolume(); const p = BGM.play(); if (p && p.catch) p.catch(() => {}); renderST();
+}
+function renderST() {
+  $("stName").textContent = trackOf(PREF.track).name;
+  $("stBtn").classList.toggle("on", !BGM.paused);
+  $("stList").innerHTML = TRACKS.map((t, i) => `<button type="button" class="tr" data-tr="${t.id}" aria-pressed="${t.id === PREF.track}">${t.id === PREF.track && !BGM.paused ? "♪" : String(i + 1).padStart(2, "0")} ${esc(t.name)}<small>BATTLE</small></button>`).join("");
+  $("stList").querySelectorAll("[data-tr]").forEach(b => b.onclick = () => { PREF.track = b.dataset.tr; PREF.bgmOn = true; savePref(); BGM.src = trackOf(PREF.track).src; bgmPlay(); });
+  $("stPlay").textContent = BGM.paused ? "▶ 流す" : "⏸ 止める";
+  $("bgmVol").value = PREF.bgm;
+}
+BGM.addEventListener("play", renderST); BGM.addEventListener("pause", renderST);
+$("stBtn").onclick = () => { sfx("click"); $("stPop").hidden = !$("stPop").hidden; renderST(); };
+$("stClose").onclick = () => { $("stPop").hidden = true; };
+$("stPlay").onclick = () => { if (BGM.paused) { PREF.bgmOn = true; bgmPlay(); } else { PREF.bgmOn = false; BGM.pause(); } savePref(); renderST(); };
+$("bgmVol").oninput = () => { PREF.bgm = +$("bgmVol").value; bgmVolume(); savePref(); };
+// browsers start audio only after a tap inside the page
+document.addEventListener("pointerdown", () => { if (bgmWanted && PREF.bgmOn && BGM.paused) bgmPlay(); }, { capture: true });
+
 /* =====================================================================
    FX PLAYER (animations from the old SELECTEAR battle)
    ===================================================================== */
@@ -1798,7 +1849,7 @@ async function start(ally, enemy, opt = {}) {
   $("devset") && $("devset").remove();
   UI.mode = null; UI.targets = null; UI.resolve = null; UI.detail = null;
   newMatch(ally, enemy, opt);
-  $("app").hidden = false;
+  $("app").hidden = false; bgmPlay();
   render();
   fx("banner", { t: "BATTLE START", s: opt.dev ? "DEVELOPER" : "SELECTEAR", c: "#b05cff" });
   matchStart(); settle();
