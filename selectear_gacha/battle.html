@@ -87,7 +87,7 @@ button:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
 .act { display: flex; align-items: stretch; gap: 8px; padding: 8px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); min-height: 64px; }
 .act.mine { border-color: rgba(63, 182, 255, .55); box-shadow: 0 0 18px rgba(63, 182, 255, .18); }
 .act.theirs { border-color: rgba(255, 47, 91, .45); }
-.act .who { flex: none; width: 46px; border-radius: 8px; background: #17121f center 18% / cover; border: 2px solid var(--tc); }
+.act .who { flex: none; align-self: flex-start; width: 46px; height: 64px; border-radius: 8px; background: #17121f center 18% / cover; border: 2px solid var(--tc); }
 .act .mid2 { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; justify-content: center; }
 .act .ttl { display: flex; align-items: baseline; gap: 8px; font-weight: 900; font-size: 14px; white-space: nowrap; overflow: hidden; }
 .act .ttl small { font-weight: 500; font-size: 11px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; }
@@ -101,7 +101,24 @@ button:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
 .sk.used { opacity: .4; }
 .sk.ab { border-color: rgba(255, 77, 94, .5); }
 .sk.sys { border-color: var(--line); font-weight: 500; }
-.endbtn { flex: none; align-self: stretch; padding: 0 16px; border-radius: 12px; font-weight: 900; font-size: 14px; letter-spacing: .08em; background: linear-gradient(180deg, #3a2c5a, #1d1530); border: 1.5px solid var(--yellow); box-shadow: 0 0 12px rgba(255, 228, 92, .25); }
+.act { align-items: flex-start; max-height: min(46vh, 420px); overflow-y: auto; }
+.abls { display: flex; flex-wrap: wrap; gap: 4px; }
+.abl, .abl em, .abl b, .abl i { white-space: nowrap; }
+@media (max-width: 899px) {
+  .act { max-height: 31vh; }
+  .endbtn { align-self: flex-start; min-height: 0; height: 64px; padding: 0 12px; font-size: 13px; }
+  .act .grp .gl { width: auto; margin-right: 2px; }
+}
+.abl { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 8px; font-size: 11px; font-weight: 700; background: rgba(255, 77, 94, .1); border: 1px solid rgba(255, 77, 94, .45); }
+.abl b { color: #ff6b7a; font-size: 10px; } .abl i { font-style: normal; font-size: 10px; color: var(--green); }
+.abl em { font-style: normal; font-size: 10px; padding: 0 5px; border-radius: 5px; background: rgba(255, 255, 255, .08); color: var(--silver); }
+.abl.done em { background: rgba(93, 255, 154, .18); color: var(--green); } .abl.not em { color: var(--yellow); } .abl.off { opacity: .6; } .abl.off em { color: var(--purple); }
+.grps { display: grid; gap: 5px; }
+.grp { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
+.grp .gl { flex: none; width: 100%; font-size: 10px; font-weight: 700; color: var(--muted); letter-spacing: .06em; }
+.sk em { font-style: normal; font-size: 9px; color: var(--muted); margin-left: 2px; }
+.sk.auto { cursor: default; opacity: .7; border-style: dashed; font-weight: 500; }
+.endbtn { position: sticky; top: 0; min-height: 64px; flex: none; align-self: stretch; padding: 0 16px; border-radius: 12px; font-weight: 900; font-size: 14px; letter-spacing: .08em; background: linear-gradient(180deg, #3a2c5a, #1d1530); border: 1.5px solid var(--yellow); box-shadow: 0 0 12px rgba(255, 228, 92, .25); }
 .prompt { padding: 8px 12px; border-radius: 12px; background: rgba(255, 228, 92, .12); border: 1px solid rgba(255, 228, 92, .5); font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .prompt .opts { display: flex; gap: 6px; flex-wrap: wrap; }
 .thinking { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--silver); }
@@ -263,6 +280,14 @@ button:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
 .devset .ed input[type=number] { width: 64px; font: 700 14px var(--font-num); background: #0f0b17; color: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 5px; }
 .devset select { width: 100%; font: inherit; background: #0f0b17; color: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 7px; }
 .devset .go { display: flex; gap: 10px; flex-wrap: wrap; } .devset .go button { flex: 1 1 200px; padding: 14px; font-weight: 900; font-size: 15px; } .devset .go .pri { border-color: var(--yellow); box-shadow: 0 0 14px rgba(255, 228, 92, .25); }
+.devset header .pri, .devset .motionsec .pri { border-color: var(--yellow); box-shadow: 0 0 14px rgba(255, 228, 92, .25); font-weight: 900; }
+.devset .motionsec { border-color: rgba(255, 228, 92, .45); }
+.mpanel { width: 100%; display: grid; gap: 8px; }
+.mpanel .mhead { display: flex; align-items: center; gap: 8px; } .mpanel .mhead b { flex: 1; font-size: 14px; }
+.mpanel .mtabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; } .mpanel .mtabs::-webkit-scrollbar { display: none; }
+.mpanel .mtabs button { flex: none; padding: 6px 10px; font-size: 12px; } .mpanel .mtabs button[aria-pressed="true"] { border-color: var(--yellow); color: var(--yellow); }
+.mpanel .mbtns { display: flex; flex-wrap: wrap; gap: 5px; } .mpanel .mbtns button { padding: 6px 9px; font-size: 12px; } .mpanel .mbtns button small { color: var(--muted); margin-left: 4px; }
+.mpanel .mbtns button.run { border-color: var(--yellow); color: var(--yellow); }
 .devset .pal { display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 6px; margin-top: 8px; }
 .devset .pal button { padding: 0; border-radius: 7px; overflow: hidden; border: 2px solid var(--tc); } .devset .pal img { width: 100%; aspect-ratio: 5 / 7; object-fit: cover; display: block; }
 
@@ -798,7 +823,7 @@ function chooseTargets(c, abId) {
 // run an automatic ability (k: start) — returns nothing
 function runAuto(c, abId) {
   const a = CH[abId].ab;
-  const cut = to => { fx("cut", { u: c.uid, t: a.n, s: "ability", c: "#ff4d5e", so: true }); O({ type: "fx", fx: "ability", uid: c.uid, pid: PID[abId], to }); log(`${nm(c)}の[ability]${a.n}`, c.side === 0 ? "a" : "e"); };
+  const cut = to => { (c.abFired = c.abFired || []).push(abId); fx("cut", { u: c.uid, t: a.n, s: "ability", c: "#ff4d5e", so: true }); O({ type: "fx", fx: "ability", uid: c.uid, pid: PID[abId], to }); log(`${nm(c)}の[ability]${a.n}`, c.side === 0 ? "a" : "e"); };
   switch (abId) {
     case "morooka": {
       const got = Object.values(S.c).filter(x => x.lost && !x.returned && x.side === c.side && x.id !== "morooka");
@@ -843,6 +868,7 @@ function runAuto(c, abId) {
 // a choose-type ability with a chosen target / option
 function runChoose(c, abId, tgtUid, opt) {
   const a = CH[abId].ab, t = tgtUid ? ch(tgtUid) : null;
+  (c.abFired = c.abFired || []).push(abId);
   fx("cut", { u: c.uid, t: a.n, s: "ability", c: "#ff4d5e", so: true }); log(`${nm(c)}の[ability]${a.n}${t ? " → " + nm(t) : ""}`, c.side === 0 ? "a" : "e");
   if (abId !== "sakayori") O({ type: "fx", fx: "ability", uid: c.uid, pid: PID[abId], to: t ? t.uid : undefined });
   switch (abId) {
@@ -1145,7 +1171,7 @@ function attributeStart(c) {
 function endTurnState(c) {
   const sd = sideOf(c.side);
   sd.temp = 0; sd.credit = false; sd.free = null;
-  c.s.powT = 0; c.stolen = null; c.iro = null; c.used = {}; c.speed = null; c.abAgain = false;
+  c.s.powT = 0; c.stolen = null; c.iro = null; c.used = {}; c.speed = null; c.abAgain = false; c.abFired = [];
   if (c.lie) { c.lie = false; O({ type: "fx", fx: "lieEnd", uid: c.uid }); log("諸岡の大嘘吐が終わった"); }   // lasts until the end of his first turn
   tickEvents();
   settle();
@@ -1312,7 +1338,10 @@ const sfx = (k, a) => { try { SFX[k] && SFX[k](a); } catch {} };
 /* ---------- battle BGM (soundtrack) ---------- */
 const TRACKS = [
   { id: "37564", name: "37564", src: "bgm_37564.mp3" },
-  { id: "relative", name: "Relative brilliance", src: "bgm_relative.mp3" }
+  { id: "relative", name: "Relative brilliance", src: "bgm_relative.mp3" },
+  { id: "404", name: "404:フリーズコード", src: "bgm_404.mp3" },
+  { id: "haguruma", name: "動き出す歯車", src: "bgm_haguruma.mp3" },
+  { id: "cyber", name: "cyber", src: "bgm_cyber.mp3" }
 ];
 PREF.bgm = PREF.bgm ?? 55; PREF.track = TRACKS.some(t => t.id === PREF.track) ? PREF.track : TRACKS[0].id; PREF.bgmOn = PREF.bgmOn ?? true;
 const BGM = new Audio(); BGM.loop = true; BGM.preload = "auto";
@@ -1357,7 +1386,7 @@ function setHp(uid, hp, max, lie) {
   el.querySelector(".bar").style.width = pct + "%"; el.querySelector(".trail").style.width = pct + "%";
   el.querySelector(".hp span").textContent = lie ? "1京" : `${hp} / ${max}`;
 }
-function skipFx() { if (PREF.fx === "none") return true; if (PREF.fx === "enemy" && S.turnUid && ch(S.turnUid).side === 1) return true; return false; }
+function skipFx() { if (S && S.motion) return false; if (PREF.fx === "none") return true; if (PREF.fx === "enemy" && S.turnUid && ch(S.turnUid).side === 1) return true; return false; }
 
 /* ---------- the old SELECTEAR animation engine (fxlib.js) ---------- */
 // every AudioContext the old effects create goes through a gain node that follows the volume slider
@@ -1582,27 +1611,54 @@ function renderBanks() {
     $(id).innerHTML = `${s === 0 ? "あなた" : "相手"} <i>◆</i><em>${moneyOf(s)}</em><small>ロスト ${lostCount(s)}/${lostNeed(s)}${sd.zankure ? " ・残クレ" : ""}${sd.credit ? " ・クレジット" : ""}${sd.off ? " ・25%OFF" : ""}</small>`;
   }
 }
+function abilityStatus(c) {
+  const out = [];
+  for (const ab of [c.id, ...(c.perm ? [c.perm] : []), ...(c.stolen ? [c.stolen] : [])]) {
+    const a = CH[ab].ab, own = ab === c.id;
+    let st, cls;
+    if (own && c.abOff) { st = "封印中"; cls = "off"; }
+    else if (a.k === "passive") { st = "常時（条件で自動）"; cls = "pass"; }
+    else if ((c.abFired || []).includes(ab)) { st = (c.abFired.filter(x => x === ab).length > 1 ? "✓ 2回発動" : "✓ 発動済み"); cls = "done"; }
+    else { st = S.turnUid === c.uid ? "未発動" : "ターン開始時に発動"; cls = "not"; }
+    out.push(`<span class="abl ${cls}"><b>[ability]</b>${own ? "" : `<i>${c.perm === ab ? "自分のもの" : "盗んだ"}</i>`}${esc(a.n)}<em>${st}</em></span>`);
+  }
+  return out.join("");
+}
 function renderDock() {
   const act = $("act");
+  if (S.motion) { renderMotionPanel(act); return; }
   if (!S.turnUid) { act.className = "act"; act.innerHTML = `<div class="mid2"><div class="thinking">準備中…</div></div>`; return; }
   const c = ch(S.turnUid), mine = !sideOf(c.side).cpu, t = TYPES[def(c).type];
+  const canAct = mine && UI.mode === "main";
   act.className = "act " + (c.side === 0 ? "mine" : "theirs");
   const head = `<div class="who" style="--tc:${t.c};background-image:url(${img(c.id)})"></div>`;
-  const ttl = `<div class="ttl"><span class="tag ${mine ? "me" : "cpu"}">${mine ? (S.auto ? "AUTO" : "あなた") : "CPU"}</span>${esc(def(c).name)}<small>${esc(CH[c.id].ab.n)}：${esc(CH[c.id].ab.t)}</small></div>`;
+  const ttl = `<div class="ttl"><span class="tag ${mine ? "me" : "cpu"}">${mine ? (S.auto ? "AUTO" : "あなた") : "CPU"}</span>${esc(def(c).name)}<small style="color:${t.c}">${t.jp}</small></div><div class="abls">${abilityStatus(c)}</div>`;
   if (UI.mode === "prompt" && UI.promptHTML) { act.innerHTML = head + `<div class="mid2">${ttl}<div class="prompt">${UI.promptHTML}</div></div>`; bindPrompt(); return; }
-  if (!mine || UI.mode !== "main") { act.innerHTML = head + `<div class="mid2">${ttl}<div class="thinking"><i></i><i></i><i></i>${mine ? "処理中" : "相手が考えています"}</div></div>`; return; }
-  const btns = [];
+  // skills grouped by where they come from (own / each job / stolen / ...)
+  const groups = new Map();
   for (const sk of skillList(c)) {
+    const label = sk.via ? `${sk.via}：${CH[sk.id].short}` : "自分のskill";
+    if (!groups.has(label)) groups.set(label, []);
     const key = skKey(sk.id, sk.i), freeKey = "sk:" + c.uid + ":" + key, cost = costOf(c.side, sk.d.c, freeKey);
-    const ok = canUseSkill(c, sk); const used = (c.used[key] || 0) > 0;
-    btns.push(`<button type="button" class="sk${used && !ok ? " used" : ""}" data-sk="${key}" ${ok ? "" : "disabled"} title="${esc(sk.d.t)}"><span class="c${cost === 0 && sk.d.c > 0 ? " free" : ""}">◆${cost}</span>${sk.via ? `<small>${esc(sk.via)}</small>` : ""}${esc(sk.d.n)}${usesLeft(c, key) > 1 && used ? " ×2" : ""}</button>`);
+    const ok = canAct && canUseSkill(c, sk), usedN = c.used[key] || 0, max = def(c).type === "spd" && c.speed !== "ability" ? 2 : 1;
+    const state = usedN >= max ? "使用済み" : usedN ? `残り${max - usedN}回` : "";
+    groups.get(label).push(`<button type="button" class="sk${usedN >= max ? " used" : ""}" data-sk="${key}" ${ok ? "" : "disabled"} title="${esc(sk.d.t)}"><span class="c${cost === 0 && sk.d.c > 0 ? " free" : ""}">◆${cost}</span>${esc(sk.d.n)}${state ? `<em>${state}</em>` : ""}</button>`);
   }
-  // attribute actions
-  if (def(c).type === "spd" && !c.abAgain && c.speed !== "skill" && CH[c.id].ab.k !== "passive" && !c.abOff) btns.push(`<button type="button" class="sk ab" data-ab2="1" title="${esc(TYPES.spd.bonus)}">⚡ ability「${esc(CH[c.id].ab.n)}」をもう1回</button>`);
-  if (def(c).type === "sup" && !c.supUsed) btns.push(`<button type="button" class="sk ab" data-sup="1" title="${esc(TYPES.sup.bonus)}">★ サポート：◆0にする</button>`);
-  if (aliveOf(c.side).some(x => x.s.debt > 0)) btns.push(`<button type="button" class="sk sys" data-repay="1">借金を返す</button>`);
-  if (canHelp(c.side)) btns.push(`<button type="button" class="sk sys" data-help="1">ヘルプ！</button>`);
-  act.innerHTML = head + `<div class="mid2">${ttl}<div class="skills">${btns.join("")}</div></div><button type="button" class="endbtn" id="endBtn">ターン<br>終了</button>`;
+  // automatic skills (報復・陰の実力者) are listed for information
+  const autos = [c.id, ...c.jobs].flatMap(id => CH[id].sk.filter(d => d.c === "auto").map(d => d.n));
+  let body = [...groups].map(([label, b]) => `<div class="grp"><span class="gl">${esc(label)}</span>${b.join("")}</div>`).join("");
+  if (autos.length) body += `<div class="grp"><span class="gl">自動のskill</span>${autos.map(n => `<span class="sk auto">${esc(n)}</span>`).join("")}</div>`;
+  const sys = [];
+  if (canAct) {
+    if (def(c).type === "spd" && !c.abAgain && c.speed !== "skill" && CH[c.id].ab.k !== "passive" && !c.abOff) sys.push(`<button type="button" class="sk ab" data-ab2="1" title="${esc(TYPES.spd.bonus)}">⚡ ability「${esc(CH[c.id].ab.n)}」をもう1回</button>`);
+    if (def(c).type === "sup" && !c.supUsed) sys.push(`<button type="button" class="sk ab" data-sup="1" title="${esc(TYPES.sup.bonus)}">★ サポート：◆0にする</button>`);
+    if (aliveOf(c.side).some(x => x.s.debt > 0)) sys.push(`<button type="button" class="sk sys" data-repay="1">借金を返す</button>`);
+    if (canHelp(c.side)) sys.push(`<button type="button" class="sk sys" data-help="1">ヘルプ！</button>`);
+  }
+  if (sys.length) body += `<div class="grp"><span class="gl">そのほか</span>${sys.join("")}</div>`;
+  const foot = canAct ? "" : `<div class="thinking"><i></i><i></i><i></i>${mine ? "処理中" : "相手が考えています"}</div>`;
+  act.innerHTML = head + `<div class="mid2">${ttl}<div class="grps">${body}</div>${foot}</div>${canAct ? '<button type="button" class="endbtn" id="endBtn">ターン<br>終了</button>' : ""}`;
+  if (!canAct) return;
   act.querySelectorAll("[data-sk]").forEach(b => b.onclick = () => onSkill(b.dataset.sk));
   const a2 = act.querySelector("[data-ab2]"); if (a2) a2.onclick = () => onAbilityAgain();
   const su = act.querySelector("[data-sup]"); if (su) su.onclick = () => onSupport();
@@ -1620,6 +1676,7 @@ function cardHTML(k, s, i) {
     <b>${esc(sk ? sk.n + "（偽造）" : d.n)}</b><p>${esc(sk ? sk.t : d.t)}</p></button>`;
 }
 function renderHand() {
+  document.querySelector(".handwrap").hidden = !!S.motion; if (S.motion) return;
   const s = viewSide(); const sd = sideOf(s);
   $("handTitle").textContent = S.auto ? `HAND ・ ${s === 0 ? "味方" : "相手"}` : "HAND";
   $("deckInfo").textContent = `${sd.hand.length}/${handLimit(s)}枚 ・ 山札${sd.deck.length}${S.events.length ? " ・ EVENT " + S.events.map(e => `${e.name}(${e.left})`).join(" ") : ""}`;
@@ -1998,7 +2055,7 @@ function openDevSetup() {
   const [ss, si] = DEV.sel, selId = DEV.side[ss] && DEV.side[ss][si], m = (DEV.mods[ss] && DEV.mods[ss][si]) || {};
   const st = m.st || {};
   el.innerHTML = `<div class="in">
-    <header><button type="button" id="dvBack">‹ ガチャへ</button><h1>開発者モード</h1><span class="tag">DEVELOPER</span></header>
+    <header><button type="button" id="dvBack">‹ ガチャへ</button><h1>開発者モード</h1><button type="button" class="pri" id="dvMotionTop">🎬 モーション</button><span class="tag">DEVELOPER</span></header>
     <div class="cols">${sec(1, "相手のグループ", "enemy")}${sec(0, "あなたのグループ", "ally")}</div>
     <section><h2>ステージ</h2><div class="row2"><button type="button" data-rnd="both">ランダム（両方）</button><button type="button" data-rnd="1">敵だけランダム</button><button type="button" data-rnd="0">味方だけランダム</button><button type="button" data-all>全キャラ vs 全キャラ</button><button type="button" data-swap>敵と味方を入れ替え</button><button type="button" data-reset>編集をリセット</button></div></section>
     ${selId ? `<section><h2>キャラ：${esc(CH[selId].name)}（${ss === 0 ? "味方" : "敵"}${si + 1}）</h2>
@@ -2024,7 +2081,8 @@ function openDevSetup() {
       <label>敵の最初の◆<input type="number" id="dvM1" value="${DEV.money[1]}" min="0" max="99"></label>
       <label>CPUの強さ<select id="dvCpu"><option value="easy"${DEV.cpu === "easy" ? " selected" : ""}>やさしい</option><option value="normal"${DEV.cpu === "normal" ? " selected" : ""}>ふつう</option><option value="hard"${DEV.cpu === "hard" ? " selected" : ""}>つよい</option></select></label>
     </div></section>
-    <section><h2>モーション</h2><div class="row2"><button type="button" id="dvMotion">🎬 アニメーション確認（全ability・skill・バフ・デバフ・お金・演出）</button></div></section>
+    <section class="motionsec"><h2>モーション（アニメーション確認）</h2><p style="margin:0 0 8px;font-size:12px;color:var(--silver)">ability・skill・special・チャージ・バフ・デバフ・カットインなど、バトルで出る演出を全部その場で再生できます。</p>
+      <div class="row2"><button type="button" class="pri" id="dvMotion2">🎬 モーションを開く</button><button type="button" id="dvMotion">旧モーション一覧（108個）</button></div></section>
     <div class="go"><button type="button" class="pri" id="dvStart">この配置で対戦開始</button><button type="button" id="dvAuto">オート戦闘（CPU vs CPU）</button></div>
   </div>`;
   const q = s => el.querySelectorAll(s);
@@ -2045,6 +2103,7 @@ function openDevSetup() {
   el.querySelector("#dvCpu").onchange = e => { DEV.cpu = e.target.value; saveDev(); };
   const go = auto => { sfx("power"); start([...DEV.side[0]], [...DEV.side[1]], { dev: true, auto, cpu: DEV.cpu, mods: clone(DEV.mods), money: [...DEV.money] }); };
   el.querySelector("#dvStart").onclick = () => go(false);
+  el.querySelector("#dvMotion2").onclick = el.querySelector("#dvMotionTop").onclick = () => { sfx("click"); openMotion(); };
   el.querySelector("#dvMotion").onclick = async () => { sfx("click"); await FXREADY; if (window.OLDFX) { OLDFX.snd(PREF.vol > 0); OLDFX.Or.v = 1; OLDFX.motion(); } };
   el.querySelector("#dvAuto").onclick = () => go(true);
 }
@@ -2080,6 +2139,140 @@ function renderDevPanel(body) {
   body.querySelectorAll("[data-addst]").forEach(b => b.onclick = () => { const m = { "毒": "poison", "パニック": "panic", "拘束": "restrain", "回避": "evade", "無敵の人": "inv", "疾走": "dash", "ダウン": "down" }[b.dataset.addst]; addStatus(c, m, null, { n: 1 }); S.fx = []; re(); });
   body.querySelectorAll("[data-card]").forEach(b => b.onclick = () => { sideOf(0).hand.push(card(b.dataset.card)); re(); });
   body.querySelectorAll("[data-test]").forEach(b => b.onclick = async () => { tests[+b.dataset.test][1](c); closeDrawer(); await playFx(); });
+}
+
+/* =====================================================================
+   MOTION (developer mode): every battle animation, played on a real board
+   ===================================================================== */
+const MOTION = { tab: "ability", busy: false };
+const EN3 = ["yamanaka", "nishida", "ushida"];
+function mStage(actorId, opt = {}) {
+  const ally = [actorId, ...(opt.ally || shuffle(IDS.filter(x => x !== actorId)).slice(0, 2))];
+  const enemy = opt.enemy || shuffle(IDS.filter(x => !ally.includes(x))).slice(0, 3);
+  newMatch(ally, enemy, { dev: true, money: [99, 99] });
+  S.motion = true; S.round = 1; S.fx = []; S.log = [];
+  const me = members(0)[0]; S.turnUid = me.uid; S.queue = members(0).slice(1).concat(members(1)).map(c => c.uid); S.done = [];
+  $("app").hidden = false; render(); snapshot();
+  return { me, al: members(0), en: members(1) };
+}
+const withRandom = (v, fn) => { const r = Math.random; Math.random = () => v; try { fn(); } finally { Math.random = r; } };
+async function mPlay(fn) {
+  if (MOTION.busy) return; MOTION.busy = true; renderMotionPanel($("act"));
+  try { fn(); await playFx(); } catch (e) { console.error(e); }
+  MOTION.busy = false; if (S && S.motion) { render(); }
+}
+function skillTarget(st, sk) {
+  const { me, al, en } = st;
+  switch (sk.d.tg) {
+    case "enemy": case "any": case "char": return en[0];
+    case "enemyDebt": en[0].s.debt = 1; return en[0];
+    case "ally": case "allyOther": case "allyAbility": return al[1];
+    case "allyAny": return al[1];
+    default: return null;
+  }
+}
+const MDEF = {
+  ability: () => IDS.map(id => [`${CH[id].ab.n}`, CH[id].short, () => {
+    const st = mStage(id, id === "morooka" ? {} : {}); const { me, al, en } = st;
+    if (id === "morooka") { al[1].lost = true; al[1].hp = 0; render(); snapshot(); }
+    if (id === "ogawa") { al[1].hp = 2; render(); snapshot(); }
+    if (id === "sato") return mPlay(() => withRandom(.1, () => { me.hp = 1; hurt(me, 3, en[0]); }));
+    if (id === "fujikura") return mPlay(() => { me.s.patience = 3; settle(); });
+    const a = CH[id].ab;
+    if (a.k === "start") return mPlay(() => runAuto(me, id));
+    if (id === "hirabayashi") return mPlay(() => runChoose(me, id, al[1].uid, "chou"));
+    if (id === "endo") return mPlay(() => runChoose(me, id, null, rand(2) ? "hakai" : "kaizo"));
+    if (id === "sakayori") return mPlay(() => runChoose(me, id, en[0].uid));
+    if (id === "yanai") { en[0].s.armor = 1; en[0].s.powR.push({ n: 1, r: 1 }); render(); snapshot(); }
+    return mPlay(() => runChoose(me, id, en[0].uid));
+  }]),
+  skill: () => IDS.flatMap(id => CH[id].sk.map((d, i) => [d, i]).filter(([d]) => d.c !== "auto").map(([d, i]) => [d.n, CH[id].short, () => {
+    const st = mStage(id); const sk = { id, i, d, via: "" };
+    if (id === "ogawa" && i === 0) { st.al[1].lost = true; st.al[1].hp = 0; render(); snapshot(); }
+    if (id === "kashima" && i === 1) { /* ツッコミ on an enemy */ }
+    if (id === "chou" && i === 1) { st.en[0].s.debt = 1; render(); snapshot(); }
+    const t = skillTarget(st, sk);
+    return mPlay(() => useSkill(st.me, sk, t ? t.uid : null));
+  }])).concat([["報復", "平林", () => { const st = mStage("hirabayashi"); return mPlay(() => { hurt(st.me, 1, st.en[0]); hurt(st.me, 1, st.en[0]); }); }],
+               ["陰の実力者", "小福田", () => { const st = mStage("kobukuda"); return mPlay(() => { st.me.s.data = 3; settle(); }); }]]),
+  special: () => [
+    ["イカサマルーレット", "風野・ロスト時", () => { const st = mStage("kazano", { enemy: ["morooka", "yamanaka", "ushida"] }); return mPlay(() => { st.me.hp = 0; lose(st.me); }); }],
+    ["最後の奇行", "酒寄・ロスト時", () => { const st = mStage("sakayori"); return mPlay(() => { st.me.hp = 0; lose(st.me); }); }],
+    ["大嘘吐", "諸岡・試合開始時", () => { const st = mStage("morooka"); return mPlay(() => { st.me.lie = true; O({ type: "fx", fx: "lie", uid: st.me.uid, text: "大嘘吐" }); }); }],
+    ["大嘘吐 → 攻撃を受ける", "諸岡", () => { const st = mStage("morooka"); st.me.lie = true; snapshot(); render(); return mPlay(() => damage(st.en[0], st.me, 3, { single: true })); }],
+    ["大嘘吐がバレる", "鹿島のツッコミ", () => { const st = mStage("kashima", { enemy: ["morooka", "yamanaka", "ushida"] }); st.en[0].lie = true; snapshot(); render(); return mPlay(() => useSkill(st.me, { id: "kashima", i: 1, d: CH.kashima.sk[1], via: "" }, st.en[0].uid)); }],
+    ["大嘘吐が終わる", "諸岡", () => { const st = mStage("morooka"); st.me.lie = true; snapshot(); render(); return mPlay(() => { st.me.lie = false; O({ type: "fx", fx: "lieEnd", uid: st.me.uid }); }); }],
+    ["聖力（耐える）", "佐藤", () => { const st = mStage("sato"); return mPlay(() => withRandom(.1, () => { st.me.hp = 1; hurt(st.me, 3, st.en[0]); })); }],
+    ["聖力（耐えられない）", "佐藤", () => { const st = mStage("sato"); return mPlay(() => withRandom(.9, () => { st.me.hp = 1; hurt(st.me, 3, st.en[0]); })); }],
+    ["我慢の限界", "藤倉", () => { const st = mStage("fujikura"); return mPlay(() => { st.me.s.patience = 3; settle(); }); }],
+    ["夜逃", "大橋・取り立て直前", () => { const st = mStage("ohashi"); return mPlay(() => { st.me.s.debt = 3; settle(); }); }],
+    ["吐いた", "卯都木・酔い4", () => { const st = mStage("utsugi"); st.me.s.drunk = 3; snapshot(); return mPlay(() => runAuto(st.me, "utsugi")); }],
+    ["ヘルプ", "仲間が来る", () => { mStage("kazano"); return mPlay(() => doHelp(0)); }],
+    ["パトカード（奇行を通報）", "酒寄", () => { const st = mStage("sakayori"); sideOf(1).hand.push(card("patocard")); return mPlay(() => useSkill(st.me, { id: "sakayori", i: 0, d: CH.sakayori.sk[0], via: "" }, st.en[0].uid)); }]
+  ],
+  charge: () => [
+    ["ターン開始の収入", "◆チャージ", () => { const st = mStage("kazano"); sideOf(0).n = 3; return mPlay(() => phaseIncome(st.me)); }],
+    ["賭狂 7！（◆+7）", "西田", () => { const st = mStage("nishida"); return mPlay(() => withRandom(6.5 / 9, () => runAuto(st.me, "nishida"))); }],
+    ["給料日（◆+3）", "カード", () => { const st = mStage("endo"); sideOf(0).hand.push(card("payday")); const k = sideOf(0).hand.at(-1); return mPlay(() => playCard(0, k.uid, null, st.me)); }],
+    ["詫び石（◆+1）", "カード", () => { const st = mStage("endo"); sideOf(0).hand.push(card("wabi")); const k = sideOf(0).hand.at(-1); return mPlay(() => playCard(0, k.uid, null, st.me)); }],
+    ["龍炎でロスト（◆+3）", "ヤン", () => { const st = mStage("chou"); st.en[0].hp = 1; snapshot(); render(); return mPlay(() => runAuto(st.me, "chou")); }],
+    ["借金", "借用書", () => { const st = mStage("yamanaka"); return mPlay(() => addDebt(st.en[0], 1, st.me)); }],
+    ["取り立て", "借金3", () => { const st = mStage("yamanaka"); st.en[0].s.debt = 2; snapshot(); return mPlay(() => addDebt(st.en[0], 1, st.me)); }],
+    ["返済", "借金を返す", () => { const st = mStage("nishida"); st.me.s.debt = 1; snapshot(); render(); return mPlay(() => { pay(0, 1, null); st.me.s.debt--; O({ type: "fx", fx: "repay", uid: st.me.uid }); }); }],
+    ["残クレ", "山中", () => { const st = mStage("yamanaka"); return mPlay(() => useSkill(st.me, { id: "yamanaka", i: 0, d: CH.yamanaka.sk[0], via: "" }, null)); }]
+  ],
+  buff: () => [["パワー", "powR"], ["装甲", "armor"], ["分析", "ana"], ["回避", "evade"], ["無敵の人", "inv"], ["疾走", "dash"]].map(([n, k]) => [n, "バフ", () => { const st = mStage("endo"); return mPlay(() => addStatus(st.al[1], k, st.me, { n: k === "ana" ? 2 : 1 })); }]).concat([
+    ["装甲で防ぐ", "バフが効く", () => { const st = mStage("chou"); st.en[0].s.armor = 2; snapshot(); render(); return mPlay(() => damage(st.me, st.en[0], 2, { single: true })); }],
+    ["回避でよける", "バフが効く", () => { const st = mStage("chou"); st.en[0].s.evade = 1; snapshot(); render(); return mPlay(() => damage(st.me, st.en[0], 2, { single: true })); }],
+    ["かばう（キャリー）", "佐藤", () => { const st = mStage("sato"); return mPlay(() => useSkill(st.me, { id: "sato", i: 1, d: CH.sato.sk[1], via: "" }, st.al[1].uid)); }],
+    ["推し", "小川", () => { const st = mStage("ogawa"); return mPlay(() => useSkill(st.me, { id: "ogawa", i: 1, d: CH.ogawa.sk[1], via: "" }, st.al[1].uid)); }],
+    ["回復", "+2", () => { const st = mStage("ogawa"); st.al[1].hp = 3; snapshot(); render(); return mPlay(() => heal(st.al[1], 2)); }],
+    ["全体回復（ヒール属性）", "+1", () => { const st = mStage("ogawa"); st.al.forEach(x => x.hp = Math.max(1, x.hp - 3)); snapshot(); render(); return mPlay(() => attributeStart(st.me)); }],
+    ["蘇生", "マジ蘇生します", () => { const st = mStage("endo"); st.al[1].lost = true; st.al[1].hp = 0; snapshot(); render(); sideOf(0).hand.push(card("revive")); const k = sideOf(0).hand.at(-1); return mPlay(() => playCard(0, k.uid, st.al[1].uid, st.me)); }],
+    ["解除", "デート", () => { const st = mStage("endo"); st.al[1].s.poison = 2; st.al[1].s.restrain = 1; snapshot(); render(); sideOf(0).hand.push(card("date")); const k = sideOf(0).hand.at(-1); return mPlay(() => playCard(0, k.uid, st.al[1].uid, st.me)); }]
+  ]),
+  debuff: () => [["毒", "poison"], ["パニック", "panic"], ["拘束", "restrain"], ["ダウン", "down"]].map(([n, k]) => [n, "デバフ", () => { const st = mStage("endo"); return mPlay(() => addStatus(st.en[0], k, st.me, { n: 1 })); }]).concat([
+    ["眠らせる", "ちゅっちゅ", () => { const st = mStage("endo"); return mPlay(() => addStatus(st.en[0], "restrain", st.me, { n: 1, sleep: true })); }],
+    ["毒が効く", "ターン開始", () => { const st = mStage("endo"); st.me.s.poison = 2; snapshot(); render(); return mPlay(() => phaseStatus(st.me)); }],
+    ["パニックが効く", "ターン開始", () => { const st = mStage("endo"); st.me.s.panic = 2; snapshot(); render(); return mPlay(() => phaseStatus(st.me)); }],
+    ["拘束で動けない", "ターン開始", () => { const st = mStage("endo"); st.me.s.restrain = 1; snapshot(); render(); return mPlay(() => O({ type: "fx", fx: "stuck", uid: st.me.uid })); }],
+    ["灰コンブ", "カード", () => { const st = mStage("endo"); sideOf(0).hand.push(card("haikonbu")); const k = sideOf(0).hand.at(-1); return mPlay(() => playCard(0, k.uid, st.en[0].uid, st.me)); }],
+    ["ability封印", "イカサマ", () => { const st = mStage("kazano", { enemy: ["morooka", "yamanaka", "ushida"] }); return mPlay(() => { st.me.hp = 0; lose(st.me); }); }]
+  ]),
+  cutin: () => [
+    ["TURN（ターン開始）", "カットイン", () => { const st = mStage("kazano"); return mPlay(() => O({ type: "turn", uid: st.me.uid })); }],
+    ["abilityカットイン", "カットイン", () => { const st = mStage("nishida"); return mPlay(() => O({ type: "fx", fx: "ability", uid: st.me.uid, pid: PID.yamanaka })); }],
+    ["skillカットイン", "カットイン", () => { const st = mStage("chou"); return mPlay(() => useSkill(st.me, { id: "chou", i: 0, d: CH.chou.sk[0], via: "" }, st.en[0].uid)); }],
+    ["カードを使う", "カットイン", () => { const st = mStage("chou"); sideOf(0).hand.push(card("attack")); const k = sideOf(0).hand.at(-1); return mPlay(() => playCard(0, k.uid, st.en[0].uid, st.me)); }],
+    ["掛け声", "お値段以上ヒトリ", () => { const st = mStage("sakayori", { ally: ["nishida", "endo"] }); return mPlay(() => fx("combo", { a: st.me.uid, b: st.al[1].uid, n: "お値段以上ヒトリ", l1: "お値段以上〜？", l2: "ヒトリ！！" })); }],
+    ["ナンパ", "大橋", () => { const st = mStage("ohashi", { ally: ["kashima", "endo"] }); return mPlay(() => fx("combo", { a: st.me.uid, b: st.al[1].uid, n: "ナンパ", l1: "ねえ、このあと時間ある？", l2: NANPA.kashima[0] })); }],
+    ["暴走", "西田", () => { const st = mStage("nishida"); return mPlay(() => addDebt(st.me, 1, null, true)); }],
+    ["ROUND", "バナー", () => { mStage("kazano"); return mPlay(() => fx("banner", { t: "ROUND 2", s: "ラウンド", c: "#b05cff" })); }],
+    ["攻撃（小）", "ダメージ", () => { const st = mStage("chou"); return mPlay(() => hurt(st.en[0], 1, st.me)); }],
+    ["攻撃（中）", "ダメージ", () => { const st = mStage("chou"); return mPlay(() => hurt(st.en[0], 3, st.me)); }],
+    ["攻撃（大・会心）", "ダメージ", () => { const st = mStage("chou"); return mPlay(() => hurt(st.en[0], 6, st.me)); }],
+    ["ロスト", "LOST", () => { const st = mStage("chou"); st.en[0].hp = 2; snapshot(); render(); return mPlay(() => hurt(st.en[0], 3, st.me)); }],
+    ["勝利画面", "結果", () => { mStage("chou"); return window.OLDFX && OLDFX.L.resultScreen(true); }],
+    ["敗北画面", "結果", () => { mStage("chou"); return window.OLDFX && OLDFX.L.resultScreen(false); }]
+  ]
+};
+const MTABS = [["ability", "ability"], ["skill", "skill"], ["special", "special"], ["charge", "チャージ・お金"], ["buff", "バフ・回復"], ["debuff", "デバフ"], ["cutin", "カットイン・演出"]];
+async function openMotion() {
+  await FXREADY;
+  $("devset") && $("devset").remove();
+  document.querySelectorAll(".result,.modal").forEach(x => x.remove());
+  mStage("kazano");
+  OLDFX && OLDFX.snd(PREF.vol > 0);
+}
+function renderMotionPanel(act) {
+  act.className = "act mine";
+  const list = MDEF[MOTION.tab]();
+  act.innerHTML = `<div class="mpanel"><div class="mhead"><button type="button" id="mBack">‹ 開発者モード</button><b>🎬 モーション</b>${MOTION.busy ? '<span class="thinking"><i></i><i></i><i></i>再生中</span>' : ""}</div>
+    <div class="mtabs">${MTABS.map(([k, l]) => `<button type="button" data-mt="${k}" aria-pressed="${k === MOTION.tab}">${l}</button>`).join("")}</div>
+    <div class="mbtns">${list.map(([n, sub], i) => `<button type="button" data-mi="${i}" ${MOTION.busy ? "disabled" : ""}>${esc(n)}<small>${esc(sub)}</small></button>`).join("")}</div></div>`;
+  act.querySelector("#mBack").onclick = () => { S = null; openDevSetup(); };
+  act.querySelectorAll("[data-mt]").forEach(b => b.onclick = () => { MOTION.tab = b.dataset.mt; sfx("click"); renderMotionPanel(act); });
+  act.querySelectorAll("[data-mi]").forEach(b => b.onclick = () => { if (MOTION.busy) return; sfx("click"); list[+b.dataset.mi][2](); });
 }
 
 /* ---------- boot: #battle=id,id,id (from the gacha) / #dev ---------- */
