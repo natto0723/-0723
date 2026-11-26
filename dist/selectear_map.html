@@ -81,66 +81,69 @@ button:focus-visible, a:focus-visible { outline: 2px solid #fff; outline-offset:
 .coins .val { font: 700 17px/1 var(--font-num); color: #fff; min-width: 2ch; text-align: right; font-variant-numeric: tabular-nums; }
 @media (max-width: 420px) { .coins .lb, .back span, .place small { display: none; } .back { padding: 0 10px; } }
 
-/* ---------- MAP: islands floating on a dark sea ---------- */
+/* ---------- MAP: one big city in front, its neighbours behind (3D carousel on the sea) ---------- */
 #map { background: #03020a; }
 canvas#water { position: absolute; inset: 0; width: 100%; height: 100%; }
-#map .fog { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgba(3, 2, 10, .9) 0%, rgba(3, 2, 10, .25) 18%, transparent 35%), radial-gradient(ellipse at 50% 45%, transparent 45%, rgba(3, 2, 10, .75) 100%); }
-svg#routes { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
-.route { fill: none; stroke-width: 2.5; stroke-dasharray: 5 7; stroke-linecap: round; }
-.route.lit { stroke-width: 3.5; stroke-dasharray: 12 10; animation: flow 1.2s linear infinite; }
-@keyframes flow { to { stroke-dashoffset: -44; } }
-#board { position: absolute; inset: 0; }
-.isle { position: absolute; border: 0; padding: 0; background: none; cursor: pointer; display: block; text-align: center; color: #fff; }
-.isle .float { position: relative; display: block; animation: bob 5.5s ease-in-out infinite; animation-delay: var(--d); }
-@keyframes bob { 50% { transform: translateY(-5px); } }
-.isle .art { position: relative; z-index: 2; display: block; }
-.isle .art img, .isle .art svg { display: block; width: 100%; height: auto; }
-.isle.pic .art img { filter: drop-shadow(0 0 6px var(--c)) drop-shadow(0 6px 10px rgba(0, 0, 0, .8)); }
-.isle .art svg { filter: drop-shadow(0 0 5px color-mix(in srgb, var(--c) 70%, transparent)) drop-shadow(0 6px 10px rgba(0, 0, 0, .8)); overflow: visible; }
-/* the island's reflection in the water */
-.isle .refl { position: absolute; left: 0; right: 0; top: 74%; z-index: 1; transform: scaleY(-.55); transform-origin: top; opacity: .32; filter: blur(2px) saturate(1.3); -webkit-mask-image: linear-gradient(0deg, rgba(0, 0, 0, .9), transparent 70%); mask-image: linear-gradient(0deg, rgba(0, 0, 0, .9), transparent 70%); pointer-events: none; }
-.isle .refl img, .isle .refl svg { display: block; width: 100%; height: auto; }
-.isle .ripple { position: absolute; z-index: 0; left: 6%; right: 6%; top: 52%; aspect-ratio: 4 / 1; border-radius: 50%; border: 1.5px solid var(--c); opacity: 0; animation: ripple 4s ease-out infinite; animation-delay: var(--d); pointer-events: none; }
-@keyframes ripple { 0% { opacity: .55; transform: scale(.7); } 100% { opacity: 0; transform: scale(1.25); } }
-.isle .plate { position: relative; z-index: 3; left: 50%; transform: translateX(-50%); width: max-content; max-width: var(--pw, 200px); display: inline-flex; flex-direction: column; align-items: center; gap: 1px; margin-top: -6px; padding: 4px 10px; border-radius: 8px; background: rgba(6, 4, 16, .88); border: 1px solid var(--c); box-shadow: 0 0 12px color-mix(in srgb, var(--c) 40%, transparent); }
-.isle .plate b { font: 700 var(--fs) / 1.2 var(--font-body); letter-spacing: -.02em; word-break: keep-all; overflow-wrap: anywhere; }
-.isle .plate small { font: 700 calc(var(--fs) * .72) / 1.2 var(--font-body); color: var(--ice); opacity: .85; word-break: keep-all; overflow-wrap: anywhere; }
-.tight .isle .plate { padding: 7px 6px 3px; }
-.tight .isle .plate .sin { display: none; }
-.isle .plate i { position: absolute; top: -9px; font: 700 10px/18px var(--font-num); font-style: normal; width: 18px; height: 18px; border-radius: 50%; text-align: center; }
-.isle .plate .no { left: -8px; background: #0b0716; border: 1.5px solid var(--c); }
-.isle .plate .sin { left: 12px; background: var(--c); color: #0b0716; font-family: var(--font-body); font-weight: 900; }
-.isle .plate .ok { right: -8px; background: var(--gold); color: #0b0716; }
-.isle .plate .lk { right: -8px; background: #2a2440; font-size: 9px; }
-.isle.locked .art, .isle.locked .refl { filter: grayscale(.9) brightness(.55); }
-.isle.locked .plate { border-color: rgba(200, 190, 240, .35); box-shadow: none; color: var(--dim); }
-.isle.locked .plate .sin { background: #3b3654; color: #cfc8ef; }
-.isle.locked .ripple { display: none; }
-.isle.city.open .ripple { border-width: 2.5px; animation-duration: 2s; }
-.isle.city.open .plate { background: linear-gradient(90deg, color-mix(in srgb, var(--c) 45%, #06040f), #06040f); }
-.isle.gz.locked .art, .isle.gz.locked .refl { filter: none; }
-.isle.gz.locked .plate { color: #ffc0c8; border-color: #ff4d5e; }
-.isle.hide .plate { border-color: #fff; background: linear-gradient(90deg, rgba(155, 92, 255, .7), rgba(8, 5, 18, .92)); }
-.isle:hover .art, .isle:focus-visible .art { transform: translateY(-3px) scale(1.03); transition: transform .2s; }
-.isle:focus-visible { outline: none; }
-.isle:focus-visible .plate { outline: 2px solid #fff; outline-offset: 2px; }
+#map .fog { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgba(3, 2, 10, .92) 0%, rgba(3, 2, 10, .2) 22%, transparent 40%), radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(3, 2, 10, .7) 100%); }
+.stage { position: absolute; left: 0; right: 0; top: calc(58px + env(safe-area-inset-top, 0px)); bottom: var(--foot, 190px); perspective: 1400px; touch-action: pan-y; cursor: grab; overflow: hidden; }
+.stage.drag { cursor: grabbing; }
+.ci { position: absolute; left: 50%; top: 50%; width: var(--fw); margin-left: calc(var(--fw) / -2); border: 0; padding: 0; background: none; cursor: pointer; transform-style: preserve-3d; transition: transform .7s cubic-bezier(.25, .9, .25, 1), opacity .7s, filter .7s; will-change: transform; }
+.ci .float { display: block; position: relative; animation: bob 6s ease-in-out infinite; animation-delay: var(--d); }
+@keyframes bob { 50% { transform: translateY(-8px); } }
+.ci .art { position: relative; z-index: 2; display: block; }
+.ci .art img, .ci .art svg { display: block; width: 100%; height: auto; }
+.ci.pic .art img { filter: drop-shadow(0 0 10px var(--c)) drop-shadow(0 14px 18px rgba(0, 0, 0, .85)); }
+.ci .art svg { overflow: visible; filter: drop-shadow(0 0 8px color-mix(in srgb, var(--c) 70%, transparent)) drop-shadow(0 12px 16px rgba(0, 0, 0, .85)); }
+.ci .refl { position: absolute; left: 0; right: 0; top: 76%; z-index: 1; transform: scaleY(-.5); transform-origin: top; opacity: .3; filter: blur(2.5px) saturate(1.3); -webkit-mask-image: linear-gradient(0deg, rgba(0, 0, 0, .9), transparent 70%); mask-image: linear-gradient(0deg, rgba(0, 0, 0, .9), transparent 70%); pointer-events: none; }
+.ci .refl img, .ci .refl svg { display: block; width: 100%; height: auto; }
+.ci .glow { position: absolute; z-index: 0; left: 8%; right: 8%; top: 56%; aspect-ratio: 4 / 1; border-radius: 50%; background: radial-gradient(ellipse, color-mix(in srgb, var(--c) 45%, transparent), transparent 70%); pointer-events: none; }
+.ci .ripple { position: absolute; z-index: 0; left: 4%; right: 4%; top: 56%; aspect-ratio: 4 / 1; border-radius: 50%; border: 2px solid var(--c); opacity: 0; pointer-events: none; }
+.ci.front .ripple { animation: ripple 3.2s ease-out infinite; }
+@keyframes ripple { 0% { opacity: .6; transform: scale(.7); } 100% { opacity: 0; transform: scale(1.25); } }
+.ci .tag { position: absolute; z-index: 3; left: 50%; bottom: 4%; transform: translateX(-50%); padding: 4px 12px; border-radius: 999px; background: rgba(6, 4, 16, .88); border: 1px solid var(--c); font: 700 13px var(--font-body); white-space: nowrap; color: #fff; transition: opacity .4s; }
+.ci.front .tag { opacity: 0; }
+.ci.locked .art, .ci.locked .refl { filter: grayscale(.9) brightness(.5); }
+.ci.locked.front .art, .ci.locked.front .refl { filter: grayscale(.55) brightness(.85); }
+.ci.locked .glow { opacity: .3; }
+.ci:focus-visible { outline: none; }
+.ci:focus-visible .art { outline: 2px solid #fff; outline-offset: 4px; border-radius: 12px; }
+.arrow { position: absolute; z-index: 9; top: calc(50% - 10px); width: 48px; height: 48px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, .35); background: rgba(8, 5, 18, .75); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); display: grid; place-items: center; cursor: pointer; padding: 0; }
+.arrow svg { width: 22px; height: 22px; stroke: #fff; fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.arrow.l { left: max(12px, env(safe-area-inset-left, 0px)); }
+.arrow.r { right: max(12px, env(safe-area-inset-right, 0px)); }
+.arrow:hover { border-color: #fff; }
+/* the selected city's name card and actions */
+.foot { position: absolute; z-index: 9; left: 0; right: 0; bottom: 0; padding: 0 max(14px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(14px, env(safe-area-inset-left, 0px)); display: grid; justify-items: center; gap: 10px; background: linear-gradient(0deg, rgba(3, 2, 10, .95) 40%, transparent); }
+.title-card { text-align: center; display: grid; gap: 4px; justify-items: center; }
+.title-card .eyebrow2 { font: 700 11px var(--font-num); letter-spacing: .25em; color: var(--cc, var(--ice)); }
+.title-card h2 { margin: 0; font: 900 clamp(24px, 6vw, 40px)/1.1 var(--font-body); letter-spacing: .04em; text-shadow: 0 0 18px var(--cc, var(--violet)); }
+.title-card .sub { font: 700 13px var(--font-body); color: var(--ice); }
+.chip { display: inline-block; padding: 3px 12px; border-radius: 999px; font: 700 11px var(--font-body); border: 1px solid; }
+.chip.locked { color: var(--dim); border-color: rgba(201, 198, 214, .4); }
+.chip.open { color: #fff; border-color: var(--cc); background: color-mix(in srgb, var(--cc) 30%, transparent); }
+.chip.cleared { color: #0b0716; background: var(--cc); border-color: var(--cc); }
+.acts { display: flex; gap: 8px; width: min(520px, 100%); }
+.acts button { flex: 1; height: 48px; border-radius: 12px; font: 800 14px var(--font-body); cursor: pointer; border: 1px solid #fff; background: linear-gradient(90deg, color-mix(in srgb, var(--cc) 70%, transparent), color-mix(in srgb, var(--cc) 25%, transparent)); box-shadow: 0 0 16px color-mix(in srgb, var(--cc) 50%, transparent); }
+.acts button.sec { flex: .6; border-color: rgba(201, 198, 214, .45); background: rgba(8, 5, 18, .8); box-shadow: none; }
+.acts button:disabled { opacity: .45; cursor: default; box-shadow: none; }
+.dots { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: center; }
+.dots button { width: 30px; height: 30px; border-radius: 50%; padding: 0; border: 1.5px solid rgba(200, 190, 240, .4); background: #14102a; color: var(--dim); font: 700 12px var(--font-num); cursor: pointer; }
+.dots button.open { border-color: var(--c); color: #fff; }
+.dots button.cleared { background: var(--c); border-color: var(--c); color: #0b0716; }
+.dots button.sel { outline: 2px solid #fff; outline-offset: 2px; }
+.dots .sep { width: 1px; height: 20px; background: rgba(255, 255, 255, .2); margin: 0 2px; }
+.dots .pill { width: auto; padding: 0 12px; border-radius: 999px; font: 700 11px var(--font-body); }
+.dots .pill.gz { border-color: #ff4d5e; color: #ffc0c8; }
+.dots .pill.gz.open { border-color: #c25cff; color: #fff; background: rgba(194, 92, 255, .3); }
+.dots .pill.home { border-color: #fff; color: #fff; background: linear-gradient(90deg, rgba(155, 92, 255, .7), rgba(8, 5, 18, .9)); }
+.dots .pill.sel { outline: 2px solid #fff; outline-offset: 2px; }
 .swirl { transform-box: fill-box; transform-origin: center; animation: spin 10s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .barrier { animation: noise 2.6s steps(1) infinite; }
 @keyframes noise { 0%, 100% { opacity: .95; } 31% { opacity: .5; } 33% { opacity: .95; } 62% { opacity: .7; } 64% { opacity: .95; } }
-.sea { position: absolute; display: flex; flex-direction: column; align-items: center; gap: 4px; pointer-events: none; opacity: .6; }
-.sea svg { width: 44px; height: 44px; }
-.sea span { font: 700 10px var(--font-body); letter-spacing: .3em; color: var(--dim); }
-/* status panel (bottom-left) */
-.status { position: absolute; z-index: 8; left: max(10px, env(safe-area-inset-left, 0px)); bottom: calc(10px + env(safe-area-inset-bottom, 0px)); padding: 8px 10px; border-radius: 12px; background: rgba(8, 5, 18, .85); border: 1px solid var(--line); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); display: grid; gap: 6px; max-width: 30%; }
-.status .t { font: 700 10px var(--font-num); letter-spacing: .14em; color: var(--ice); }
-.locks { display: flex; gap: 3px; align-items: center; flex-wrap: wrap; }
-.locks i { width: 14px; height: 7px; border-radius: 2px; background: #2a2440; border: 1px solid rgba(255, 255, 255, .2); }
-.locks i.on { background: var(--c); box-shadow: 0 0 8px var(--c); border-color: #fff; }
-.locks b { margin-left: 4px; font: 700 13px var(--font-num); font-variant-numeric: tabular-nums; }
-.status .demo { white-space: nowrap; justify-self: start; padding: 4px 8px; border-radius: 999px; border: 1px solid rgba(201, 198, 214, .35); background: transparent; color: var(--dim); font: 700 10px var(--font-body); cursor: pointer; }
-@media (max-width: 600px) { .status { padding: 6px 8px; gap: 4px; } .status .t { font-size: 8px; letter-spacing: .06em; } .locks i { width: 8px; } .locks b { font-size: 11px; } .status .demo { font-size: 9px; padding: 3px 6px; } }
-@media (max-height: 520px) { .status .demo, .status .t { display: none; } }
+.reset { position: absolute; z-index: 9; left: max(10px, env(safe-area-inset-left, 0px)); top: calc(62px + env(safe-area-inset-top, 0px)); padding: 5px 10px; border-radius: 999px; border: 1px solid rgba(201, 198, 214, .3); background: rgba(8, 5, 18, .7); color: var(--dim); font: 700 10px var(--font-body); cursor: pointer; }
+@media (max-width: 600px) { .arrow { width: 40px; height: 40px; } .dots { gap: 5px; } .dots button { width: 26px; height: 26px; font-size: 11px; } .dots .pill { padding: 0 9px; font-size: 10px; } .acts button { height: 44px; font-size: 13px; } }
+@media (max-height: 520px) { .title-card .sub, .title-card .eyebrow2 { display: none; } .title-card h2 { font-size: 20px; } .foot { gap: 6px; } .acts button { height: 38px; } .dots button { width: 24px; height: 24px; } .stage { top: calc(50px + env(safe-area-inset-top, 0px)); } .reset { display: none; } }
 /* info sheet: a side panel on wide screens, a bottom sheet on phones */
 .sheet { position: absolute; z-index: 20; right: max(12px, env(safe-area-inset-right, 0px)); top: calc(66px + env(safe-area-inset-top, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); width: min(380px, calc(100% - 24px)); display: none; flex-direction: column; border-radius: 16px; background: var(--panel); border: 1px solid var(--c, var(--line)); box-shadow: 0 0 40px rgba(0, 0, 0, .6), 0 0 24px color-mix(in srgb, var(--c, #9b5cff) 35%, transparent); overflow: hidden; }
 .sheet.on { display: flex; animation: slideIn .3s cubic-bezier(.2, .8, .2, 1); }
@@ -201,9 +204,15 @@ svg#routes { position: absolute; inset: 0; width: 100%; height: 100%; pointer-ev
 <!-- MAP -->
 <section class="scene" id="map" aria-label="外の世界のマップ">
   <canvas id="water" aria-hidden="true"></canvas>
-  <svg id="routes" aria-hidden="true"></svg>
-  <div id="board"></div>
+  <div class="stage" id="stage" aria-roledescription="カルーセル" aria-label="都市を選ぶ"></div>
   <div class="fog"></div>
+  <button class="arrow l" type="button" id="prev" aria-label="前の都市"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+  <button class="arrow r" type="button" id="next" aria-label="次の都市"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+  <div class="foot" id="foot">
+    <div class="title-card" id="card" aria-live="polite"></div>
+    <div class="acts" id="acts"></div>
+    <div class="dots" id="dots" aria-label="場所を選ぶ"></div>
+  </div>
   <div class="topbar">
     <button class="back" type="button" id="toStart"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg><span>戻る</span></button>
     <div class="place"><b>NEON RUIN CITY</b><small>外の世界</small></div>
@@ -212,13 +221,10 @@ svg#routes { position: absolute; inset: 0; width: 100%; height: 100%; pointer-ev
       <div class="coins" aria-label="有料コイン"><span class="coin-ic" aria-hidden="true"></span><span class="lb">有料<br>コイン</span><span class="val" id="coinVal">0</span></div>
     </div>
   </div>
-  <div class="status" aria-label="攻略状況">
-    <span class="t">MEMORY LOCK</span>
-    <div class="locks" id="locks"></div>
-    <button class="demo" type="button" id="resetDemo">リセット（デモ）</button>
-  </div>
+  <button class="reset" type="button" id="resetDemo">進行リセット（デモ）</button>
   <aside class="sheet" id="sheet" aria-live="polite"></aside>
 </section>
+
 
 <div class="unlock" id="unlock"><div><b>MEMORY UNLOCKED</b><small>バリアが消え、爆心地への橋が繋がった</small></div></div>
 <div class="flash" id="flash"></div>
@@ -337,79 +343,108 @@ svg#routes { position: absolute; inset: 0; width: 100%; height: 100%; pointer-ev
       ${[0, 1, 2].map(k => `<rect x="${108 + k * 11}" y="${74 - k * 5}" width="5" height="8" fill="#d6c7ff"/><rect x="${66 + k * 11}" y="${60 + k * 5}" width="5" height="8" fill="#9b7cff"/>`).join("")}
     </svg>`;
   }
+  /* =========================================================
+     CAROUSEL: the ring of places, clockwise. The selected one is big in front,
+     the one before and after sit behind it on the left and right.
+     Ring: アジト → 1 … 7 → GROUND ZERO → (back to アジト)
+     ========================================================= */
+  const PLACES = [{ kind: "home" }, ...CITIES.map((c, i) => ({ kind: "city", i })), { kind: "gz" }];
+  const stage = $("stage");
+  let sel = 1 + Math.min(cleared, 6), items = [];
+  const placeColor = p => p.kind === "city" ? CITIES[p.i].c : p.kind === "gz" ? (cleared >= 7 ? "#c25cff" : "#ff4d5e") : "#b9a2ff";
+  const placeName = p => p.kind === "city" ? CITIES[p.i].name : p.kind === "gz" ? "GROUND ZERO" : "HIDEOUT アジト";
+  function build() {
+    stage.innerHTML = ""; items = PLACES.map((p, k) => {
+      const d = document.createElement("button"); d.type = "button"; d.className = "ci";
+      let inner, pic = false, state = "";
+      if (p.kind === "city") { const c = CITIES[p.i]; state = stateOf(p.i); pic = !!c.img; inner = pic ? `<img src="${A(c.img)}" alt="" draggable="false">` : genericIsland(c, p.i); }
+      else if (p.kind === "gz") { inner = gzIsland(cleared >= 7); state = cleared >= 7 ? "open" : "gz"; }
+      else inner = hideIsland();
+      d.classList.add(...[pic ? "pic" : "", state].filter(Boolean));
+      d.style.setProperty("--c", placeColor(p)); d.style.setProperty("--d", (-k * .8) + "s");
+      d.setAttribute("aria-label", placeName(p));
+      d.innerHTML = `<span class="float"><span class="glow"></span><span class="ripple"></span><span class="art">${inner}</span><span class="refl" aria-hidden="true">${inner}</span></span><span class="tag">${p.kind === "city" ? CITIES[p.i].no + " " : ""}${esc(placeName(p))}</span>`;
+      d.addEventListener("click", () => { if (dragMoved) return; if (k === sel) openDetail(); else go(k); });
+      stage.append(d); return d;
+    });
+    position(); paintFoot();
+  }
+  function position() {
+    const W = innerWidth, sh = stage.clientHeight, n = PLACES.length, portrait = W / sh < 1;
+    // front size: as big as the stage allows (illustrations are 16:9, block islands 10:7)
+    const fw = Math.min(W * (portrait ? .8 : .56), sh * (portrait ? .62 : .82) / .62);
+    stage.style.setProperty("--fw", fw + "px");
+    items.forEach((el, k) => {
+      let o = k - sel; if (o > n / 2) o -= n; if (o < -n / 2) o += n;
+      const a = Math.abs(o), side = Math.sign(o);
+      const x = side * (a === 0 ? 0 : a === 1 ? (portrait ? W * .3 : fw * .8) : (portrait ? W * .5 : fw * 1.2));
+      const y = a === 0 ? (portrait ? sh * .1 : 0) : a === 1 ? -sh * (portrait ? .2 : .14) : -sh * .26;
+      const s = a === 0 ? 1 : a === 1 ? (portrait ? .55 : .5) : .3;
+      const rot = a === 0 ? 0 : -side * 22;
+      const art = el.querySelector(".art"), ah = art.offsetHeight || fw * .6;
+      el.style.transform = `translate(${x}px, ${y - ah * .55}px) translateZ(${-a * 160}px) rotateY(${rot}deg) scale(${s})`;
+      el.style.opacity = a === 0 ? 1 : a === 1 ? .95 : a === 2 ? .3 : 0;
+      el.style.filter = a === 0 ? "none" : a === 1 ? "brightness(.9)" : "brightness(.5) blur(1.5px)";
+      el.style.zIndex = 10 - a; el.style.pointerEvents = a <= 1 ? "auto" : "none";
+      el.classList.toggle("front", a === 0); el.tabIndex = a <= 1 ? 0 : -1;
+    });
+  }
+  function go(k) {
+    const n = PLACES.length; k = (k + n) % n; if (k === sel) return;
+    sel = k; tone(880, .05, "triangle", .07); position(); paintFoot();
+  }
+  function paintFoot() {
+    const p = PLACES[sel], cc = placeColor(p), foot = $("foot"); foot.style.setProperty("--cc", cc);
+    let eyebrow, title, sub, chip, acts;
+    if (p.kind === "city") {
+      const c = CITIES[p.i], s = stateOf(p.i);
+      eyebrow = `CITY ${c.no} / 7 ・ ${c.sin}`; title = c.name; sub = c.title || `大罪：${c.sin} ・ ${c.district}`;
+      chip = `<span class="chip ${s}">${STATE_JP[s]}</span>`;
+      acts = `<button type="button" class="sec" data-a="detail">詳しく</button><button type="button" data-a="go" ${s === "locked" ? "disabled" : ""}>${s === "cleared" ? "もう一度探索する" : s === "locked" ? `${esc(CITIES[p.i - 1].name)}の攻略で解放` : "攻略に出発する"}</button>${s === "open" ? '<button type="button" class="sec" data-a="demo">制圧（デモ）</button>' : ""}`;
+    } else if (p.kind === "gz") {
+      const done = cleared >= 7;
+      eyebrow = "FINAL DESTINATION"; title = "GROUND ZERO"; sub = `爆心地 ・ 記憶のロック ${cleared}/7 解除`;
+      chip = `<span class="chip ${done ? "open" : "locked"}">${done ? "侵入可能" : "バリアで封鎖中"}</span>`;
+      acts = `<button type="button" class="sec" data-a="detail">詳しく</button><button type="button" data-a="gz" ${done ? "" : "disabled"}>${done ? "爆心地へ侵入する" : "7都市の攻略で解放"}</button>`;
+    } else {
+      eyebrow = "HOME BASE"; title = "HIDEOUT"; sub = `アジト ・ 広い屋敷 ・ 電脳世界の入口`;
+      chip = `<span class="chip open">拠点</span>`;
+      acts = `<button type="button" class="sec" data-a="detail">詳しく</button><button type="button" data-a="home">アジトに入る</button>`;
+    }
+    $("card").innerHTML = `<span class="eyebrow2">${esc(eyebrow)}</span><h2>${esc(title)}</h2><span class="sub">${esc(sub)}</span>${chip}`;
+    $("acts").innerHTML = acts;
+    for (const b of $("acts").querySelectorAll("button")) b.addEventListener("click", () => act(b.dataset.a));
+    const dots = PLACES.map((q, k) => {
+      if (q.kind === "home") return `<button type="button" class="pill home ${k === sel ? "sel" : ""}" data-k="${k}">アジト</button><span class="sep"></span>`;
+      if (q.kind === "gz") return `<span class="sep"></span><button type="button" class="pill gz ${cleared >= 7 ? "open" : ""} ${k === sel ? "sel" : ""}" data-k="${k}">GZ</button>`;
+      const c = CITIES[q.i]; return `<button type="button" class="${stateOf(q.i)} ${k === sel ? "sel" : ""}" style="--c:${c.c}" data-k="${k}" aria-label="${c.no} ${esc(c.name)}">${c.no}</button>`;
+    }).join("");
+    $("dots").innerHTML = dots;
+    for (const b of $("dots").querySelectorAll("[data-k]")) b.addEventListener("click", () => go(+b.dataset.k));
+  }
+  function act(a) {
+    const p = PLACES[sel];
+    if (a === "detail") return openDetail();
+    if (a === "go") { decide(); toast("バトルと探索は準備中です"); }
+    if (a === "demo") clearCity(p.i);
+    if (a === "gz") { decide(); toast("GROUND ZERO は準備中です"); }
+    if (a === "home") { gameStartSE(); window.open(HIDEOUT_URL, "_blank", "noopener"); }
+  }
+  function openDetail() { const p = PLACES[sel]; if (p.kind === "city") openCity(p.i); else if (p.kind === "gz") openGZ(); else openHideout(); }
+  function draw() { build(); }
 
-  const board = $("board"), routes = $("routes");
-  let L = null;
-  function layout() {
-    const W = innerWidth, H = innerHeight, top = 62, bottom = 8;
-    const short = H < 520;
-    const rows = 3 + (short ? .7 : .85);
-    const rowH = (H - top - bottom) / rows, cellW = W / 3;
-    // name plate height follows the font size, which follows the island width
-    const fsOf = w => Math.max(short ? 9 : 10, Math.min(15, w * .085));
-    const plateOf = w => fsOf(w) * (W < 600 || short ? 2.5 : 2.3) + 10;
-    // largest island (bottom row, generic art is 200×140) must fit its row with its plate
-    let base = cellW * .86; while (base > 40 && base * .7 + plateOf(base) > rowH * .96) base -= 2;
-    const cx = col => cellW * (col + .5);
-    const cy = row => top + rowH * (row + .5);
-    L = { W, H, rowH, cellW, base, short, fsOf, plateOf, cx, cy, hideY: top + rowH * 3 + rowH * (rows - 3) / 2 };
-  }
-  function place(el, x, y, w) { el.style.left = x + "px"; el.style.top = y + "px"; el.style.width = w + "px"; }
-  function island(kind, i, x, y, w, inner, label, sub, cls, aria, color) {
-    const d = document.createElement("button"); d.type = "button";
-    d.className = "isle " + cls; d.setAttribute("aria-label", aria); d.style.setProperty("--c", color);
-    d.style.setProperty("--d", (-i * .7) + "s");
-    d.innerHTML = `<span class="float"><span class="art">${inner}</span><span class="refl" aria-hidden="true">${inner}</span></span><span class="ripple" aria-hidden="true"></span>
-      <span class="plate"><b>${esc(label).replace("・", "・<wbr>").replace(" ", "<wbr> ")}</b>${sub && !L.short && !(L.W < 600 && !cls.includes("pic")) ? `<small>${esc(sub)}</small>` : ""}</span>`;
-    const artH = w * (cls.includes("pic") ? .565 : .7), total = artH + L.plateOf(w) - 6;
-    place(d, x - w / 2, y - total / 2, w);
-    d.style.setProperty("--fs", L.fsOf(w) + "px"); d.style.setProperty("--pw", (L.cellW - 8) + "px");
-    board.append(d); return d;
-  }
-  // water-line centre of each island, for the routes
-  const anchor = el => { const a = el.querySelector(".art").getBoundingClientRect(); return { x: a.left + a.width / 2, y: a.top + a.height * .66, w: a.width }; };
-  function draw() {
-    layout(); board.innerHTML = ""; board.classList.toggle("tight", L.W < 600 || L.short);
-    const nodes = CITIES.map((c, i) => {
-      const [col, row] = CELL[i], s = stateOf(i), w = L.base * ROWSCALE[row];
-      const inner = c.img ? `<img src="${A(c.img)}" alt="">` : genericIsland(c, i);
-      const el = island("city", i, L.cx(col), L.cy(row), w, inner, c.name, c.title || c.sin + " ・ " + c.district, "city " + s + (c.img ? " pic" : ""), `${c.no} ${c.name}（${c.sin}・${STATE_JP[s]}）`, c.c);
-      el.querySelector(".plate").insertAdjacentHTML("afterbegin", `<i class="no">${c.no}</i><i class="sin">${c.sin[0]}</i>${s === "cleared" ? '<i class="ok">✓</i>' : s === "locked" ? '<i class="lk">🔒︎</i>' : ""}`);
-      el.addEventListener("click", () => openCity(i));
-      return el;
-    });
-    const done = cleared >= 7;
-    const gz = island("gz", 8, L.cx(1), L.cy(1), L.base * 1.05 * ROWSCALE[1], gzIsland(done), "GROUND ZERO", done ? "バリア解除・侵入可能" : "爆心地・封鎖中", "gz " + (done ? "open" : "locked"), `GROUND ZERO 爆心地（${done ? "侵入可能" : "封鎖中"}）`, done ? "#c25cff" : "#ff4d5e");
-    gz.addEventListener("click", openGZ);
-    let hw = L.base * .7; while (hw > 30 && hw * .7 + L.plateOf(hw) > (L.H - 8 - L.hideY) * 2 - 4) hw -= 2;
-    const hide = island("hide", 9, L.cx(1), L.hideY, hw, hideIsland(), "HIDEOUT アジト", "", "hide", "HIDEOUT アジト（拠点）", "#b9a2ff");
-    hide.addEventListener("click", openHideout);
-    // compass over the open sea at the top centre
-    const cmp = document.createElement("div"); cmp.className = "sea"; place(cmp, L.cx(1) - 60, L.cy(0) - 30, 120);
-    cmp.innerHTML = `<svg viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="26" fill="none" stroke="#d9e6ff" opacity=".5"/><path d="M30 8L35 30 30 52 25 30z" fill="none" stroke="#d9e6ff" stroke-width="1.5" opacity=".7"/><text x="30" y="6" text-anchor="middle" font-size="8" fill="#d9e6ff">N</text></svg><span>未踏海域</span>`;
-    board.append(cmp);
-    requestAnimationFrame(() => drawRoutes(nodes, gz, hide));
-    $("locks").innerHTML = CITIES.map((c, i) => `<i class="${i < cleared ? "on" : ""}" style="--c:${c.c}" title="${c.sin}"></i>`).join("") + `<b>${cleared}/7</b>`;
-  }
-  function drawRoutes(nodes, gz, hide) {
-    const P = nodes.map(anchor), g = anchor(gz), h = anchor(hide);
-    let svg = `<defs><filter id="rg" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>`;
-    const edge = (a, b, k) => { const dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy) || 1; const ka = Math.min(a.w * .42, d * .35), kb = Math.min(b.w * .42, d * .35); return [a.x + dx / d * ka, a.y + dy / d * ka * .7, b.x - dx / d * kb, b.y - dy / d * kb * .7]; };
-    P.forEach((a, i) => {
-      const b = P[(i + 1) % 7], [x1, y1, x2, y2] = edge(a, b), lit = i < cleared, c = CITIES[i].c;
-      const mx = (x1 + x2) / 2, my = (y1 + y2) / 2, bend = i === 3 ? -L.rowH * .18 : 0; // 4→5 crosses the open sea at the top
-      svg += `<path class="route ${lit ? "lit" : ""}" d="M${x1} ${y1}Q${mx} ${my + bend} ${x2} ${y2}" stroke="${lit ? c : "rgba(190,180,240,.35)"}" ${lit ? 'filter="url(#rg)"' : ""}/>`;
-      const ax = (mx + (x1 + x2) / 2) / 2, ay = my + bend / 2, ang = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
-      svg += `<path d="M-6 -5L6 0L-6 5z" transform="translate(${ax} ${ay}) rotate(${ang})" fill="${lit ? "#fff" : "rgba(190,180,240,.55)"}"/>`;
-    });
-    const done = cleared >= 7, [bx1, by1, bx2, by2] = edge(P[0], g);
-    svg += `<path d="M${bx1} ${by1}L${bx2} ${by2}" stroke="${done ? "#fff" : "rgba(200,190,240,.4)"}" stroke-width="${done ? 5 : 3}" stroke-dasharray="${done ? "0" : "6 7"}" fill="none" ${done ? 'filter="url(#rg)"' : ""}/>`;
-    svg += `<text x="${(bx1 + bx2) / 2 + 8}" y="${(by1 + by2) / 2}" font-size="11" font-weight="700" fill="${done ? "#fff" : "#a7a2c6"}">${done ? "橋が繋がった" : "一周後に橋"}</text>`;
-    const [hx1, hy1, hx2, hy2] = edge(h, P[0]);
-    svg += `<path d="M${hx1} ${hy1}L${hx2} ${hy2}" stroke="#d9e6ff" stroke-width="2" stroke-dasharray="3 5" opacity=".7" fill="none"/>`;
-    routes.setAttribute("viewBox", `0 0 ${L.W} ${L.H}`); routes.innerHTML = svg;
-  }
-  let rt = 0; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { if (scene === "map") draw(); }, 120); });
+  // swipe / drag, arrows, keys, wheel
+  let dragX = null, dragMoved = false;
+  stage.addEventListener("pointerdown", e => { dragX = e.clientX; dragMoved = false; });
+  addEventListener("pointermove", e => { if (dragX == null) return; if (Math.abs(e.clientX - dragX) > 10) { dragMoved = true; stage.classList.add("drag"); } });
+  addEventListener("pointerup", e => { if (dragX == null) return; const dx = e.clientX - dragX; dragX = null; stage.classList.remove("drag"); if (Math.abs(dx) > 40) go(sel + (dx < 0 ? 1 : -1)); setTimeout(() => { dragMoved = false; }, 0); });
+  $("prev").addEventListener("click", () => go(sel - 1));
+  $("next").addEventListener("click", () => go(sel + 1));
+  let wheelT = 0; stage.addEventListener("wheel", e => { e.preventDefault(); const t = Date.now(); if (t - wheelT < 450) return; wheelT = t; go(sel + ((e.deltaY || e.deltaX) > 0 ? 1 : -1)); }, { passive: false });
+  addEventListener("keydown", e => { if (scene !== "map" || $("sheet").classList.contains("on")) return; if (e.key === "ArrowLeft") go(sel - 1); if (e.key === "ArrowRight") go(sel + 1); });
+  function fitFoot() { const f = $("foot"); $("map").style.setProperty("--foot", (f.offsetHeight + 6) + "px"); }
+  let rt = 0; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { if (scene === "map") { fitFoot(); position(); } }, 120); });
+  new ResizeObserver(() => { if (scene === "map") { fitFoot(); position(); } }).observe($("foot"));
 
   /* water: dark sea with drifting light streaks, ripples drawn by CSS around each island */
   const wv = $("water"), wg = wv.getContext("2d"); let ww = 0, wh = 0;
@@ -467,11 +502,11 @@ svg#routes { position: absolute; inset: 0; width: 100%; height: 100%; pointer-ev
   function clearCity(i) {
     if (i !== cleared) return;
     cleared++; store.set("selectear_progress", cleared); gameStartSE(); buzz([30, 30, 60]);
-    closeSheet(); draw();
+    closeSheet(); sel = cleared >= 7 ? PLACES.length - 1 : 1 + cleared; draw();
     if (cleared >= 7) { flash(); const u = $("unlock"); u.classList.remove("on"); void u.offsetWidth; u.classList.add("on"); toast("7都市を一周した。爆心地への橋が繋がった"); }
     else toast(`${CITIES[i].name} を制圧。${CITIES[cleared].name} が解放された`);
   }
-  $("resetDemo").addEventListener("click", () => { back(); cleared = 0; store.set("selectear_progress", 0); closeSheet(); draw(); toast("進行をリセットしました"); });
+  $("resetDemo").addEventListener("click", () => { back(); cleared = 0; sel = 1; store.set("selectear_progress", 0); closeSheet(); draw(); toast("進行をリセットしました"); });
 
   /* =========================================================
      SOUND: map music + city ambience (same files as before)
@@ -516,7 +551,7 @@ svg#routes { position: absolute; inset: 0; width: 100%; height: 100%; pointer-ev
   /* scenes */
   function show(id) {
     $("toast").hidden = true; for (const s of ["start", "map"]) $(s).classList.toggle("on", s === id); scene = id;
-    if (id === "map") draw();
+    if (id === "map") { draw(); fitFoot(); position(); }
     syncMusic();
   }
   $("startBtn").addEventListener("click", () => { audio(); if (st.bgm) { music.start(); ambience.start(); } gameStartSE(); buzz([30, 30, 60]); flash(); setTimeout(() => show("map"), reduce ? 0 : 250); });
