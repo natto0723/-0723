@@ -81,49 +81,66 @@ button:focus-visible, a:focus-visible { outline: 2px solid #fff; outline-offset:
 .coins .val { font: 700 17px/1 var(--font-num); color: #fff; min-width: 2ch; text-align: right; font-variant-numeric: tabular-nums; }
 @media (max-width: 420px) { .coins .lb, .back span, .place small { display: none; } .back { padding: 0 10px; } }
 
-/* ---------- MAP ---------- */
-#map { background: radial-gradient(ellipse at 45% 50%, #120a26 0%, #05040b 75%); }
-.viewport { position: absolute; inset: 0; overflow: hidden; touch-action: none; cursor: grab; }
-.viewport.drag { cursor: grabbing; }
-.world { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform; }
-.world.ease { transition: transform .6s cubic-bezier(.3, 0, .2, 1); }
-.world svg { display: block; width: 100%; height: 100%; overflow: visible; }
-svg text { font-family: var(--font-body); }
-.node { cursor: pointer; }
-.node .hex { transition: filter .2s; }
-.node:hover .hex, .node:focus-visible .hex { filter: url(#glowStrong); }
-.node:focus-visible { outline: none; }
-.node.locked { opacity: .55; }
-.node.locked .hexfill { fill: #1a1630; }
-.node .ring { fill: none; stroke-width: 3; opacity: 0; }
-.node.open .ring { animation: ringPulse 1.8s ease-out infinite; transform-box: fill-box; transform-origin: center; }
-@keyframes ringPulse { 0% { opacity: .9; transform: scale(.85); } 100% { opacity: 0; transform: scale(1.45); } }
-.seg { fill: none; stroke-width: 3; stroke-linecap: round; }
-.seg.lit { stroke-dasharray: 10 12; animation: flow 1.2s linear infinite; }
+/* ---------- MAP: islands floating on a dark sea ---------- */
+#map { background: #03020a; }
+canvas#water { position: absolute; inset: 0; width: 100%; height: 100%; }
+#map .fog { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgba(3, 2, 10, .9) 0%, rgba(3, 2, 10, .25) 18%, transparent 35%), radial-gradient(ellipse at 50% 45%, transparent 45%, rgba(3, 2, 10, .75) 100%); }
+svg#routes { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+.route { fill: none; stroke-width: 2.5; stroke-dasharray: 5 7; stroke-linecap: round; }
+.route.lit { stroke-width: 3.5; stroke-dasharray: 12 10; animation: flow 1.2s linear infinite; }
 @keyframes flow { to { stroke-dashoffset: -44; } }
-.swirl { transform-box: fill-box; transform-origin: center; animation: spin 14s linear infinite; }
-.swirl.rev { animation-duration: 22s; animation-direction: reverse; }
+#board { position: absolute; inset: 0; }
+.isle { position: absolute; border: 0; padding: 0; background: none; cursor: pointer; display: block; text-align: center; color: #fff; }
+.isle .float { position: relative; display: block; animation: bob 5.5s ease-in-out infinite; animation-delay: var(--d); }
+@keyframes bob { 50% { transform: translateY(-5px); } }
+.isle .art { position: relative; z-index: 2; display: block; }
+.isle .art img, .isle .art svg { display: block; width: 100%; height: auto; }
+.isle.pic .art img { filter: drop-shadow(0 0 6px var(--c)) drop-shadow(0 6px 10px rgba(0, 0, 0, .8)); }
+.isle .art svg { filter: drop-shadow(0 0 5px color-mix(in srgb, var(--c) 70%, transparent)) drop-shadow(0 6px 10px rgba(0, 0, 0, .8)); overflow: visible; }
+/* the island's reflection in the water */
+.isle .refl { position: absolute; left: 0; right: 0; top: 74%; z-index: 1; transform: scaleY(-.55); transform-origin: top; opacity: .32; filter: blur(2px) saturate(1.3); -webkit-mask-image: linear-gradient(0deg, rgba(0, 0, 0, .9), transparent 70%); mask-image: linear-gradient(0deg, rgba(0, 0, 0, .9), transparent 70%); pointer-events: none; }
+.isle .refl img, .isle .refl svg { display: block; width: 100%; height: auto; }
+.isle .ripple { position: absolute; z-index: 0; left: 6%; right: 6%; top: 52%; aspect-ratio: 4 / 1; border-radius: 50%; border: 1.5px solid var(--c); opacity: 0; animation: ripple 4s ease-out infinite; animation-delay: var(--d); pointer-events: none; }
+@keyframes ripple { 0% { opacity: .55; transform: scale(.7); } 100% { opacity: 0; transform: scale(1.25); } }
+.isle .plate { position: relative; z-index: 3; left: 50%; transform: translateX(-50%); width: max-content; max-width: var(--pw, 200px); display: inline-flex; flex-direction: column; align-items: center; gap: 1px; margin-top: -6px; padding: 4px 10px; border-radius: 8px; background: rgba(6, 4, 16, .88); border: 1px solid var(--c); box-shadow: 0 0 12px color-mix(in srgb, var(--c) 40%, transparent); }
+.isle .plate b { font: 700 var(--fs) / 1.2 var(--font-body); letter-spacing: -.02em; word-break: keep-all; overflow-wrap: anywhere; }
+.isle .plate small { font: 700 calc(var(--fs) * .72) / 1.2 var(--font-body); color: var(--ice); opacity: .85; word-break: keep-all; overflow-wrap: anywhere; }
+.tight .isle .plate { padding: 7px 6px 3px; }
+.tight .isle .plate .sin { display: none; }
+.isle .plate i { position: absolute; top: -9px; font: 700 10px/18px var(--font-num); font-style: normal; width: 18px; height: 18px; border-radius: 50%; text-align: center; }
+.isle .plate .no { left: -8px; background: #0b0716; border: 1.5px solid var(--c); }
+.isle .plate .sin { left: 12px; background: var(--c); color: #0b0716; font-family: var(--font-body); font-weight: 900; }
+.isle .plate .ok { right: -8px; background: var(--gold); color: #0b0716; }
+.isle .plate .lk { right: -8px; background: #2a2440; font-size: 9px; }
+.isle.locked .art, .isle.locked .refl { filter: grayscale(.9) brightness(.55); }
+.isle.locked .plate { border-color: rgba(200, 190, 240, .35); box-shadow: none; color: var(--dim); }
+.isle.locked .plate .sin { background: #3b3654; color: #cfc8ef; }
+.isle.locked .ripple { display: none; }
+.isle.city.open .ripple { border-width: 2.5px; animation-duration: 2s; }
+.isle.city.open .plate { background: linear-gradient(90deg, color-mix(in srgb, var(--c) 45%, #06040f), #06040f); }
+.isle.gz.locked .art, .isle.gz.locked .refl { filter: none; }
+.isle.gz.locked .plate { color: #ffc0c8; border-color: #ff4d5e; }
+.isle.hide .plate { border-color: #fff; background: linear-gradient(90deg, rgba(155, 92, 255, .7), rgba(8, 5, 18, .92)); }
+.isle:hover .art, .isle:focus-visible .art { transform: translateY(-3px) scale(1.03); transition: transform .2s; }
+.isle:focus-visible { outline: none; }
+.isle:focus-visible .plate { outline: 2px solid #fff; outline-offset: 2px; }
+.swirl { transform-box: fill-box; transform-origin: center; animation: spin 10s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
-.barrier { animation: noise 2.6s steps(1) infinite; transition: opacity 1.2s; }
-@keyframes noise { 0%, 100% { opacity: .95; } 31% { opacity: .55; } 33% { opacity: .95; } 62% { opacity: .7; } 64% { opacity: .95; } }
-.gz.open .barrier { opacity: 0 !important; animation: none; }
-.bridge { transition: stroke .8s, opacity .8s; }
-.radar { transform-box: view-box; transform-origin: 540px 380px; animation: spin 9s linear infinite; }
-
-/* status panel (bottom-left) + zoom (bottom-right) */
-.status { position: absolute; z-index: 8; left: max(12px, env(safe-area-inset-left, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); padding: 10px 12px; border-radius: 12px; background: rgba(8, 5, 18, .85); border: 1px solid var(--line); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); display: grid; gap: 7px; max-width: calc(100% - 120px); }
-.status .t { font: 700 11px var(--font-num); letter-spacing: .18em; color: var(--ice); }
-.locks { display: flex; gap: 4px; align-items: center; }
-.locks i { width: 18px; height: 8px; border-radius: 2px; background: #2a2440; border: 1px solid rgba(255, 255, 255, .2); }
+.barrier { animation: noise 2.6s steps(1) infinite; }
+@keyframes noise { 0%, 100% { opacity: .95; } 31% { opacity: .5; } 33% { opacity: .95; } 62% { opacity: .7; } 64% { opacity: .95; } }
+.sea { position: absolute; display: flex; flex-direction: column; align-items: center; gap: 4px; pointer-events: none; opacity: .6; }
+.sea svg { width: 44px; height: 44px; }
+.sea span { font: 700 10px var(--font-body); letter-spacing: .3em; color: var(--dim); }
+/* status panel (bottom-left) */
+.status { position: absolute; z-index: 8; left: max(10px, env(safe-area-inset-left, 0px)); bottom: calc(10px + env(safe-area-inset-bottom, 0px)); padding: 8px 10px; border-radius: 12px; background: rgba(8, 5, 18, .85); border: 1px solid var(--line); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); display: grid; gap: 6px; max-width: 30%; }
+.status .t { font: 700 10px var(--font-num); letter-spacing: .14em; color: var(--ice); }
+.locks { display: flex; gap: 3px; align-items: center; flex-wrap: wrap; }
+.locks i { width: 14px; height: 7px; border-radius: 2px; background: #2a2440; border: 1px solid rgba(255, 255, 255, .2); }
 .locks i.on { background: var(--c); box-shadow: 0 0 8px var(--c); border-color: #fff; }
-.locks b { margin-left: 6px; font: 700 14px var(--font-num); font-variant-numeric: tabular-nums; }
-.legend { display: flex; gap: 10px; flex-wrap: wrap; font: 700 10px var(--font-body); color: var(--dim); }
-.legend span { display: flex; align-items: center; gap: 4px; }
-.legend i { width: 9px; height: 9px; transform: rotate(45deg); }
-.status .demo { justify-self: start; padding: 4px 10px; border-radius: 999px; border: 1px solid rgba(201, 198, 214, .35); background: transparent; color: var(--dim); font: 700 10px var(--font-body); cursor: pointer; }
-.zoom { position: absolute; z-index: 8; right: max(12px, env(safe-area-inset-right, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 6px; }
-.zb { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; padding: 0; }
-
+.locks b { margin-left: 4px; font: 700 13px var(--font-num); font-variant-numeric: tabular-nums; }
+.status .demo { white-space: nowrap; justify-self: start; padding: 4px 8px; border-radius: 999px; border: 1px solid rgba(201, 198, 214, .35); background: transparent; color: var(--dim); font: 700 10px var(--font-body); cursor: pointer; }
+@media (max-width: 600px) { .status { padding: 6px 8px; gap: 4px; } .status .t { font-size: 8px; letter-spacing: .06em; } .locks i { width: 8px; } .locks b { font-size: 11px; } .status .demo { font-size: 9px; padding: 3px 6px; } }
+@media (max-height: 520px) { .status .demo, .status .t { display: none; } }
 /* info sheet: a side panel on wide screens, a bottom sheet on phones */
 .sheet { position: absolute; z-index: 20; right: max(12px, env(safe-area-inset-right, 0px)); top: calc(66px + env(safe-area-inset-top, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); width: min(380px, calc(100% - 24px)); display: none; flex-direction: column; border-radius: 16px; background: var(--panel); border: 1px solid var(--c, var(--line)); box-shadow: 0 0 40px rgba(0, 0, 0, .6), 0 0 24px color-mix(in srgb, var(--c, #9b5cff) 35%, transparent); overflow: hidden; }
 .sheet.on { display: flex; animation: slideIn .3s cubic-bezier(.2, .8, .2, 1); }
@@ -183,7 +200,10 @@ svg text { font-family: var(--font-body); }
 
 <!-- MAP -->
 <section class="scene" id="map" aria-label="外の世界のマップ">
-  <div class="viewport" id="vp"><div class="world" id="world"></div></div>
+  <canvas id="water" aria-hidden="true"></canvas>
+  <svg id="routes" aria-hidden="true"></svg>
+  <div id="board"></div>
+  <div class="fog"></div>
   <div class="topbar">
     <button class="back" type="button" id="toStart"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg><span>戻る</span></button>
     <div class="place"><b>NEON RUIN CITY</b><small>外の世界</small></div>
@@ -193,12 +213,10 @@ svg text { font-family: var(--font-body); }
     </div>
   </div>
   <div class="status" aria-label="攻略状況">
-    <span class="t">MEMORY LOCK — 記憶のロック</span>
+    <span class="t">MEMORY LOCK</span>
     <div class="locks" id="locks"></div>
-    <div class="legend"><span><i style="background:#3b3654"></i>未解放</span><span><i style="background:#fff;box-shadow:0 0 6px #fff"></i>攻略可能</span><span><i style="background:var(--gold)"></i>制圧済み</span></div>
-    <button class="demo" type="button" id="resetDemo">進行をリセット（デモ）</button>
+    <button class="demo" type="button" id="resetDemo">リセット（デモ）</button>
   </div>
-  <div class="zoom"><button class="zb" type="button" id="zin" aria-label="拡大"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button><button class="zb" type="button" id="zout" aria-label="縮小"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button></div>
   <aside class="sheet" id="sheet" aria-live="polite"></aside>
 </section>
 
@@ -254,145 +272,173 @@ svg text { font-family: var(--font-body); }
       gimmicks: ["最深部の封印：ループと大崩落（ゼロ・デイ）の秘密が記録されたメインサーバーがある。ここを制圧すると一周が完成し、12時の怠惰から爆心地への橋が繋がる。"] }
   ];
 
-  /* progress (demo): cities are cleared in order 1→7 for now (fixed or recommended order is still open in the spec) */
+  let scene = "start";
+  /* progress (demo): cities are cleared in order 1→7 */
   let cleared = Math.max(0, Math.min(7, Number(store.get("selectear_progress", 0)) || 0));
   const stateOf = i => i < cleared ? "cleared" : i === cleared ? "open" : "locked";
   const STATE_JP = { locked: "未解放", open: "攻略可能", cleared: "制圧済み" };
 
   /* =========================================================
-     MAP DRAWING (SVG, viewBox 1200 x 760)
+     BOARD: 3×3 islands on water. Bottom row 2 | 1 | 7, GROUND ZERO in the middle,
+     clockwise 1 → 2 → 3 → 4 → (top centre is open sea) → 5 → 6 → 7. アジト below 1.
      ========================================================= */
-  const VW = 1200, VH = 760, CX = 540, CY = 380, RX = 340, RY = 290;
-  // clock turned 90°: 怠惰 (12 o'clock) sits on the right, then clockwise every 360/7 degrees
-  const ang = i => 90 + i * 360 / 7;
-  const pt = d => ({ x: CX + RX * Math.sin(d * Math.PI / 180), y: CY - RY * Math.cos(d * Math.PI / 180) });
-  for (const [i, c] of CITIES.entries()) Object.assign(c, pt(ang(i)));
-  const HIDE = { x: 1070, y: CY };
+  const CELL = [[1, 2], [0, 2], [0, 1], [0, 0], [2, 0], [2, 1], [2, 2]];
+  const ROWSCALE = [.84, .92, 1];
   const NS = "http://www.w3.org/2000/svg";
-  const hexPath = (x, y, r) => Array.from({ length: 6 }, (_, k) => { const a = Math.PI / 6 + k * Math.PI / 3; return `${(x + r * Math.cos(a)).toFixed(1)},${(y + r * Math.sin(a)).toFixed(1)}`; }).join(" ");
-  const arcPath = (d1, d2) => { let s = ""; for (let d = d1; d <= d2 + .01; d += 2) { const p = pt(Math.min(d, d2)); s += (s ? "L" : "M") + p.x.toFixed(1) + " " + p.y.toFixed(1); } return s; };
-
-  function draw() {
-    const gap = i => CITIES[i % 7].img ? 22 : 13; // degrees kept clear around each city on the route
-    const segs = CITIES.map((c, i) => {
-      const d1 = ang(i) + gap(i), d2 = ang(i + 1) - gap(i + 1);
-      const lit = i < cleared; // route from city i to the next is lit once city i is cleared
-      return `<path class="seg ${lit ? "lit" : ""}" d="${arcPath(d1, d2)}" stroke="${lit ? c.c : "rgba(160,150,210,.28)"}" ${lit ? 'filter="url(#glow)"' : 'stroke-dasharray="4 8"'} marker-end="url(#arrow${lit ? "Lit" : ""})"/>`;
-    }).join("");
-    const nodes = CITIES.map((c, i) => {
-      const s = stateOf(i);
-      if (c.img) return tileNode(c, i, s);
-      return `<g class="node ${s}" data-i="${i}" tabindex="0" role="button" aria-label="${c.no} ${c.name}（${c.sin}・${STATE_JP[s]}）">
-        <polygon class="ring" points="${hexPath(c.x, c.y, 58)}" stroke="${c.c}"/>
-        <polygon class="hex hexfill" points="${hexPath(c.x, c.y, 50)}" fill="url(#hexg${i})" stroke="${s === "locked" ? "rgba(200,190,240,.45)" : c.c}" stroke-width="3" ${s !== "locked" ? 'filter="url(#glow)"' : ""}/>
-        <text x="${c.x}" y="${c.y + 13}" text-anchor="middle" font-size="38" font-weight="900" fill="${s === "locked" ? "#8f88b5" : "#fff"}">${c.sin[0]}</text>
-        <circle cx="${c.x - 40}" cy="${c.y - 32}" r="14" fill="#0b0716" stroke="${s === "locked" ? "rgba(200,190,240,.5)" : c.c}" stroke-width="2"/>
-        <text x="${c.x - 40}" y="${c.y - 27}" text-anchor="middle" font-size="14" font-weight="700" font-family="Chakra Petch, sans-serif" fill="#fff">${c.no}</text>
-        ${s === "cleared" ? `<circle cx="${c.x + 40}" cy="${c.y - 32}" r="14" fill="#f2c14e"/><path d="M${c.x + 33} ${c.y - 32}l5 5 9-10" fill="none" stroke="#0b0716" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>` : ""}
-        ${s === "locked" ? `<g transform="translate(${c.x + 30} ${c.y - 46})"><rect x="0" y="9" width="20" height="15" rx="3" fill="#2a2440" stroke="#bdb6e0" stroke-width="1.5"/><path d="M4 9V6a6 6 0 0 1 12 0v3" fill="none" stroke="#bdb6e0" stroke-width="1.8"/></g>` : ""}
-        <rect x="${c.x - 92}" y="${c.y + 58}" width="184" height="44" rx="8" fill="rgba(8,5,18,.88)" stroke="${s === "locked" ? "rgba(200,190,240,.3)" : c.c}" stroke-width="1.5"/>
-        <text x="${c.x}" y="${c.y + 78}" text-anchor="middle" font-size="15" font-weight="700" fill="${s === "locked" ? "#a7a2c6" : "#fff"}">${c.name}</text>
-        <text x="${c.x}" y="${c.y + 95}" text-anchor="middle" font-size="11" fill="#a7a2c6">${c.sin} ・ ${c.district}</text>
-      </g>`;
-    }).join("");
-    const done = cleared >= 7, sl = CITIES[0];
-    const svg = `<svg viewBox="0 0 ${VW} ${VH}" xmlns="${NS}" role="img" aria-label="外の世界の配置図">
-      <defs>
-        <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="rgba(120,110,220,.12)" stroke-width="1"/></pattern>
-        <radialGradient id="crater" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#f3d9ff"/><stop offset="18%" stop-color="#c25cff"/><stop offset="55%" stop-color="#4a1680"/><stop offset="100%" stop-color="#0d0618"/></radialGradient>
-        <radialGradient id="fog" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="rgba(155,92,255,.28)"/><stop offset="100%" stop-color="rgba(155,92,255,0)"/></radialGradient>
-        ${CITIES.map((c, i) => `<radialGradient id="hexg${i}" cx="50%" cy="40%" r="60%"><stop offset="0%" stop-color="${c.c}" stop-opacity=".55"/><stop offset="100%" stop-color="#0b0716"/></radialGradient>`).join("")}
-        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-        <filter id="glowStrong" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="9" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-        <filter id="soft"><feGaussianBlur stdDeviation="6"/></filter>
-        <filter id="gray"><feColorMatrix type="saturate" values=".12"/><feComponentTransfer><feFuncR type="linear" slope=".6"/><feFuncG type="linear" slope=".6"/><feFuncB type="linear" slope=".6"/></feComponentTransfer></filter>
-        ${CITIES.map((c, i) => `<filter id="cityGlow${i}" x="-15%" y="-15%" width="130%" height="130%"><feMorphology in="SourceAlpha" operator="dilate" radius="1.5" result="d"/><feFlood flood-color="${c.c}" flood-opacity=".85"/><feComposite in2="d" operator="in"/><feGaussianBlur stdDeviation="5" result="g"/><feMerge><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`).join("")}
-        <radialGradient id="tileFade" cx="50%" cy="50%" r="50%"><stop offset="72%" stop-color="#fff"/><stop offset="100%" stop-color="#000"/></radialGradient>
-        <mask id="tileMask" maskContentUnits="objectBoundingBox"><ellipse cx=".5" cy=".5" rx=".5" ry=".5" fill="url(#tileFade)"/></mask>
-        <marker id="arrow" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="rgba(160,150,210,.5)"/></marker>
-        <marker id="arrowLit" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#fff"/></marker>
-      </defs>
-      <!-- ground: the city picture as a faint texture under a tactical grid -->
-      <image href="${A("img/map.webp")}" x="-60" y="-20" width="1320" height="800" preserveAspectRatio="xMidYMid slice" opacity=".16" filter="url(#soft)"/>
-      <rect x="-400" y="-300" width="2000" height="1360" fill="url(#grid)"/>
-      <circle cx="${CX}" cy="${CY}" r="330" fill="url(#fog)"/>
-      <g class="radar"><path d="M${CX} ${CY}L${CX + 420} ${CY}A420 420 0 0 0 ${CX + 297} ${CY - 297}z" fill="rgba(72,225,255,.05)"/></g>
-      ${[200, 300, 420].map(r => `<circle cx="${CX}" cy="${CY}" r="${r}" fill="none" stroke="rgba(120,110,220,.12)"/>`).join("")}
-      <!-- the route round the 7 cities (clockwise) -->
-      <g>${segs}</g>
-      <text x="${pt(64).x + 34}" y="${pt(64).y - 6}" font-size="12" fill="#a7a2c6" font-weight="700">時計回り ↻</text>
-      <!-- ring road (the old Shuto Expressway inner circular route) -->
-      <circle cx="${CX}" cy="${CY}" r="150" fill="none" stroke="rgba(200,190,240,.55)" stroke-width="7" opacity=".35"/>
-      <circle cx="${CX}" cy="${CY}" r="150" fill="none" stroke="#d9e6ff" stroke-width="1.5" stroke-dasharray="10 8" opacity=".7"/>
-      <text x="${CX}" y="${CY + 172}" text-anchor="middle" font-size="11" fill="#a7a2c6">環状線（かつての首都高都心環状線）</text>
-      <!-- GROUND ZERO -->
-      <g class="gz ${done ? "open" : ""}" id="gzNode" tabindex="0" role="button" aria-label="GROUND ZERO 爆心地（${done ? "侵入可能" : "封鎖中"}）" style="cursor:pointer">
-        <circle cx="${CX}" cy="${CY}" r="108" fill="url(#crater)" opacity=".9"/>
-        <g class="swirl"><path d="M${CX - 80} ${CY}a80 80 0 0 1 160 0" fill="none" stroke="rgba(255,220,255,.5)" stroke-width="3"/><path d="M${CX - 52} ${CY + 20}a56 56 0 0 0 104 -10" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="2"/></g>
-        <g class="swirl rev"><path d="M${CX + 96} ${CY + 18}a98 98 0 0 1 -180 30" fill="none" stroke="rgba(194,92,255,.7)" stroke-width="2.5"/></g>
-        <polygon class="barrier" points="${hexPath(CX, CY, 124)}" fill="none" stroke="#ff4d5e" stroke-width="3" stroke-dasharray="14 6" filter="url(#glow)"/>
-        <text x="${CX}" y="${CY - 6}" text-anchor="middle" font-size="22" font-weight="800" font-family="Cinzel, serif" fill="#fff" letter-spacing="3" filter="url(#glow)">GROUND ZERO</text>
-        <text x="${CX}" y="${CY + 18}" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">爆心地</text>
-        <text x="${CX}" y="${CY + 40}" text-anchor="middle" font-size="11" font-weight="700" fill="${done ? "#4ce39a" : "#ff9aa8"}">${done ? "バリア解除・侵入可能" : "バリア（干渉ノイズ）で封鎖"}</text>
-      </g>
-      <!-- bridge from 怠惰 to the crater (after the full loop) -->
-      <line class="bridge" x1="${sl.x - (sl.img ? TW / 2 + 4 : 56)}" y1="${sl.y}" x2="${CX + 128}" y2="${CY}" stroke="${done ? "#fff" : "rgba(200,190,240,.35)"}" stroke-width="${done ? 5 : 3}" stroke-dasharray="${done ? "0" : "6 7"}" ${done ? 'filter="url(#glowStrong)"' : ""}/>
-      <text x="${(sl.x - (sl.img ? TW / 2 : 56) + CX + 128) / 2}" y="${CY - 12}" text-anchor="middle" font-size="12" font-weight="700" fill="${done ? "#fff" : "#a7a2c6"}">${done ? "橋が繋がった" : "一周後に橋"}</text>
-      <!-- link and the hideout -->
-      <line x1="${sl.x + (sl.img ? TW / 2 + 4 : 56)}" y1="${sl.y}" x2="${HIDE.x - 74}" y2="${HIDE.y}" stroke="#d9e6ff" stroke-width="2" stroke-dasharray="3 5" opacity=".7"/>
-      <g class="node home" id="hideNode" tabindex="0" role="button" aria-label="HIDEOUT アジト（拠点）">
-        <rect x="${HIDE.x - 74}" y="${HIDE.y - 70}" width="148" height="140" rx="14" fill="rgba(25,14,52,.92)" stroke="#fff" stroke-width="2.5" filter="url(#glow)" class="hex"/>
-        <path transform="translate(${HIDE.x - 22} ${HIDE.y - 58})" d="M2 22L22 6l20 16v20H30V30H14v12H2z" fill="rgba(155,92,255,.5)" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>
-        <text x="${HIDE.x}" y="${HIDE.y + 14}" text-anchor="middle" font-size="17" font-weight="800" font-family="Cinzel, serif" fill="#fff" letter-spacing="2">HIDEOUT</text>
-        <text x="${HIDE.x}" y="${HIDE.y + 34}" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">アジト</text>
-        <text x="${HIDE.x}" y="${HIDE.y + 54}" text-anchor="middle" font-size="10.5" fill="#d9e6ff">広い屋敷・電脳世界の入口</text>
-      </g>
-      <g>${nodes}</g>
-      <!-- HUD corners -->
-      <g stroke="rgba(217,230,255,.55)" stroke-width="2" fill="none"><path d="M12 52V12H52"/><path d="M1148 12H1188V52"/><path d="M12 708V748H52"/><path d="M1148 748H1188V708"/></g>
-      <text x="22" y="40" font-size="11" font-family="Chakra Petch, sans-serif" fill="rgba(217,230,255,.6)" letter-spacing="2">TACTICAL MAP / TOKYO</text>
-      <!-- compass -->
-      <g transform="translate(1130 680)" opacity=".7"><circle r="26" fill="none" stroke="#d9e6ff"/><path d="M0 -22L6 0 0 22 -6 0z" fill="none" stroke="#d9e6ff" stroke-width="1.5"/><text y="-30" text-anchor="middle" font-size="11" fill="#d9e6ff" font-family="Chakra Petch, sans-serif">N</text></g>
+  const esc = s => String(s).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+  // seeded random so each generic island always looks the same
+  const rng = seed => () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+  // an isometric slab with a few blocky buildings, for cities that have no illustration yet
+  function genericIsland(c, i) {
+    const r = rng(17 + i * 31), col = c.c;
+    const box = (x, y, a, h) => {
+      const b = a / 2;
+      const top = `${x - a},${y - h} ${x},${y - b - h} ${x + a},${y - h} ${x},${y + b - h}`;
+      const left = `${x - a},${y - h} ${x},${y + b - h} ${x},${y + b} ${x - a},${y}`;
+      const right = `${x},${y + b - h} ${x + a},${y - h} ${x + a},${y} ${x},${y + b}`;
+      let win = "";
+      for (let k = 0; k < Math.floor(h / 9); k++) if (r() > .35) win += `<rect x="${x + a * .25 + r() * a * .4}" y="${y - h + 6 + k * 9 + a * .05}" width="3" height="3" fill="${col}" opacity=".9"/>`;
+      for (let k = 0; k < Math.floor(h / 9); k++) if (r() > .55) win += `<rect x="${x - a * .75 + r() * a * .4}" y="${y - h + 8 + k * 9}" width="3" height="3" fill="${col}" opacity=".6"/>`;
+      return `<polygon points="${left}" fill="#0c0919"/><polygon points="${right}" fill="#151030"/><polygon points="${top}" fill="#221b40" stroke="${col}" stroke-opacity=".55" stroke-width=".8"/>${win}`;
+    };
+    const spots = [];
+    for (let k = 0; k < 9; k++) { const u = r() * 2 - 1, v = r() * 2 - 1; if (Math.abs(u) + Math.abs(v) < .9) spots.push([100 + u * 62, 74 + v * 22, 9 + r() * 9, 14 + r() * 42]); }
+    spots.sort((p, q) => p[1] - q[1]);
+    return `<svg viewBox="0 0 200 140" xmlns="${NS}" aria-hidden="true">
+      <polygon points="8,78 100,36 192,78 100,120" fill="#18122e" stroke="${col}" stroke-width="1.6"/>
+      <polygon points="8,78 100,120 100,138 8,96" fill="#0a0716"/>
+      <polygon points="100,120 192,78 192,96 100,138" fill="#110c24"/>
+      <polyline points="8,78 100,120 192,78" fill="none" stroke="${col}" stroke-width="2" opacity=".9"/>
+      <path d="M30 78L100 46L170 78" fill="none" stroke="${col}" stroke-opacity=".25"/><path d="M54 78L100 57L146 78L100 99Z" fill="none" stroke="${col}" stroke-opacity=".2"/>
+      ${spots.map(([x, y, a, h]) => box(x, y, a, h)).join("")}
+      <text x="100" y="${Math.min(...spots.map(s => s[1] - s[3])) - 6}" text-anchor="middle" font-size="22" font-weight="900" fill="#fff" stroke="${col}" stroke-width=".6" style="paint-order:stroke">${c.sin[0]}</text>
     </svg>`;
-    $("world").innerHTML = svg;
-    for (const n of document.querySelectorAll(".node[data-i]")) bindTap(n, () => openCity(+n.dataset.i));
-    bindTap($("hideNode"), openHideout);
-    bindTap($("gzNode"), openGZ);
+  }
+  function gzIsland(open) {
+    return `<svg viewBox="0 0 200 140" xmlns="${NS}" aria-hidden="true">
+      <defs><radialGradient id="cr" cx="50%" cy="45%" r="55%"><stop offset="0%" stop-color="#ffe6ff"/><stop offset="22%" stop-color="#c25cff"/><stop offset="60%" stop-color="#3a1066"/><stop offset="100%" stop-color="#0d0618"/></radialGradient></defs>
+      <ellipse cx="100" cy="92" rx="94" ry="40" fill="#0a0716"/><ellipse cx="100" cy="82" rx="94" ry="40" fill="#1a1230" stroke="#c9b8ff" stroke-opacity=".5"/>
+      <ellipse cx="100" cy="82" rx="74" ry="30" fill="none" stroke="#d9e6ff" stroke-width="3" stroke-dasharray="7 5" opacity=".6"/>
+      <ellipse cx="100" cy="80" rx="56" ry="22" fill="url(#cr)"/>
+      <g class="swirl"><ellipse cx="100" cy="78" rx="34" ry="13" fill="none" stroke="rgba(255,220,255,.6)" stroke-width="2" stroke-dasharray="40 20"/></g>
+      <path d="M100 76C96 40 104 30 100 6" stroke="#e6b3ff" stroke-width="3" opacity=".55" fill="none" filter="url(#bl)"/>
+      ${open ? "" : `<g class="barrier"><ellipse cx="100" cy="62" rx="78" ry="52" fill="rgba(255,77,94,.07)" stroke="#ff4d5e" stroke-width="2.5" stroke-dasharray="10 5"/></g>`}
+      <filter id="bl"><feGaussianBlur stdDeviation="3"/></filter>
+    </svg>`;
+  }
+  function hideIsland() {
+    return `<svg viewBox="0 0 200 140" xmlns="${NS}" aria-hidden="true">
+      <polygon points="12,80 100,42 188,80 100,118" fill="#1d1438" stroke="#fff" stroke-width="1.6"/>
+      <polygon points="12,80 100,118 100,134 12,96" fill="#0a0716"/><polygon points="100,118 188,80 188,96 100,134" fill="#120c26"/>
+      <polygon points="56,78 100,59 144,78 100,97" fill="#2a1e52"/>
+      <polygon points="56,78 100,97 100,70 56,51" fill="#16102c"/><polygon points="100,97 144,78 144,51 100,70" fill="#211741"/>
+      <polygon points="52,52 100,30 148,52 100,74" fill="#3a2a6e" stroke="#b9a2ff" stroke-width="1"/>
+      <path d="M100 30L100 18" stroke="#fff" stroke-width="2"/><circle cx="100" cy="16" r="3" fill="#fff"/>
+      ${[0, 1, 2].map(k => `<rect x="${108 + k * 11}" y="${74 - k * 5}" width="5" height="8" fill="#d6c7ff"/><rect x="${66 + k * 11}" y="${60 + k * 5}" width="5" height="8" fill="#9b7cff"/>`).join("")}
+    </svg>`;
+  }
+
+  const board = $("board"), routes = $("routes");
+  let L = null;
+  function layout() {
+    const W = innerWidth, H = innerHeight, top = 62, bottom = 8;
+    const short = H < 520;
+    const rows = 3 + (short ? .7 : .85);
+    const rowH = (H - top - bottom) / rows, cellW = W / 3;
+    // name plate height follows the font size, which follows the island width
+    const fsOf = w => Math.max(short ? 9 : 10, Math.min(15, w * .085));
+    const plateOf = w => fsOf(w) * (W < 600 || short ? 2.5 : 2.3) + 10;
+    // largest island (bottom row, generic art is 200×140) must fit its row with its plate
+    let base = cellW * .86; while (base > 40 && base * .7 + plateOf(base) > rowH * .96) base -= 2;
+    const cx = col => cellW * (col + .5);
+    const cy = row => top + rowH * (row + .5);
+    L = { W, H, rowH, cellW, base, short, fsOf, plateOf, cx, cy, hideY: top + rowH * 3 + rowH * (rows - 3) / 2 };
+  }
+  function place(el, x, y, w) { el.style.left = x + "px"; el.style.top = y + "px"; el.style.width = w + "px"; }
+  function island(kind, i, x, y, w, inner, label, sub, cls, aria, color) {
+    const d = document.createElement("button"); d.type = "button";
+    d.className = "isle " + cls; d.setAttribute("aria-label", aria); d.style.setProperty("--c", color);
+    d.style.setProperty("--d", (-i * .7) + "s");
+    d.innerHTML = `<span class="float"><span class="art">${inner}</span><span class="refl" aria-hidden="true">${inner}</span></span><span class="ripple" aria-hidden="true"></span>
+      <span class="plate"><b>${esc(label).replace("・", "・<wbr>").replace(" ", "<wbr> ")}</b>${sub && !L.short && !(L.W < 600 && !cls.includes("pic")) ? `<small>${esc(sub)}</small>` : ""}</span>`;
+    const artH = w * (cls.includes("pic") ? .565 : .7), total = artH + L.plateOf(w) - 6;
+    place(d, x - w / 2, y - total / 2, w);
+    d.style.setProperty("--fs", L.fsOf(w) + "px"); d.style.setProperty("--pw", (L.cellW - 8) + "px");
+    board.append(d); return d;
+  }
+  // water-line centre of each island, for the routes
+  const anchor = el => { const a = el.querySelector(".art").getBoundingClientRect(); return { x: a.left + a.width / 2, y: a.top + a.height * .66, w: a.width }; };
+  function draw() {
+    layout(); board.innerHTML = ""; board.classList.toggle("tight", L.W < 600 || L.short);
+    const nodes = CITIES.map((c, i) => {
+      const [col, row] = CELL[i], s = stateOf(i), w = L.base * ROWSCALE[row];
+      const inner = c.img ? `<img src="${A(c.img)}" alt="">` : genericIsland(c, i);
+      const el = island("city", i, L.cx(col), L.cy(row), w, inner, c.name, c.title || c.sin + " ・ " + c.district, "city " + s + (c.img ? " pic" : ""), `${c.no} ${c.name}（${c.sin}・${STATE_JP[s]}）`, c.c);
+      el.querySelector(".plate").insertAdjacentHTML("afterbegin", `<i class="no">${c.no}</i><i class="sin">${c.sin[0]}</i>${s === "cleared" ? '<i class="ok">✓</i>' : s === "locked" ? '<i class="lk">🔒︎</i>' : ""}`);
+      el.addEventListener("click", () => openCity(i));
+      return el;
+    });
+    const done = cleared >= 7;
+    const gz = island("gz", 8, L.cx(1), L.cy(1), L.base * 1.05 * ROWSCALE[1], gzIsland(done), "GROUND ZERO", done ? "バリア解除・侵入可能" : "爆心地・封鎖中", "gz " + (done ? "open" : "locked"), `GROUND ZERO 爆心地（${done ? "侵入可能" : "封鎖中"}）`, done ? "#c25cff" : "#ff4d5e");
+    gz.addEventListener("click", openGZ);
+    let hw = L.base * .7; while (hw > 30 && hw * .7 + L.plateOf(hw) > (L.H - 8 - L.hideY) * 2 - 4) hw -= 2;
+    const hide = island("hide", 9, L.cx(1), L.hideY, hw, hideIsland(), "HIDEOUT アジト", "", "hide", "HIDEOUT アジト（拠点）", "#b9a2ff");
+    hide.addEventListener("click", openHideout);
+    // compass over the open sea at the top centre
+    const cmp = document.createElement("div"); cmp.className = "sea"; place(cmp, L.cx(1) - 60, L.cy(0) - 30, 120);
+    cmp.innerHTML = `<svg viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="26" fill="none" stroke="#d9e6ff" opacity=".5"/><path d="M30 8L35 30 30 52 25 30z" fill="none" stroke="#d9e6ff" stroke-width="1.5" opacity=".7"/><text x="30" y="6" text-anchor="middle" font-size="8" fill="#d9e6ff">N</text></svg><span>未踏海域</span>`;
+    board.append(cmp);
+    requestAnimationFrame(() => drawRoutes(nodes, gz, hide));
     $("locks").innerHTML = CITIES.map((c, i) => `<i class="${i < cleared ? "on" : ""}" style="--c:${c.c}" title="${c.sin}"></i>`).join("") + `<b>${cleared}/7</b>`;
   }
-  // a city with its own illustration: the city itself cut out (transparent around it), glowing in the sin's colour
-  const TW = 250, TH = 142;
-  function tileNode(c, i, s) {
-    const x = c.x - TW / 2, y = c.y - TH / 2, lockC = "rgba(200,190,240,.45)";
-    return `<g class="node tile ${s}" data-i="${i}" tabindex="0" role="button" aria-label="${c.no} ${c.name}（${c.title}・${c.sin}・${STATE_JP[s]}）">
-      <ellipse cx="${c.x}" cy="${c.y + TH * .32}" rx="${TW * .46}" ry="${TH * .16}" fill="${s === "locked" ? "rgba(120,110,170,.18)" : c.c}" opacity="${s === "locked" ? 1 : .28}" filter="url(#soft)"/>
-      <image class="hex" href="${A(c.img)}" x="${x}" y="${y}" width="${TW}" height="${TH}" preserveAspectRatio="xMidYMid meet" filter="url(#${s === "locked" ? "gray" : "cityGlow" + i})"/>
-      <circle cx="${x + 18}" cy="${y + 14}" r="14" fill="#0b0716" stroke="${s === "locked" ? lockC : c.c}" stroke-width="2"/>
-      <text x="${x + 18}" y="${y + 19}" text-anchor="middle" font-size="14" font-weight="700" font-family="Chakra Petch, sans-serif" fill="#fff">${c.no}</text>
-      <circle cx="${x + 46}" cy="${y + 8}" r="14" fill="${s === "locked" ? "#2a2440" : c.c}" stroke="#fff" stroke-width="1.5"/>
-      <text x="${x + 46}" y="${y + 14}" text-anchor="middle" font-size="15" font-weight="900" fill="${s === "locked" ? "#bdb6e0" : "#0b0716"}">${c.sin[0]}</text>
-      ${s === "cleared" ? `<circle cx="${x + TW - 18}" cy="${y + 14}" r="14" fill="#f2c14e"/><path d="M${x + TW - 25} ${y + 14}l5 5 9-10" fill="none" stroke="#0b0716" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>` : ""}
-      ${s === "locked" ? `<g transform="translate(${x + TW - 30} ${y - 2})"><rect x="0" y="9" width="20" height="15" rx="3" fill="#2a2440" stroke="#bdb6e0" stroke-width="1.5"/><path d="M4 9V6a6 6 0 0 1 12 0v3" fill="none" stroke="#bdb6e0" stroke-width="1.8"/></g>` : ""}
-      <rect x="${c.x - 100}" y="${c.y + TH / 2 + 4}" width="200" height="46" rx="8" fill="rgba(8,5,18,.9)" stroke="${s === "locked" ? lockC : c.c}" stroke-width="1.5"/>
-      <text x="${c.x}" y="${c.y + TH / 2 + 24}" text-anchor="middle" font-size="15" font-weight="700" fill="${s === "locked" ? "#a7a2c6" : "#fff"}">${c.name}</text>
-      <text x="${c.x}" y="${c.y + TH / 2 + 41}" text-anchor="middle" font-size="11" fill="#d9e6ff">${c.title}</text>
-    </g>`;
+  function drawRoutes(nodes, gz, hide) {
+    const P = nodes.map(anchor), g = anchor(gz), h = anchor(hide);
+    let svg = `<defs><filter id="rg" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>`;
+    const edge = (a, b, k) => { const dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy) || 1; const ka = Math.min(a.w * .42, d * .35), kb = Math.min(b.w * .42, d * .35); return [a.x + dx / d * ka, a.y + dy / d * ka * .7, b.x - dx / d * kb, b.y - dy / d * kb * .7]; };
+    P.forEach((a, i) => {
+      const b = P[(i + 1) % 7], [x1, y1, x2, y2] = edge(a, b), lit = i < cleared, c = CITIES[i].c;
+      const mx = (x1 + x2) / 2, my = (y1 + y2) / 2, bend = i === 3 ? -L.rowH * .18 : 0; // 4→5 crosses the open sea at the top
+      svg += `<path class="route ${lit ? "lit" : ""}" d="M${x1} ${y1}Q${mx} ${my + bend} ${x2} ${y2}" stroke="${lit ? c : "rgba(190,180,240,.35)"}" ${lit ? 'filter="url(#rg)"' : ""}/>`;
+      const ax = (mx + (x1 + x2) / 2) / 2, ay = my + bend / 2, ang = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+      svg += `<path d="M-6 -5L6 0L-6 5z" transform="translate(${ax} ${ay}) rotate(${ang})" fill="${lit ? "#fff" : "rgba(190,180,240,.55)"}"/>`;
+    });
+    const done = cleared >= 7, [bx1, by1, bx2, by2] = edge(P[0], g);
+    svg += `<path d="M${bx1} ${by1}L${bx2} ${by2}" stroke="${done ? "#fff" : "rgba(200,190,240,.4)"}" stroke-width="${done ? 5 : 3}" stroke-dasharray="${done ? "0" : "6 7"}" fill="none" ${done ? 'filter="url(#rg)"' : ""}/>`;
+    svg += `<text x="${(bx1 + bx2) / 2 + 8}" y="${(by1 + by2) / 2}" font-size="11" font-weight="700" fill="${done ? "#fff" : "#a7a2c6"}">${done ? "橋が繋がった" : "一周後に橋"}</text>`;
+    const [hx1, hy1, hx2, hy2] = edge(h, P[0]);
+    svg += `<path d="M${hx1} ${hy1}L${hx2} ${hy2}" stroke="#d9e6ff" stroke-width="2" stroke-dasharray="3 5" opacity=".7" fill="none"/>`;
+    routes.setAttribute("viewBox", `0 0 ${L.W} ${L.H}`); routes.innerHTML = svg;
   }
-  function bindTap(el, fn) {
-    el.addEventListener("click", e => { e.stopPropagation(); if (moved) return; fn(); });
-    el.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fn(); } });
-  }
+  let rt = 0; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { if (scene === "map") draw(); }, 120); });
+
+  /* water: dark sea with drifting light streaks, ripples drawn by CSS around each island */
+  const wv = $("water"), wg = wv.getContext("2d"); let ww = 0, wh = 0;
+  function wsize() { const r = Math.min(devicePixelRatio || 1, 2); ww = innerWidth; wh = innerHeight; wv.width = ww * r; wv.height = wh * r; wg.setTransform(r, 0, 0, r, 0, 0); }
+  wsize(); addEventListener("resize", wsize);
+  const streaks = Array.from({ length: 90 }, () => ({ x: Math.random(), y: Math.random(), l: 10 + Math.random() * 50, s: .05 + Math.random() * .2, a: .05 + Math.random() * .12, hue: Math.random() < .5 ? "155,92,255" : "79,170,255" }));
+  (function wave(t) {
+    if (scene === "map") {
+      const gr = wg.createLinearGradient(0, 0, 0, wh); gr.addColorStop(0, "#03020a"); gr.addColorStop(.3, "#08061a"); gr.addColorStop(1, "#0b1030");
+      wg.fillStyle = gr; wg.fillRect(0, 0, ww, wh);
+      for (const s of streaks) {
+        const persp = .4 + s.y * .9;
+        s.x += s.s / ww * persp; if (s.x > 1.05) s.x = -.05;
+        const y = s.y * wh, x = s.x * ww, l = s.l * persp, wob = Math.sin((t || 0) / 900 + s.y * 40) * 2;
+        wg.strokeStyle = `rgba(${s.hue},${s.a * persp})`; wg.lineWidth = 1 + persp; wg.beginPath(); wg.moveTo(x, y + wob); wg.lineTo(x + l, y + wob); wg.stroke();
+      }
+    }
+    requestAnimationFrame(wave);
+  })();
 
   /* =========================================================
      INFO SHEET
      ========================================================= */
-  const esc = s => String(s).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
   const closeIco = '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>';
   function sheet(color, html) { const s = $("sheet"); s.style.setProperty("--c", color); s.innerHTML = html; s.classList.add("on"); s.querySelector(".x").addEventListener("click", closeSheet); }
   function closeSheet() { $("sheet").classList.remove("on"); }
   function openCity(i) {
-    const c = CITIES[i], s = stateOf(i); decide(); focusOn(c.x, c.y);
-    sheet(c.c, `${c.img ? `<img class="sh-img" src="${A(c.img)}" alt="${esc(c.title)}の景色">` : ""}<div class="sh-head"><span class="no">CITY ${c.no} / 7 ・ ${esc(c.where)}</span><h2>${esc(c.name)}</h2><div class="sub">${c.title ? esc(c.title) + " ・ 大罪：" + esc(c.sin) : "大罪：" + esc(c.sin) + " ・ " + esc(c.district)}</div><span class="state ${s}">${STATE_JP[s]}</span><button class="x" type="button" aria-label="閉じる">${closeIco}</button></div>
+    const c = CITIES[i], s = stateOf(i); decide();
+    sheet(c.c, `${c.img ? `<img class="sh-img" src="${A(c.img)}" alt="${esc(c.title)}の景色">` : ""}<div class="sh-head"><span class="no">CITY ${c.no} / 7</span><h2>${esc(c.name)}</h2><div class="sub">${c.title ? esc(c.title) + " ・ 大罪：" + esc(c.sin) : "大罪：" + esc(c.sin) + " ・ " + esc(c.district)}</div><span class="state ${s}">${STATE_JP[s]}</span><button class="x" type="button" aria-label="閉じる">${closeIco}</button></div>
       <div class="sh-body">${c.img ? "" : `<div><h3>LANDMARK — ランドマーク・景観</h3><p>${esc(c.view)}</p></div>
       <div><h3>GIMMICK — ギミック・探索要素</h3><ul>${c.gimmicks.map(g => `<li>${esc(g)}</li>`).join("")}</ul></div>`}
       ${s === "locked" ? `<p style="color:var(--dim)">ひとつ前の都市（${esc(CITIES[i - 1].name)}）を攻略すると解放されます。</p>` : ""}</div>
@@ -401,18 +447,18 @@ svg text { font-family: var(--font-body); }
     const dc = $("demoClear"); if (dc) dc.addEventListener("click", () => clearCity(i));
   }
   function openGZ() {
-    const done = cleared >= 7; decide(); focusOn(CX, CY);
+    const done = cleared >= 7; decide();
     sheet(done ? "#c25cff" : "#ff4d5e", `<div class="sh-head"><span class="no">FINAL DESTINATION</span><h2>GROUND ZERO</h2><div class="sub">爆心地 ・ マップ中心（東京の中心）</div><span class="state ${done ? "open" : "locked"}" style="--c:#c25cff">${done ? "侵入可能" : "封鎖中"}</span><button class="x" type="button" aria-label="閉じる">${closeIco}</button></div>
       <div class="sh-body"><div><h3>VIEW — 外観</h3><p>東京の中心にぽっかりと空いた巨大なクレーターと、紫色のエネルギーが渦巻く領域。高速道路のような環状線（かつての首都高都心環状線）が取り囲む。</p></div>
       <div><h3>LOCK — 封鎖</h3><p>強力なバリア（干渉ノイズ）で閉ざされている。七つの大罪の都市をすべて攻略し、記憶のロックを解除すると入れる。</p></div>
-      <div><h3>ENTRANCE — 入り口</h3><p>7都市を一周し、12時の怠惰（${esc(CITIES[0].name)}）に戻ると、そこから爆心地への橋が繋がる。</p></div>
+      <div><h3>ENTRANCE — 入り口</h3><p>7都市を一周し、怠惰（${esc(CITIES[0].name)}）に戻ると、そこから爆心地への橋が繋がる。</p></div>
       <p>記憶のロック：<b>${cleared} / 7</b> 解除</p></div>
       <div class="sh-foot"><button class="act" type="button" id="goGZ" ${done ? "" : "disabled"}>${done ? "爆心地へ侵入する" : "まだ入れない"}</button></div>`);
     if (done) $("goGZ").addEventListener("click", () => { decide(); toast("GROUND ZERO は準備中です"); });
   }
   function openHideout() {
-    decide(); focusOn(HIDE.x, HIDE.y);
-    sheet("#9b5cff", `<div class="sh-head"><span class="no">HOME BASE</span><h2>HIDEOUT（アジト）</h2><div class="sub">広い屋敷 ・ 最初の都市（怠惰）のすぐ隣</div><span class="state open" style="--c:#9b5cff">拠点</span><button class="x" type="button" aria-label="閉じる">${closeIco}</button></div>
+    decide();
+    sheet("#9b5cff", `<div class="sh-head"><span class="no">HOME BASE</span><h2>HIDEOUT（アジト）</h2><div class="sub">広い屋敷 ・ ${esc(CITIES[0].name)}のすぐ下</div><span class="state open" style="--c:#9b5cff">拠点</span><button class="x" type="button" aria-label="閉じる">${closeIco}</button></div>
       <div class="sh-body"><p>プレイヤーの拠点である広い屋敷。外の世界への出発点で、電脳世界への入り口でもある。ホーム画面への帰還ポイント。</p>
       <div><h3>WHAT YOU CAN DO — アジトでできること</h3><ul><li>デッキ構築</li><li>記憶の解放（スキルツリー）</li><li>相棒との会話</li><li>電脳世界へ入る（インターネット対戦・CPU対戦など）</li></ul></div></div>
       <div class="sh-foot"><a class="act" href="${HIDEOUT_URL}" target="_blank" rel="noopener" id="goHide">アジトに入る</a></div>`);
@@ -422,55 +468,10 @@ svg text { font-family: var(--font-body); }
     if (i !== cleared) return;
     cleared++; store.set("selectear_progress", cleared); gameStartSE(); buzz([30, 30, 60]);
     closeSheet(); draw();
-    if (cleared >= 7) {
-      flash(); const u = $("unlock"); u.classList.remove("on"); void u.offsetWidth; u.classList.add("on");
-      setTimeout(() => focusOn(CX, CY), 400);
-      toast("7都市を一周した。爆心地への橋が繋がった");
-    } else {
-      const n = CITIES[cleared]; toast(`${CITIES[i].name} を制圧。${n.name} が解放された`);
-      setTimeout(() => focusOn(n.x, n.y), 300);
-    }
+    if (cleared >= 7) { flash(); const u = $("unlock"); u.classList.remove("on"); void u.offsetWidth; u.classList.add("on"); toast("7都市を一周した。爆心地への橋が繋がった"); }
+    else toast(`${CITIES[i].name} を制圧。${CITIES[cleared].name} が解放された`);
   }
   $("resetDemo").addEventListener("click", () => { back(); cleared = 0; store.set("selectear_progress", 0); closeSheet(); draw(); toast("進行をリセットしました"); });
-
-  /* =========================================================
-     PAN + ZOOM
-     ========================================================= */
-  const vp = $("vp"), world = $("world");
-  let W = 0, H = 0, fw = 0, fh = 0, z = 1, ox = 0, oy = 0;
-  function layout() {
-    W = innerWidth; H = innerHeight;
-    // fit the whole map on wide screens; on tall phones fit the height and drag sideways
-    const top = 60, s = Math.min(W / VW, (H - top) / VH);
-    const sTall = (H - top) / VH;
-    const base = W / H < 1 ? sTall : s;
-    fw = VW * base; fh = VH * base;
-    world.style.width = fw + "px"; world.style.height = fh + "px";
-    clamp(); apply();
-  }
-  function clamp() {
-    const w = fw * z, h = fh * z, top = 56;
-    ox = w <= W ? (W - w) / 2 : Math.min(0, Math.max(W - w, ox));
-    oy = h <= H - top ? top + (H - top - h) / 2 : Math.min(top, Math.max(H - h, oy));
-  }
-  function apply() { world.style.transform = `translate(${ox}px, ${oy}px) scale(${z})`; }
-  function focusOn(x, y, ease = true) {
-    const sx = x / VW * fw * z, sy = y / VH * fh * z;
-    const sheetW = $("sheet").classList.contains("on") && W > 700 ? Math.min(380, W - 24) + 12 : 0;
-    const sheetH = $("sheet").classList.contains("on") && W <= 700 && H > W ? H * .64 : 0;
-    ox = (W - sheetW) / 2 - sx; oy = (H - sheetH) / 2 + 20 - sy; clamp();
-    world.classList.toggle("ease", ease && !reduce); apply();
-  }
-  function zoomBy(f) { const cx = W / 2, cy = H / 2, wx = (cx - ox) / z, wy = (cy - oy) / z; z = Math.min(2.4, Math.max(1, z * f)); ox = cx - wx * z; oy = cy - wy * z; clamp(); world.classList.add("ease"); apply(); }
-  $("zin").addEventListener("click", () => { decide(); zoomBy(1.35); });
-  $("zout").addEventListener("click", () => { decide(); zoomBy(1 / 1.35); });
-  vp.addEventListener("wheel", e => { e.preventDefault(); const f = e.deltaY < 0 ? 1.12 : 1 / 1.12; const wx = (e.clientX - ox) / z, wy = (e.clientY - oy) / z; z = Math.min(2.4, Math.max(1, z * f)); ox = e.clientX - wx * z; oy = e.clientY - wy * z; clamp(); world.classList.remove("ease"); apply(); }, { passive: false });
-  let drag = null, moved = false;
-  vp.addEventListener("pointerdown", e => { drag = { x: e.clientX, y: e.clientY, ox, oy }; moved = false; world.classList.remove("ease"); });
-  addEventListener("pointermove", e => { if (!drag) return; const dx = e.clientX - drag.x, dy = e.clientY - drag.y; if (Math.abs(dx) + Math.abs(dy) > 6) { moved = true; vp.classList.add("drag"); } if (moved) { ox = drag.ox + dx; oy = drag.oy + dy; clamp(); apply(); } });
-  addEventListener("pointerup", () => { drag = null; vp.classList.remove("drag"); setTimeout(() => { moved = false; }, 0); });
-  vp.addEventListener("click", () => { if (!moved) closeSheet(); });
-  addEventListener("resize", () => { if (scene === "map") layout(); });
 
   /* =========================================================
      SOUND: map music + city ambience (same files as before)
@@ -513,10 +514,9 @@ svg text { font-family: var(--font-body); }
   $("snd").addEventListener("click", () => { audio(); st.bgm = !st.bgm; syncMusic(); try { const all = JSON.parse(localStorage.getItem("selectear_settings2") || "{}"); all.bgm = st.bgm; localStorage.setItem("selectear_settings2", JSON.stringify(all)); } catch {} });
 
   /* scenes */
-  let scene = "start", first = true;
   function show(id) {
     $("toast").hidden = true; for (const s of ["start", "map"]) $(s).classList.toggle("on", s === id); scene = id;
-    if (id === "map") { layout(); if (first) { first = false; z = H < 500 ? 1.7 : 1; clamp(); focusOn(CITIES[0].x + 120, CY, false); } }
+    if (id === "map") draw();
     syncMusic();
   }
   $("startBtn").addEventListener("click", () => { audio(); if (st.bgm) { music.start(); ambience.start(); } gameStartSE(); buzz([30, 30, 60]); flash(); setTimeout(() => show("map"), reduce ? 0 : 250); });
@@ -525,7 +525,6 @@ svg text { font-family: var(--font-body); }
     if (e.key === "Escape") { if ($("sheet").classList.contains("on")) closeSheet(); else if (scene === "map") show("start"); }
     if (scene === "start" && (e.key === "Enter" || e.key === " ") && document.activeElement !== $("startBtn")) { e.preventDefault(); $("startBtn").click(); }
   });
-  draw();
 })();
 </script>
 
