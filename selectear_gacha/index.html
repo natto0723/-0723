@@ -729,7 +729,7 @@ canvas.spark { position: absolute; inset: 0; width: 100%; height: 100%; z-index:
   const setAng = a => { ang = a; inn().style.transform = `rotateY(${a}deg)`; };
   const retrig = (el, cls) => { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); };
   function startSummon() { show("summon"); $("summon").classList.add("holo-mode"); si = 0; chargeFor(0); }
-  function chargeFor(i) {
+  function chargeFor(i) { endRewind();
     si = i; sumStage = "charge"; runId++;
     const sm = $("summon"); sm.classList.remove("dark", "info", "gl", "cutbg"); sm.classList.add("sway"); sm.style.setProperty("--tc", "#b48cff");
     const bg = $("sumBg"); bg.style.backgroundImage = `url(${A("img/st_charge.webp")})`; bg.classList.remove("charge");
@@ -749,9 +749,9 @@ canvas.spark { position: absolute; inset: 0; width: 100%; height: 100%; z-index:
     sumStage = "anim"; $("sumCue").textContent = ""; $("sumTitle").textContent = "";
     const c = $("card3d"), sm = $("summon");
     se("attr"); buzz(25);
-    retrig(c, "cut"); retrig(sm, "cutbg");
+    retrig(c, "cut");
     c.style.setProperty("--tc", t.c); sm.style.setProperty("--tc", t.c);
-    $("sumBg").style.backgroundImage = `url(${bgOf(m)})`; $("cardBack").style.backgroundImage = `url(${A(BACK[m.type])})`;
+    rewindBg(bgOf(m)); $("cardBack").style.backgroundImage = `url(${A(BACK[m.type])})`;
     $("cardFront").innerHTML = `<img class="art" src="${A(m.img)}" alt="${esc(m.name)}のカード">${m.oshi ? '<span class="dup">推し確定</span>' : m.dup ? '<span class="dup">ダブり</span>' : ""}`;
     const tag = document.createElement("div"); tag.className = "attrtag"; tag.id = "attrTag"; tag.textContent = attrOf(m); sm.append(tag);
     await wait(450); if (!live()) return;
@@ -760,22 +760,25 @@ canvas.spark { position: absolute; inset: 0; width: 100%; height: 100%; z-index:
   }
   // tap 2 → the hologram becomes a solid card (チョウ・ヤン and 小川 結菜 turn rainbow here). ②
   // background change in a tape-rewind style (no blackout)
+  let rwTimer = 0;
+  function endRewind() { clearTimeout(rwTimer); const sm = $("summon"); for (const x of sm.querySelectorAll(".rwIn, .rwBand")) x.remove(); $("sumBg").classList.remove("rwOut"); }
   function rewindBg(url) {
     const sm = $("summon"), bg = $("sumBg");
-    for (const x of sm.querySelectorAll(".rwIn, .rwBand")) x.remove();
+    endRewind();
     sm.classList.remove("cutbg", "sway");
     const nb = document.createElement("div"); nb.className = "rwIn"; nb.style.backgroundImage = `url(${url})`;
     const band = document.createElement("div"); band.className = "rwBand";
     bg.after(nb, band); bg.classList.add("rwOut");
-    setTimeout(() => { bg.style.backgroundImage = `url(${url})`; bg.classList.remove("rwOut"); nb.remove(); band.remove(); sm.classList.add("sway"); }, 920);
+    rwTimer = setTimeout(() => { bg.style.backgroundImage = `url(${url})`; bg.classList.remove("rwOut"); nb.remove(); band.remove(); sm.classList.add("sway"); }, 920);
   }
   async function confirmCard() {
     const my = ++runId, m = team[si], live = () => my === runId, rb = isRainbow(m);
     sumStage = "anim"; $("sumCue").textContent = ""; const c = $("card3d"), sm = $("summon"), tag = $("attrTag");
     holoSE(false);
     // every card: the attribute background turns rainbow when it is confirmed
-    se("confirm"); buzz([30, 20, 60]);
-    rewindBg(A("img/st_oshi.webp")); sm.style.setProperty("--tc", "#c25cff");
+    endRewind(); sm.classList.add("sway");
+    se("confirm"); buzz([30, 20, 60]); flash(); retrig(sm, "cutbg");
+    $("sumBg").style.backgroundImage = `url(${A("img/st_oshi.webp")})`; sm.style.setProperty("--tc", "#c25cff");
     const r = c.getBoundingClientRect(); burstAt(r.left + r.width / 2, r.top + r.height / 2, ["#ff4d5e", "#f2c14e", "#3ddc84", "#4f8cff", "#c25cff", "#fff"], 140, 14);
     if (rb) { // チョウ・ヤン and 小川 結菜: the card itself turns rainbow too
       retrig(c, "rainbow"); c.style.setProperty("--tc", "#c25cff");
