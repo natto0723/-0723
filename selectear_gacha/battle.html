@@ -62,11 +62,11 @@ button:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
 #board .f .side { position: absolute; right: 4px; top: 4px; width: 9px; height: 9px; border-radius: 50%; background: var(--sc); box-shadow: 0 0 8px var(--sc); }
 #board .f .info { position: absolute; left: 0; right: 0; bottom: 0; padding: 14px 5px 4px; background: linear-gradient(transparent, rgba(5, 4, 10, .92) 45%); }
 #board .f .nm { font-weight: 900; font-size: clamp(10px, calc(var(--cw) * .1), 14px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 3px #000; }
-#board .f .hp { position: relative; height: 11px; margin-top: 2px; border-radius: 99px; background: #1b1626; overflow: hidden; border: 1px solid rgba(201, 198, 214, .25); }
+#board .f .hp { position: relative; height: clamp(13px, calc(var(--cw) * .12), 19px); margin-top: 3px; border-radius: 99px; background: #1b1626; overflow: hidden; border: 1px solid rgba(201, 198, 214, .25); }
 #board .f .hp .tr { position: absolute; inset: 0 auto 0 0; background: #fff; transition: width .6s ease-in .35s; }
 #board .f .hp .bar { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, #1d6fb8, var(--blue)); transition: width .15s; }
 #board .f.enemy .hp .bar { background: linear-gradient(90deg, #a01639, var(--red)); }
-#board .f .hp span { position: relative; display: block; text-align: center; font: 700 9px/9px var(--font-num); text-shadow: 0 1px 2px #000; }
+#board .f .hp span { position: relative; display: block; text-align: center; font: 700 clamp(11px, calc(var(--cw) * .1), 15px)/clamp(11px, calc(var(--cw) * .1), 17px) var(--font-num); letter-spacing: .04em; color: #fff; text-shadow: 0 0 3px #000, 0 1px 2px #000; }
 #board .f .chips { display: flex; flex-wrap: wrap; gap: 2px; margin-top: 3px; min-height: 0; }
 #board .chip, .chip { font-size: 9px; line-height: 1.4; padding: 0 4px; border-radius: 5px; border: 1px solid currentColor; white-space: nowrap; background: rgba(10, 8, 16, .8); }
 .chip.good { color: var(--yellow); } .chip.bad { color: var(--purple); } .chip.own { color: var(--silver); }
@@ -299,6 +299,47 @@ button:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
 
+
+/* sides: each group sits on its own tinted strip with a label; every card carries a side badge */
+#board { z-index: 8; }
+.dock { position: relative; z-index: 7; }
+#board .row { position: relative; padding: 18px 8px 8px; border-radius: 16px; }
+#board #rowE { background: linear-gradient(180deg, rgba(255, 47, 91, .2), rgba(255, 47, 91, .05)); border: 1px solid rgba(255, 47, 91, .45); }
+#board #rowA { background: linear-gradient(0deg, rgba(63, 182, 255, .2), rgba(63, 182, 255, .05)); border: 1px solid rgba(63, 182, 255, .45); }
+#board .row::before { position: absolute; left: 12px; top: 2px; font: 700 10px/14px var(--font-num); letter-spacing: .2em; }
+#board #rowE::before { content: "相手 ENEMY"; color: #ff8aa0; } #board #rowA::before { content: "味方 ALLY"; color: #9fd8ff; }
+#board .f .sd { position: absolute; right: 3px; top: 3px; z-index: 2; min-width: 18px; padding: 1px 5px; border-radius: 6px; font: 900 10px/1.4 var(--font-body); color: #fff; text-align: center; }
+#board .f.enemy .sd { background: #e0244c; box-shadow: 0 0 8px rgba(255, 47, 91, .8); } #board .f.ally .sd { background: #1f86d6; box-shadow: 0 0 8px rgba(63, 182, 255, .8); }
+#board .f.enemy .art { border-color: #ff2f5b; box-shadow: 0 0 0 2px rgba(255, 47, 91, .35), 0 0 14px rgba(255, 47, 91, .45); }
+#board .f.ally .art { border-color: #3fb6ff; box-shadow: 0 0 0 2px rgba(63, 182, 255, .35), 0 0 14px rgba(63, 182, 255, .45); }
+#board .f .attr { box-shadow: 0 0 0 1px rgba(0, 0, 0, .5); }
+#board .f.mt .art { outline: 3px dashed var(--yellow); outline-offset: 3px; }
+/* battle backgrounds */
+#bgl { position: fixed; inset: -3%; z-index: -1; background: center / cover no-repeat; opacity: 0; transition: opacity .6s; animation: bgDrift 46s ease-in-out infinite alternate; }
+#bgl.on { opacity: 1; }
+#bgl::after { content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 45%, rgba(8, 6, 16, .35), rgba(8, 6, 16, .82) 75%), linear-gradient(rgba(8, 6, 16, .25), rgba(8, 6, 16, .55)); }
+@keyframes bgDrift { from { transform: scale(1) translateX(-1%); } to { transform: scale(1.06) translateX(1%); } }
+.bgpick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.bgpick button { padding: 0; aspect-ratio: 16 / 9; border-radius: 8px; overflow: hidden; background: #17121f center / cover; border: 2px solid transparent; position: relative; }
+.bgpick button span { position: absolute; left: 0; right: 0; bottom: 0; font-size: 10px; font-weight: 700; padding: 6px 4px 2px; background: linear-gradient(transparent, rgba(0, 0, 0, .8)); }
+.bgpick button[aria-pressed="true"] { border-color: var(--yellow); box-shadow: 0 0 10px var(--yellow); }
+.bgpick .rnd { display: grid; place-items: center; font-weight: 900; font-size: 12px; background: linear-gradient(135deg, #2b2142, #120d1e); }
+#app.motion .act { max-height: 54vh; }
+@media (max-width: 899px) {
+  #board .row { padding: 14px 6px 6px; border-radius: 12px; }
+  #board .row::before { left: 8px; top: 1px; font-size: 9px; line-height: 12px; }
+  .hand { padding-top: 8px; padding-bottom: 4px; }
+  .card { width: 92px; height: 112px; padding-top: 16px; }
+  .card p { -webkit-line-clamp: 3; }
+  .act { max-height: 27vh; }
+}
+@media (max-width: 899px) { #app.motion .act { max-height: 50vh; } }
+.mpanel .mopts { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12px; }
+.mpanel .mopts .seg2 { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.mpanel .mopts .seg2 button { border: 0; border-radius: 0; padding: 6px 10px; font-size: 12px; } .mpanel .mopts .seg2 button[aria-pressed="true"] { background: rgba(255, 228, 92, .18); color: var(--yellow); }
+.mpanel .mopts select { font: inherit; font-size: 12px; background: #0f0b17; color: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 5px; }
+.mpanel .mhint { font-size: 11px; color: var(--muted); }
+
 /* the board hosts the old SELECTEAR effects (.xscope): keep it a plain container */
 #board.xfield { position: relative; top: auto; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; overflow: visible; isolation: auto; display: flex; flex-direction: column; justify-content: center; gap: 6px; }
 #board .f.xf { overflow: visible; }
@@ -326,6 +367,7 @@ button:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
     </div>
   </div>
 </div>
+<div id="bgl" aria-hidden="true"></div>
 <div class="scrim" id="scrim" hidden></div>
 <aside class="drawer" id="menu" aria-label="ログと詳細">
   <h2>メニュー <button type="button" data-close>閉じる</button></h2>
@@ -337,6 +379,7 @@ button:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
   <div class="dbody">
     <label for="vol">音量 <span id="volv"></span></label><input type="range" id="vol" min="0" max="100" step="5">
     <label>速さ</label><div class="seg" id="spdSeg"><button type="button" data-v="1">1倍</button><button type="button" data-v="2">2倍</button><button type="button" data-v="3">3倍</button></div>
+    <label>背景</label><div id="bgSet"></div>
     <label>演出</label><div class="seg" id="fxSeg"><button type="button" data-v="all">全部見る</button><button type="button" data-v="enemy">敵はスキップ</button><button type="button" data-v="none">全部スキップ</button></div>
     <button type="button" class="wide" id="toTitle">タイトル（ガチャ）へ戻る</button>
     <button type="button" class="wide danger" id="surrender">降参する</button>
@@ -535,6 +578,8 @@ function makeDeck() { const d = []; for (const [k, v] of Object.entries(CARDS)) 
 const card = cid => ({ uid: "k" + (S.seq++), cid });
 
 function newMatch(allyIds, enemyIds, opt = {}) {
+  for (const r of ["rowE", "rowA"]) { const el = document.getElementById(r); if (el) el.replaceChildren(); }
+  document.querySelectorAll(".xlayer > *").forEach(x => x.remove());
   S = { c: {}, sides: [], seq: 1, round: 0, queue: [], done: [], turnUid: null, winner: null, log: [], fx: [], events: [], sim: false,
     dev: !!opt.dev, auto: !!opt.auto, cpu: opt.cpu || "normal", firstSide: 0, turnCount: 0 };
   for (const [i, nm2] of [[0, "あなたのグループ"], [1, "相手のグループ"]]) S.sides.push({ name: nm2, uids: [], hand: [], deck: makeDeck(), money: 0, temp: 0, n: 0, help: true, credit: false, off: false, zankure: 0, nullSpell: false, kikanai: false, skipNext: false, interestIn: 0, dmgTaken: 0, free: null, cpu: i === 1 || !!opt.auto, size: 0 });
@@ -1335,6 +1380,20 @@ const SFX = {
 };
 const sfx = (k, a) => { try { SFX[k] && SFX[k](a); } catch {} };
 
+/* ---------- battle backgrounds ---------- */
+const BGS = [["bb_1", "黒い月"], ["bb_2", "紫の聖都"], ["bb_3", "白の聖堂"], ["bb_4", "赤の監獄"], ["bb_5", "桃色の街"], ["bb_6", "翠の工場"], ["bb_7", "太陽の市場"], ["bb_8", "黄金の都"], ["bb_9", "月のアーケード"]];
+PREF.bg = PREF.bg || "random";
+function applyBg(force) {
+  const key = force || (PREF.bg === "random" ? pick(BGS)[0] : PREF.bg);
+  const l = $("bgl");
+  if (key === "brick") { l.classList.remove("on"); return; }
+  l.style.backgroundImage = `url(img/${key}.webp)`; l.classList.add("on");
+}
+function bgPickHTML() {
+  return `<div class="bgpick">${[["random", "ランダム"], ...BGS, ["brick", "レンガ"]].map(([k, n]) => k === "random" || k === "brick" ? `<button type="button" class="rnd" data-bg="${k}" aria-pressed="${PREF.bg === k}">${n}</button>` : `<button type="button" data-bg="${k}" aria-pressed="${PREF.bg === k}" style="background-image:url(img/${k}.webp)"><span>${n}</span></button>`).join("")}</div>`;
+}
+function bindBgPick(root, after) { root.querySelectorAll("[data-bg]").forEach(b => b.onclick = () => { PREF.bg = b.dataset.bg; savePref(); applyBg(); sfx("click"); after && after(); }); }
+
 /* ---------- battle BGM (soundtrack) ---------- */
 const TRACKS = [
   { id: "37564", name: "37564", src: "bgm_37564.mp3" },
@@ -1397,7 +1456,7 @@ function skipFx() { if (S && S.motion) return false; if (PREF.fx === "none") ret
   window.AudioContext = VolCtx; if (window.webkitAudioContext) window.webkitAudioContext = VolCtx;
   window.__setVol = () => { for (const a of all) a.__m.gain.value = PREF.vol / 100; };
 })();
-window.__kombuHuman = uid => { const c = S && S.c[uid]; return !!c && c.side === 0 && !S.auto; };
+window.__kombuHuman = uid => { const c = S && S.c[uid]; return !!c && c.side === 0 && !S.auto && !S.motion; };
 window.__nameOf = uid => { const c = S && S.c[uid]; return c ? def(c).name : ""; };
 const FXREADY = new Promise(res => { if (window.OLDFX) res(); else addEventListener("oldfx", () => res(), { once: true }); setTimeout(res, 8000); });
 let SNAP = null;                  // board as the player last saw it (before the next engine step)
@@ -1553,7 +1612,8 @@ function sizeCards() {
   for (const [row, s] of [["rowE", 1], ["rowA", 0]]) {
     const n = Math.max(1, members(s).length), perRow = Math.min(n, 6), rows = Math.ceil(n / 6);
     const byW = (W - (perRow - 1) * 8 - 4) / perRow;
-    const byH = ((H - 40) / 2 / rows - 16) * 5 / 7 / 1.08;
+    const rowPad = innerWidth < 900 ? 22 : 28;
+    const byH = (((H - 34) / 2 - rowPad) / rows - (rows - 1) * 6) / 1.4;
     const cw = Math.max(54, Math.min(170, byW, byH));
     $(row).style.setProperty("--cw", cw + "px");
   }
@@ -1575,7 +1635,7 @@ function fighterEl(c) {
     el = document.createElement("article");
     el.className = "f xf " + (c.side === 0 ? "ally" : "enemy"); el.dataset.u = c.uid; el.tabIndex = 0; el.setAttribute("role", "button");
     el.style.setProperty("--tc", t.c); el.style.setProperty("--sc", c.side === 0 ? "#3fb6ff" : "#ff2f5b");
-    el.innerHTML = `<div class="art por photo" style="background-image:url(${img(c.id)})"><span class="attr">${t.en}</span>
+    el.innerHTML = `<div class="art por photo" style="background-image:url(${img(c.id)})"><span class="attr">${t.en}</span><span class="sd">${c.side === 0 ? "味" : "敵"}</span>
       <div class="info"><div class="nm">${esc(def(c).name)}</div><div class="hp"><div class="trail"></div><div class="bar"></div><span></span></div><div class="chips"></div></div></div>`;
   }
   return el;
@@ -1585,7 +1645,7 @@ function paintFighter(c, el) {
   k.toggle("turn", c.uid === S.turnUid); k.toggle("lost", c.lost); k.toggle("away", c.s.home > 0 || c.returned);
   const tg = !!(UI.targets && UI.targets.includes(c.uid));
   k.toggle("tgt", tg); k.toggle("allyT", tg && c.side === 0); k.toggle("enemyT", tg && c.side === 1); k.toggle("dim", !!UI.targets && !tg);
-  k.toggle("sel", UI.detail === c.uid && !UI.targets);
+  k.toggle("sel", UI.detail === c.uid && !UI.targets); k.toggle("mt", !!S.motion && UI.mtgt === c.uid);
   // lasting looks of the old effects follow the rules state
   k.toggle("poisoned", c.s.poison > 0); k.toggle("restrained", c.s.restrain > 0); k.toggle("ghost", c.returned);
   if (!(c.s.restrain > 0)) el.querySelectorAll(".fx.chains").forEach(x => x.remove());
@@ -1738,6 +1798,7 @@ function renderDrawer() {
   if (UI.tab === "dev") renderDevPanel(body);
 }
 function renderSettings() {
+  $("bgSet").innerHTML = bgPickHTML(); bindBgPick($("bgSet"), renderSettings);
   $("vol").value = PREF.vol; $("volv").textContent = PREF.vol;
   document.querySelectorAll("#spdSeg button").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.v === PREF.speed)));
   document.querySelectorAll("#fxSeg button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === PREF.fx)));
@@ -1776,6 +1837,7 @@ document.addEventListener("click", e => {
   const f = e.target.closest(".f"); if (!f || !S) return;
   const uid = f.dataset.u;
   if (UI.targets) { if (UI.targets.includes(uid)) { sfx("click"); const p = UI.onPick; UI.targets = null; UI.onPick = null; p && p(uid); } return; }
+  if (S.motion) { if (!MOTION.busy) motionTap(uid); return; }
   UI.detail = uid; UI.tab = "det"; sfx("click"); renderBoard(); openDrawer("menu");
 });
 
@@ -2026,7 +2088,7 @@ async function start(ally, enemy, opt = {}) {
   $("devset") && $("devset").remove();
   UI.mode = null; UI.targets = null; UI.resolve = null; UI.detail = null;
   newMatch(ally, enemy, opt);
-  $("app").hidden = false; bgmPlay();
+  $("app").hidden = false; $("app").classList.remove("motion"); applyBg(); bgmPlay();
   await FXREADY; $("app").hidden = false; render(); snapshot();
   render();
   fx("banner", { t: "BATTLE START", s: opt.dev ? "DEVELOPER" : "SELECTEAR", c: "#b05cff" });
@@ -2048,7 +2110,7 @@ document.addEventListener("pointerdown", () => ac(), { capture: true });
 const DEV = (() => { try { const d = JSON.parse(localStorage.getItem("selectearDev2") || "null"); if (d && d.side) return d; } catch {} return null; })() || { side: [["kazano", "hirabayashi", "kobukuda"], ["yamanaka", "nishida", "ushida"]], mods: [[{}, {}, {}], [{}, {}, {}]], money: [0, 0], cpu: "normal", sel: [0, 0] };
 const saveDev = () => { try { localStorage.setItem("selectearDev2", JSON.stringify(DEV)); } catch {} };
 function openDevSetup() {
-  S = null; $("app").hidden = true; closeDrawer();
+  S = null; $("app").hidden = true; $("app").classList.remove("motion"); closeDrawer(); applyBg();
   let el = $("devset"); if (!el) { el = document.createElement("div"); el.id = "devset"; el.className = "devset"; document.body.append(el); }
   const slot = (s, i) => { const id = DEV.side[s][i], t = TYPES[CH[id].type], m = DEV.mods[s][i] || {}; const mod = Object.keys(m).length; return `<button type="button" class="slot${DEV.sel[0] === s && DEV.sel[1] === i ? " sel" : ""}" data-slot="${s}:${i}" style="--tc:${t.c}"><img src="${img(id)}" alt="">${mod ? '<i class="mod">編集</i>' : ""}<span>${esc(CH[id].name)}</span></button>`; };
   const sec = (s, label, cls) => `<section class="${cls}"><h2>${label}<span class="sp"></span><span class="cnt"><button type="button" data-cnt="${s}:-1">−</button><b>${DEV.side[s].length}</b><button type="button" data-cnt="${s}:1">＋</button></span></h2><div class="slots">${DEV.side[s].map((_, i) => slot(s, i)).join("")}</div></section>`;
@@ -2076,6 +2138,7 @@ function openDevSetup() {
         <label>無敵の人<input type="checkbox" data-sb="inv" ${st.inv ? "checked" : ""}></label>
         <label>疾走<input type="checkbox" data-sb="dash" ${st.dash ? "checked" : ""}></label>
       </div></section>` : ""}
+    <section><h2>バトル背景</h2>${bgPickHTML()}</section>
     <section><h2>ルール</h2><div class="ed">
       <label>味方の最初の◆<input type="number" id="dvM0" value="${DEV.money[0]}" min="0" max="99"></label>
       <label>敵の最初の◆<input type="number" id="dvM1" value="${DEV.money[1]}" min="0" max="99"></label>
@@ -2087,6 +2150,7 @@ function openDevSetup() {
   </div>`;
   const q = s => el.querySelectorAll(s);
   el.querySelector("#dvBack").onclick = () => goTitle();
+  bindBgPick(el, openDevSetup);
   q("[data-slot]").forEach(b => b.onclick = () => { const [s, i] = b.dataset.slot.split(":").map(Number); DEV.sel = [s, i]; sfx("click"); openDevSetup(); });
   q("[data-cnt]").forEach(b => b.onclick = () => { const [s, d] = b.dataset.cnt.split(":").map(Number); const L = DEV.side[s]; if (d > 0 && L.length < 17) { L.push(pick(IDS)); DEV.mods[s].push({}); } if (d < 0 && L.length > 1) { L.pop(); DEV.mods[s].pop(); } DEV.sel = [s, Math.min(DEV.sel[1], L.length - 1)]; saveDev(); openDevSetup(); });
   q("[data-rnd]").forEach(b => b.onclick = () => { const v = b.dataset.rnd; for (const s of v === "both" ? [0, 1] : [+v]) DEV.side[s] = DEV.side[s].map(() => pick(IDS)); saveDev(); openDevSetup(); });
@@ -2144,16 +2208,30 @@ function renderDevPanel(body) {
 /* =====================================================================
    MOTION (developer mode): every battle animation, played on a real board
    ===================================================================== */
-const MOTION = { tab: "ability", busy: false };
-const EN3 = ["yamanaka", "nishida", "ushida"];
-function mStage(actorId, opt = {}) {
-  const ally = [actorId, ...(opt.ally || shuffle(IDS.filter(x => x !== actorId)).slice(0, 2))];
-  const enemy = opt.enemy || shuffle(IDS.filter(x => !ally.includes(x))).slice(0, 3);
-  newMatch(ally, enemy, { dev: true, money: [99, 99] });
+const MOTION = { tab: "ability", busy: false, side: 0, mode: "owner", fixed: "kazano", tgt: null, mates: null, foes: null, last: "kazano" };
+function mShuffle() { const sh = shuffle(IDS); MOTION.mates = sh.slice(0, 2); MOTION.foes = sh.slice(2, 5); MOTION.tgt = null; }
+// stage for one animation: the actor (owner of the ability/skill, or the fixed character) and its group on the chosen side
+function mStage(ownerId, opt = {}) {
+  MOTION.last = ownerId;
+  if (!MOTION.mates) mShuffle();
+  const actor = MOTION.mode === "fixed" && !opt.owner ? MOTION.fixed : ownerId;
+  let mine = [actor, ...(opt.ally || MOTION.mates)].filter((x, i, a) => a.indexOf(x) === i);
+  for (const x of shuffle(IDS)) { if (mine.length >= 3) break; if (!mine.includes(x)) mine.push(x); }
+  mine = mine.slice(0, 3);
+  let foes = (opt.enemy || MOTION.foes).filter(x => !mine.includes(x));
+  for (const x of shuffle(IDS)) { if (foes.length >= 3) break; if (!mine.includes(x) && !foes.includes(x)) foes.push(x); }
+  foes = foes.slice(0, 3);
+  const side = MOTION.side;
+  newMatch(side === 0 ? mine : foes, side === 0 ? foes : mine, { dev: true, money: [99, 99] });
   S.motion = true; S.round = 1; S.fx = []; S.log = [];
-  const me = members(0)[0]; S.turnUid = me.uid; S.queue = members(0).slice(1).concat(members(1)).map(c => c.uid); S.done = [];
-  $("app").hidden = false; render(); snapshot();
-  return { me, al: members(0), en: members(1) };
+  const al = members(side), en = members(foes === null ? 0 : 1 - side), me = al[0];
+  S.turnUid = me.uid; S.queue = al.slice(1).concat(en).map(c => c.uid); S.done = [];
+  const t = MOTION.tgt;
+  const tE = (t && t.grp === "en" && en[t.idx]) || en[0];
+  const tA = (t && t.grp === "al" && al[t.idx]) || al[1];
+  UI.mtgt = t ? (t.grp === "en" ? tE.uid : tA.uid) : null;
+  $("app").hidden = false; $("app").classList.add("motion"); render(); snapshot();
+  return { me, al, en, tE, tA };
 }
 const withRandom = (v, fn) => { const r = Math.random; Math.random = () => v; try { fn(); } finally { Math.random = r; } };
 async function mPlay(fn) {
@@ -2162,96 +2240,96 @@ async function mPlay(fn) {
   MOTION.busy = false; if (S && S.motion) { render(); }
 }
 function skillTarget(st, sk) {
-  const { me, al, en } = st;
+  const { me, tE, tA } = st;
   switch (sk.d.tg) {
-    case "enemy": case "any": case "char": return en[0];
-    case "enemyDebt": en[0].s.debt = 1; return en[0];
-    case "ally": case "allyOther": case "allyAbility": return al[1];
-    case "allyAny": return al[1];
+    case "enemy": case "any": case "char": return tE;
+    case "enemyDebt": tE.s.debt = Math.max(1, tE.s.debt); return tE;
+    case "ally": case "allyAny": return tA;
+    case "allyOther": case "allyAbility": return tA === me ? st.al[1] : tA;
     default: return null;
   }
 }
 const MDEF = {
   ability: () => IDS.map(id => [`${CH[id].ab.n}`, CH[id].short, () => {
-    const st = mStage(id, id === "morooka" ? {} : {}); const { me, al, en } = st;
-    if (id === "morooka") { al[1].lost = true; al[1].hp = 0; render(); snapshot(); }
-    if (id === "ogawa") { al[1].hp = 2; render(); snapshot(); }
-    if (id === "sato") return mPlay(() => withRandom(.1, () => { me.hp = 1; hurt(me, 3, en[0]); }));
+    const st = mStage(id); const { me, al, en, tE, tA } = st;
+    if (id === "morooka") { const d = tA === me ? al[1] : tA; d.lost = true; d.hp = 0; render(); snapshot(); }
+    if (id === "ogawa") { tA.hp = Math.min(tA.hp, 2); render(); snapshot(); }
+    if (id === "sato") return mPlay(() => withRandom(.1, () => { me.hp = 1; hurt(me, 3, tE); }));
     if (id === "fujikura") return mPlay(() => { me.s.patience = 3; settle(); });
     const a = CH[id].ab;
     if (a.k === "start") return mPlay(() => runAuto(me, id));
-    if (id === "hirabayashi") return mPlay(() => runChoose(me, id, al[1].uid, "chou"));
+    if (id === "hirabayashi") return mPlay(() => runChoose(me, id, tA.uid, pick(IDS.filter(x => x !== "hirabayashi"))));   // 計画: the job goes to the chosen ally (tap a card), self included
     if (id === "endo") return mPlay(() => runChoose(me, id, null, rand(2) ? "hakai" : "kaizo"));
-    if (id === "sakayori") return mPlay(() => runChoose(me, id, en[0].uid));
-    if (id === "yanai") { en[0].s.armor = 1; en[0].s.powR.push({ n: 1, r: 1 }); render(); snapshot(); }
-    return mPlay(() => runChoose(me, id, en[0].uid));
+    if (id === "sakayori") return mPlay(() => runChoose(me, id, tE.uid));
+    if (id === "yanai") { tE.s.armor = 1; tE.s.powR.push({ n: 1, r: 1 }); render(); snapshot(); }
+    return mPlay(() => runChoose(me, id, tE.uid));
   }]),
   skill: () => IDS.flatMap(id => CH[id].sk.map((d, i) => [d, i]).filter(([d]) => d.c !== "auto").map(([d, i]) => [d.n, CH[id].short, () => {
     const st = mStage(id); const sk = { id, i, d, via: "" };
-    if (id === "ogawa" && i === 0) { st.al[1].lost = true; st.al[1].hp = 0; render(); snapshot(); }
+    if (id === "ogawa" && i === 0) { st.tA.lost = true; st.tA.hp = 0; render(); snapshot(); }
     if (id === "kashima" && i === 1) { /* ツッコミ on an enemy */ }
-    if (id === "chou" && i === 1) { st.en[0].s.debt = 1; render(); snapshot(); }
+    if (id === "chou" && i === 1) { st.tE.s.debt = 1; render(); snapshot(); }
     const t = skillTarget(st, sk);
     return mPlay(() => useSkill(st.me, sk, t ? t.uid : null));
-  }])).concat([["報復", "平林", () => { const st = mStage("hirabayashi"); return mPlay(() => { hurt(st.me, 1, st.en[0]); hurt(st.me, 1, st.en[0]); }); }],
+  }])).concat([["報復", "平林", () => { const st = mStage("hirabayashi"); return mPlay(() => { hurt(st.me, 1, st.tE); hurt(st.me, 1, st.tE); }); }],
                ["陰の実力者", "小福田", () => { const st = mStage("kobukuda"); return mPlay(() => { st.me.s.data = 3; settle(); }); }]]),
   special: () => [
-    ["イカサマルーレット", "風野・ロスト時", () => { const st = mStage("kazano", { enemy: ["morooka", "yamanaka", "ushida"] }); return mPlay(() => { st.me.hp = 0; lose(st.me); }); }],
-    ["最後の奇行", "酒寄・ロスト時", () => { const st = mStage("sakayori"); return mPlay(() => { st.me.hp = 0; lose(st.me); }); }],
-    ["大嘘吐", "諸岡・試合開始時", () => { const st = mStage("morooka"); return mPlay(() => { st.me.lie = true; O({ type: "fx", fx: "lie", uid: st.me.uid, text: "大嘘吐" }); }); }],
-    ["大嘘吐 → 攻撃を受ける", "諸岡", () => { const st = mStage("morooka"); st.me.lie = true; snapshot(); render(); return mPlay(() => damage(st.en[0], st.me, 3, { single: true })); }],
-    ["大嘘吐がバレる", "鹿島のツッコミ", () => { const st = mStage("kashima", { enemy: ["morooka", "yamanaka", "ushida"] }); st.en[0].lie = true; snapshot(); render(); return mPlay(() => useSkill(st.me, { id: "kashima", i: 1, d: CH.kashima.sk[1], via: "" }, st.en[0].uid)); }],
-    ["大嘘吐が終わる", "諸岡", () => { const st = mStage("morooka"); st.me.lie = true; snapshot(); render(); return mPlay(() => { st.me.lie = false; O({ type: "fx", fx: "lieEnd", uid: st.me.uid }); }); }],
-    ["聖力（耐える）", "佐藤", () => { const st = mStage("sato"); return mPlay(() => withRandom(.1, () => { st.me.hp = 1; hurt(st.me, 3, st.en[0]); })); }],
-    ["聖力（耐えられない）", "佐藤", () => { const st = mStage("sato"); return mPlay(() => withRandom(.9, () => { st.me.hp = 1; hurt(st.me, 3, st.en[0]); })); }],
-    ["我慢の限界", "藤倉", () => { const st = mStage("fujikura"); return mPlay(() => { st.me.s.patience = 3; settle(); }); }],
-    ["夜逃", "大橋・取り立て直前", () => { const st = mStage("ohashi"); return mPlay(() => { st.me.s.debt = 3; settle(); }); }],
-    ["吐いた", "卯都木・酔い4", () => { const st = mStage("utsugi"); st.me.s.drunk = 3; snapshot(); return mPlay(() => runAuto(st.me, "utsugi")); }],
-    ["ヘルプ", "仲間が来る", () => { mStage("kazano"); return mPlay(() => doHelp(0)); }],
-    ["パトカード（奇行を通報）", "酒寄", () => { const st = mStage("sakayori"); sideOf(1).hand.push(card("patocard")); return mPlay(() => useSkill(st.me, { id: "sakayori", i: 0, d: CH.sakayori.sk[0], via: "" }, st.en[0].uid)); }]
+    ["イカサマルーレット", "風野・ロスト時", () => { const st = mStage("kazano", { owner: true, enemy: ["morooka", "yamanaka", "ushida"] }); return mPlay(() => { st.me.hp = 0; lose(st.me); }); }],
+    ["最後の奇行", "酒寄・ロスト時", () => { const st = mStage("sakayori", { owner: true }); return mPlay(() => { st.me.hp = 0; lose(st.me); }); }],
+    ["大嘘吐", "諸岡・試合開始時", () => { const st = mStage("morooka", { owner: true }); return mPlay(() => { st.me.lie = true; O({ type: "fx", fx: "lie", uid: st.me.uid, text: "大嘘吐" }); }); }],
+    ["大嘘吐 → 攻撃を受ける", "諸岡", () => { const st = mStage("morooka", { owner: true }); st.me.lie = true; snapshot(); render(); return mPlay(() => damage(st.tE, st.me, 3, { single: true })); }],
+    ["大嘘吐がバレる", "鹿島のツッコミ", () => { const st = mStage("kashima", { owner: true, enemy: ["morooka", "yamanaka", "ushida"] }); st.tE.lie = true; snapshot(); render(); return mPlay(() => useSkill(st.me, { id: "kashima", i: 1, d: CH.kashima.sk[1], via: "" }, st.tE.uid)); }],
+    ["大嘘吐が終わる", "諸岡", () => { const st = mStage("morooka", { owner: true }); st.me.lie = true; snapshot(); render(); return mPlay(() => { st.me.lie = false; O({ type: "fx", fx: "lieEnd", uid: st.me.uid }); }); }],
+    ["聖力（耐える）", "佐藤", () => { const st = mStage("sato", { owner: true }); return mPlay(() => withRandom(.1, () => { st.me.hp = 1; hurt(st.me, 3, st.tE); })); }],
+    ["聖力（耐えられない）", "佐藤", () => { const st = mStage("sato", { owner: true }); return mPlay(() => withRandom(.9, () => { st.me.hp = 1; hurt(st.me, 3, st.tE); })); }],
+    ["我慢の限界", "藤倉", () => { const st = mStage("fujikura", { owner: true }); return mPlay(() => { st.me.s.patience = 3; settle(); }); }],
+    ["夜逃", "大橋・取り立て直前", () => { const st = mStage("ohashi", { owner: true }); return mPlay(() => { st.me.s.debt = 3; settle(); }); }],
+    ["吐いた", "卯都木・酔い4", () => { const st = mStage("utsugi", { owner: true }); st.me.s.drunk = 3; snapshot(); return mPlay(() => runAuto(st.me, "utsugi")); }],
+    ["ヘルプ", "仲間が来る", () => { mStage("kazano", { owner: true }); return mPlay(() => doHelp(0)); }],
+    ["パトカード（奇行を通報）", "酒寄", () => { const st = mStage("sakayori", { owner: true }); sideOf(1).hand.push(card("patocard")); return mPlay(() => useSkill(st.me, { id: "sakayori", i: 0, d: CH.sakayori.sk[0], via: "" }, st.tE.uid)); }]
   ],
   charge: () => [
     ["ターン開始の収入", "◆チャージ", () => { const st = mStage("kazano"); sideOf(0).n = 3; return mPlay(() => phaseIncome(st.me)); }],
     ["賭狂 7！（◆+7）", "西田", () => { const st = mStage("nishida"); return mPlay(() => withRandom(6.5 / 9, () => runAuto(st.me, "nishida"))); }],
     ["給料日（◆+3）", "カード", () => { const st = mStage("endo"); sideOf(0).hand.push(card("payday")); const k = sideOf(0).hand.at(-1); return mPlay(() => playCard(0, k.uid, null, st.me)); }],
     ["詫び石（◆+1）", "カード", () => { const st = mStage("endo"); sideOf(0).hand.push(card("wabi")); const k = sideOf(0).hand.at(-1); return mPlay(() => playCard(0, k.uid, null, st.me)); }],
-    ["龍炎でロスト（◆+3）", "ヤン", () => { const st = mStage("chou"); st.en[0].hp = 1; snapshot(); render(); return mPlay(() => runAuto(st.me, "chou")); }],
-    ["借金", "借用書", () => { const st = mStage("yamanaka"); return mPlay(() => addDebt(st.en[0], 1, st.me)); }],
-    ["取り立て", "借金3", () => { const st = mStage("yamanaka"); st.en[0].s.debt = 2; snapshot(); return mPlay(() => addDebt(st.en[0], 1, st.me)); }],
+    ["龍炎でロスト（◆+3）", "ヤン", () => { const st = mStage("chou"); st.tE.hp = 1; snapshot(); render(); return mPlay(() => runAuto(st.me, "chou")); }],
+    ["借金", "借用書", () => { const st = mStage("yamanaka"); return mPlay(() => addDebt(st.tE, 1, st.me)); }],
+    ["取り立て", "借金3", () => { const st = mStage("yamanaka"); st.tE.s.debt = 2; snapshot(); return mPlay(() => addDebt(st.tE, 1, st.me)); }],
     ["返済", "借金を返す", () => { const st = mStage("nishida"); st.me.s.debt = 1; snapshot(); render(); return mPlay(() => { pay(0, 1, null); st.me.s.debt--; O({ type: "fx", fx: "repay", uid: st.me.uid }); }); }],
     ["残クレ", "山中", () => { const st = mStage("yamanaka"); return mPlay(() => useSkill(st.me, { id: "yamanaka", i: 0, d: CH.yamanaka.sk[0], via: "" }, null)); }]
   ],
-  buff: () => [["パワー", "powR"], ["装甲", "armor"], ["分析", "ana"], ["回避", "evade"], ["無敵の人", "inv"], ["疾走", "dash"]].map(([n, k]) => [n, "バフ", () => { const st = mStage("endo"); return mPlay(() => addStatus(st.al[1], k, st.me, { n: k === "ana" ? 2 : 1 })); }]).concat([
-    ["装甲で防ぐ", "バフが効く", () => { const st = mStage("chou"); st.en[0].s.armor = 2; snapshot(); render(); return mPlay(() => damage(st.me, st.en[0], 2, { single: true })); }],
-    ["回避でよける", "バフが効く", () => { const st = mStage("chou"); st.en[0].s.evade = 1; snapshot(); render(); return mPlay(() => damage(st.me, st.en[0], 2, { single: true })); }],
-    ["かばう（キャリー）", "佐藤", () => { const st = mStage("sato"); return mPlay(() => useSkill(st.me, { id: "sato", i: 1, d: CH.sato.sk[1], via: "" }, st.al[1].uid)); }],
-    ["推し", "小川", () => { const st = mStage("ogawa"); return mPlay(() => useSkill(st.me, { id: "ogawa", i: 1, d: CH.ogawa.sk[1], via: "" }, st.al[1].uid)); }],
-    ["回復", "+2", () => { const st = mStage("ogawa"); st.al[1].hp = 3; snapshot(); render(); return mPlay(() => heal(st.al[1], 2)); }],
+  buff: () => [["パワー", "powR"], ["装甲", "armor"], ["分析", "ana"], ["回避", "evade"], ["無敵の人", "inv"], ["疾走", "dash"]].map(([n, k]) => [n, "バフ", () => { const st = mStage("endo"); return mPlay(() => addStatus(st.tA, k, st.me, { n: k === "ana" ? 2 : 1 })); }]).concat([
+    ["装甲で防ぐ", "バフが効く", () => { const st = mStage("chou"); st.tE.s.armor = 2; snapshot(); render(); return mPlay(() => damage(st.me, st.tE, 2, { single: true })); }],
+    ["回避でよける", "バフが効く", () => { const st = mStage("chou"); st.tE.s.evade = 1; snapshot(); render(); return mPlay(() => damage(st.me, st.tE, 2, { single: true })); }],
+    ["かばう（キャリー）", "佐藤", () => { const st = mStage("sato"); return mPlay(() => useSkill(st.me, { id: "sato", i: 1, d: CH.sato.sk[1], via: "" }, st.tA.uid)); }],
+    ["推し", "小川", () => { const st = mStage("ogawa"); return mPlay(() => useSkill(st.me, { id: "ogawa", i: 1, d: CH.ogawa.sk[1], via: "" }, st.tA.uid)); }],
+    ["回復", "+2", () => { const st = mStage("ogawa"); st.tA.hp = 3; snapshot(); render(); return mPlay(() => heal(st.tA, 2)); }],
     ["全体回復（ヒール属性）", "+1", () => { const st = mStage("ogawa"); st.al.forEach(x => x.hp = Math.max(1, x.hp - 3)); snapshot(); render(); return mPlay(() => attributeStart(st.me)); }],
-    ["蘇生", "マジ蘇生します", () => { const st = mStage("endo"); st.al[1].lost = true; st.al[1].hp = 0; snapshot(); render(); sideOf(0).hand.push(card("revive")); const k = sideOf(0).hand.at(-1); return mPlay(() => playCard(0, k.uid, st.al[1].uid, st.me)); }],
-    ["解除", "デート", () => { const st = mStage("endo"); st.al[1].s.poison = 2; st.al[1].s.restrain = 1; snapshot(); render(); sideOf(0).hand.push(card("date")); const k = sideOf(0).hand.at(-1); return mPlay(() => playCard(0, k.uid, st.al[1].uid, st.me)); }]
+    ["蘇生", "マジ蘇生します", () => { const st = mStage("endo"); st.tA.lost = true; st.tA.hp = 0; snapshot(); render(); sideOf(0).hand.push(card("revive")); const k = sideOf(0).hand.at(-1); return mPlay(() => playCard(0, k.uid, st.tA.uid, st.me)); }],
+    ["解除", "デート", () => { const st = mStage("endo"); st.tA.s.poison = 2; st.tA.s.restrain = 1; snapshot(); render(); sideOf(0).hand.push(card("date")); const k = sideOf(0).hand.at(-1); return mPlay(() => playCard(0, k.uid, st.tA.uid, st.me)); }]
   ]),
-  debuff: () => [["毒", "poison"], ["パニック", "panic"], ["拘束", "restrain"], ["ダウン", "down"]].map(([n, k]) => [n, "デバフ", () => { const st = mStage("endo"); return mPlay(() => addStatus(st.en[0], k, st.me, { n: 1 })); }]).concat([
-    ["眠らせる", "ちゅっちゅ", () => { const st = mStage("endo"); return mPlay(() => addStatus(st.en[0], "restrain", st.me, { n: 1, sleep: true })); }],
+  debuff: () => [["毒", "poison"], ["パニック", "panic"], ["拘束", "restrain"], ["ダウン", "down"]].map(([n, k]) => [n, "デバフ", () => { const st = mStage("endo"); return mPlay(() => addStatus(st.tE, k, st.me, { n: 1 })); }]).concat([
+    ["眠らせる", "ちゅっちゅ", () => { const st = mStage("endo"); return mPlay(() => addStatus(st.tE, "restrain", st.me, { n: 1, sleep: true })); }],
     ["毒が効く", "ターン開始", () => { const st = mStage("endo"); st.me.s.poison = 2; snapshot(); render(); return mPlay(() => phaseStatus(st.me)); }],
     ["パニックが効く", "ターン開始", () => { const st = mStage("endo"); st.me.s.panic = 2; snapshot(); render(); return mPlay(() => phaseStatus(st.me)); }],
     ["拘束で動けない", "ターン開始", () => { const st = mStage("endo"); st.me.s.restrain = 1; snapshot(); render(); return mPlay(() => O({ type: "fx", fx: "stuck", uid: st.me.uid })); }],
-    ["灰コンブ", "カード", () => { const st = mStage("endo"); sideOf(0).hand.push(card("haikonbu")); const k = sideOf(0).hand.at(-1); return mPlay(() => playCard(0, k.uid, st.en[0].uid, st.me)); }],
+    ["灰コンブ", "カード", () => { const st = mStage("endo"); sideOf(0).hand.push(card("haikonbu")); const k = sideOf(0).hand.at(-1); return mPlay(() => playCard(0, k.uid, st.tE.uid, st.me)); }],
     ["ability封印", "イカサマ", () => { const st = mStage("kazano", { enemy: ["morooka", "yamanaka", "ushida"] }); return mPlay(() => { st.me.hp = 0; lose(st.me); }); }]
   ]),
   cutin: () => [
     ["TURN（ターン開始）", "カットイン", () => { const st = mStage("kazano"); return mPlay(() => O({ type: "turn", uid: st.me.uid })); }],
     ["abilityカットイン", "カットイン", () => { const st = mStage("nishida"); return mPlay(() => O({ type: "fx", fx: "ability", uid: st.me.uid, pid: PID.yamanaka })); }],
-    ["skillカットイン", "カットイン", () => { const st = mStage("chou"); return mPlay(() => useSkill(st.me, { id: "chou", i: 0, d: CH.chou.sk[0], via: "" }, st.en[0].uid)); }],
-    ["カードを使う", "カットイン", () => { const st = mStage("chou"); sideOf(0).hand.push(card("attack")); const k = sideOf(0).hand.at(-1); return mPlay(() => playCard(0, k.uid, st.en[0].uid, st.me)); }],
-    ["掛け声", "お値段以上ヒトリ", () => { const st = mStage("sakayori", { ally: ["nishida", "endo"] }); return mPlay(() => fx("combo", { a: st.me.uid, b: st.al[1].uid, n: "お値段以上ヒトリ", l1: "お値段以上〜？", l2: "ヒトリ！！" })); }],
-    ["ナンパ", "大橋", () => { const st = mStage("ohashi", { ally: ["kashima", "endo"] }); return mPlay(() => fx("combo", { a: st.me.uid, b: st.al[1].uid, n: "ナンパ", l1: "ねえ、このあと時間ある？", l2: NANPA.kashima[0] })); }],
+    ["skillカットイン", "カットイン", () => { const st = mStage("chou"); return mPlay(() => useSkill(st.me, { id: "chou", i: 0, d: CH.chou.sk[0], via: "" }, st.tE.uid)); }],
+    ["カードを使う", "カットイン", () => { const st = mStage("chou"); sideOf(0).hand.push(card("attack")); const k = sideOf(0).hand.at(-1); return mPlay(() => playCard(0, k.uid, st.tE.uid, st.me)); }],
+    ["掛け声", "お値段以上ヒトリ", () => { const st = mStage("sakayori", { ally: ["nishida", "endo"] }); return mPlay(() => fx("combo", { a: st.me.uid, b: st.tA.uid, n: "お値段以上ヒトリ", l1: "お値段以上〜？", l2: "ヒトリ！！" })); }],
+    ["ナンパ", "大橋", () => { const st = mStage("ohashi", { ally: ["kashima", "endo"] }); return mPlay(() => fx("combo", { a: st.me.uid, b: st.tA.uid, n: "ナンパ", l1: "ねえ、このあと時間ある？", l2: NANPA.kashima[0] })); }],
     ["暴走", "西田", () => { const st = mStage("nishida"); return mPlay(() => addDebt(st.me, 1, null, true)); }],
     ["ROUND", "バナー", () => { mStage("kazano"); return mPlay(() => fx("banner", { t: "ROUND 2", s: "ラウンド", c: "#b05cff" })); }],
-    ["攻撃（小）", "ダメージ", () => { const st = mStage("chou"); return mPlay(() => hurt(st.en[0], 1, st.me)); }],
-    ["攻撃（中）", "ダメージ", () => { const st = mStage("chou"); return mPlay(() => hurt(st.en[0], 3, st.me)); }],
-    ["攻撃（大・会心）", "ダメージ", () => { const st = mStage("chou"); return mPlay(() => hurt(st.en[0], 6, st.me)); }],
-    ["ロスト", "LOST", () => { const st = mStage("chou"); st.en[0].hp = 2; snapshot(); render(); return mPlay(() => hurt(st.en[0], 3, st.me)); }],
+    ["攻撃（小）", "ダメージ", () => { const st = mStage("chou"); return mPlay(() => hurt(st.tE, 1, st.me)); }],
+    ["攻撃（中）", "ダメージ", () => { const st = mStage("chou"); return mPlay(() => hurt(st.tE, 3, st.me)); }],
+    ["攻撃（大・会心）", "ダメージ", () => { const st = mStage("chou"); return mPlay(() => hurt(st.tE, 6, st.me)); }],
+    ["ロスト", "LOST", () => { const st = mStage("chou"); st.tE.hp = 2; snapshot(); render(); return mPlay(() => hurt(st.tE, 3, st.me)); }],
     ["勝利画面", "結果", () => { mStage("chou"); return window.OLDFX && OLDFX.L.resultScreen(true); }],
     ["敗北画面", "結果", () => { mStage("chou"); return window.OLDFX && OLDFX.L.resultScreen(false); }]
   ]
@@ -2261,18 +2339,37 @@ async function openMotion() {
   await FXREADY;
   $("devset") && $("devset").remove();
   document.querySelectorAll(".result,.modal").forEach(x => x.remove());
-  mStage("kazano");
-  OLDFX && OLDFX.snd(PREF.vol > 0);
+  applyBg();
+  mStage(MOTION.last || "kazano");
+  window.OLDFX && OLDFX.snd(PREF.vol > 0);
 }
 function renderMotionPanel(act) {
   act.className = "act mine";
   const list = MDEF[MOTION.tab]();
+  const seg = (key, opts) => `<span class="seg2">${opts.map(([v, l]) => `<button type="button" data-${key}="${v}" aria-pressed="${String(MOTION[key]) === String(v)}">${l}</button>`).join("")}</span>`;
   act.innerHTML = `<div class="mpanel"><div class="mhead"><button type="button" id="mBack">‹ 開発者モード</button><b>🎬 モーション</b>${MOTION.busy ? '<span class="thinking"><i></i><i></i><i></i>再生中</span>' : ""}</div>
+    <div class="mopts">${seg("side", [[0, "味方側"], [1, "敵側"]])}${seg("mode", [["owner", "所有者"], ["fixed", "キャラ固定"]])}
+      ${MOTION.mode === "fixed" ? `<select id="mFixed" aria-label="固定するキャラ">${IDS.map(id => `<option value="${id}"${id === MOTION.fixed ? " selected" : ""}>${esc(CH[id].name)}</option>`).join("")}</select>` : ""}
+      <button type="button" id="mReset">状態を解除</button><button type="button" id="mMates">メンバー入れ替え</button></div>
+    <div class="mhint">盤面のキャラをタップすると、そのキャラを対象にします（もう一度タップで解除）。${MOTION.mode === "fixed" ? "キャラ固定：ability・skillなどを選んだキャラが使います（specialは本人）。" : "所有者：そのability・skillを持つキャラが使います。"}</div>
     <div class="mtabs">${MTABS.map(([k, l]) => `<button type="button" data-mt="${k}" aria-pressed="${k === MOTION.tab}">${l}</button>`).join("")}</div>
     <div class="mbtns">${list.map(([n, sub], i) => `<button type="button" data-mi="${i}" ${MOTION.busy ? "disabled" : ""}>${esc(n)}<small>${esc(sub)}</small></button>`).join("")}</div></div>`;
+  const again = () => { if (!MOTION.busy) mStage(MOTION.last || "kazano"); else renderMotionPanel(act); };
   act.querySelector("#mBack").onclick = () => { S = null; openDevSetup(); };
   act.querySelectorAll("[data-mt]").forEach(b => b.onclick = () => { MOTION.tab = b.dataset.mt; sfx("click"); renderMotionPanel(act); });
+  act.querySelectorAll("[data-side]").forEach(b => b.onclick = () => { MOTION.side = +b.dataset.side; MOTION.tgt = null; sfx("click"); again(); });
+  act.querySelectorAll("[data-mode]").forEach(b => b.onclick = () => { MOTION.mode = b.dataset.mode; sfx("click"); again(); });
+  const fx2 = act.querySelector("#mFixed"); if (fx2) fx2.onchange = () => { MOTION.fixed = fx2.value; again(); };
+  act.querySelector("#mReset").onclick = () => { sfx("cleanse"); again(); };
+  act.querySelector("#mMates").onclick = () => { sfx("click"); mShuffle(); again(); };
   act.querySelectorAll("[data-mi]").forEach(b => b.onclick = () => { if (MOTION.busy) return; sfx("click"); list[+b.dataset.mi][2](); });
+}
+// tapping a card in the motion view chooses the target
+function motionTap(uid) {
+  const c = ch(uid), me = ch(S.turnUid); if (!c || !me) return;
+  const grp = c.side === me.side ? "al" : "en", idx = members(c.side).indexOf(c);
+  MOTION.tgt = MOTION.tgt && MOTION.tgt.grp === grp && MOTION.tgt.idx === idx ? null : { grp, idx };
+  UI.mtgt = MOTION.tgt ? uid : null; sfx("click"); renderBoard();
 }
 
 /* ---------- boot: #battle=id,id,id (from the gacha) / #dev ---------- */

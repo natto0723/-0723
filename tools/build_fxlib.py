@@ -79,6 +79,9 @@ one('const a=I?dA(I,A):void 0,t=!I||!!a&&a.team===AA,', 'const a=void 0,t=!!(win
 one('`${a?v(ZA(a)):""}　どれを食べる？`', '`${v(window.__nameOf?window.__nameOf(A):"")}　どれを食べる？`')
 one('const K=["poison","restrain","debt"].filter(M=>M!==o)', 'const K=["poison","restrain","weaken"].filter(M=>M!==o)')
 
+# 泥酔: only the drinker's card wobbles (the whole field used to sway)
+one('P(l.el,"drunk"),P(lA("field"),"sway"),', 'P(l.el,"drunk"),')
+
 # new rules: 亀甲 has no ◆ cost
 one('L.bankFlash(p.side,"loss"),L.floatTxt(L.pt(j),"◆-4（万円）",L.C.red),', '')
 
@@ -141,6 +144,10 @@ def scope(block):
     return "".join(out)
 
 
+# 暴食: the card keeps its shape and size (it became big and round)
+css = css.replace(".xf.st-glutton{border-radius:24px;border-width:3px;scale:1.06;z-index:2;box-shadow:0 0 14px #ff7ac88c;transition:scale .4s,border-radius .4s}", ".xf.st-glutton{box-shadow:0 0 14px #ff7ac88c}")
+css = css.replace(".xf.st-glutton .por{border-radius:21px 21px 0 0}", "")
+css = css.replace("@keyframes xk-grow{50%{scale:1.14}}", "@keyframes xk-grow{50%{scale:1.05}}")
 scoped = scope(css) + """
 /* new battle: bigger played card (instead of scaling it up) */
 .xlayer .castcard{width:168px;min-height:224px;margin:-112px 0 0 -84px;padding:32px 12px 12px;-webkit-font-smoothing:antialiased}
