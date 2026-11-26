@@ -123,6 +123,7 @@ svg text { font-family: var(--font-body); }
 .sheet { position: absolute; z-index: 20; right: max(12px, env(safe-area-inset-right, 0px)); top: calc(66px + env(safe-area-inset-top, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); width: min(380px, calc(100% - 24px)); display: none; flex-direction: column; border-radius: 16px; background: var(--panel); border: 1px solid var(--c, var(--line)); box-shadow: 0 0 40px rgba(0, 0, 0, .6), 0 0 24px color-mix(in srgb, var(--c, #9b5cff) 35%, transparent); overflow: hidden; }
 .sheet.on { display: flex; animation: slideIn .3s cubic-bezier(.2, .8, .2, 1); }
 @keyframes slideIn { from { transform: translateX(30px); opacity: 0; } }
+.sh-img { display: block; width: 100%; aspect-ratio: 16 / 7; object-fit: cover; flex: none; border-bottom: 1px solid var(--c); }
 .sh-head { position: relative; padding: 16px 48px 14px 16px; background: linear-gradient(135deg, color-mix(in srgb, var(--c, #9b5cff) 40%, transparent), transparent 70%); border-bottom: 1px solid rgba(255, 255, 255, .1); }
 .sh-head .no { font: 700 11px var(--font-num); letter-spacing: .2em; color: var(--c, var(--ice)); }
 .sh-head h2 { margin: 4px 0 2px; font: 900 22px/1.2 var(--font-body); }
@@ -143,6 +144,7 @@ svg text { font-family: var(--font-body); }
 .act.ghost { height: 38px; border-color: rgba(201, 198, 214, .35); background: transparent; box-shadow: none; font-size: 12px; color: var(--dim); }
 @media (max-width: 700px) and (orientation: portrait) {
   .sheet { left: 0; right: 0; top: auto; bottom: 0; width: auto; max-height: 64%; border-radius: 18px 18px 0 0; border-bottom: 0; }
+  .sh-img { aspect-ratio: 16 / 5; }
   @keyframes slideIn { from { transform: translateY(40px); opacity: 0; } }
 }
 
@@ -224,10 +226,10 @@ svg text { font-family: var(--font-body); }
      DATA — from the spec (all provisional there)
      ========================================================= */
   const CITIES = [
-    { no: 1, id: "sloth", name: "スロース・アーケード", sin: "怠惰", c: "#48e1ff", district: "PARK 遊園地跡", where: "右（アジトの隣）・出発と帰還",
+    { no: 1, id: "sloth", name: "スリープ・ベッド", title: "月と怠惰の街", img: "img/city_sloth.webp", sin: "怠惰", c: "#48e1ff", district: "PARK 遊園地跡", where: "右（アジトの隣）・出発と帰還",
       view: "壊れた観覧車と、無数のゲーム看板が並ぶ電脳遊戯街。",
       gimmicks: ["眠りの霧（ブルーライト）：視界が悪く、一部のルートが隠されている。", "放置されたアーケード筐体を調べると、過去の記憶の断片（サブイベント）が見られる。"] },
-    { no: 2, id: "gluttony", name: "グラトニー・マーケット", sin: "暴食", c: "#ff9b3d", district: "PORT 港湾エリア", where: "右下",
+    { no: 2, id: "gluttony", name: "フレア・ファクトリー", title: "太陽と暴食の港", img: "img/city_gluttony.webp", sin: "暴食", c: "#ff9b3d", district: "PORT 港湾エリア", where: "右下",
       view: "巨大なクレーンとコンテナ倉庫、廃市場が連なる湾岸地区。",
       gimmicks: ["物資の残骸：壊れた自動販売機やコンテナから、カード生成用の素材が多く手に入る。", "人の記憶の罪達（雑魚敵）が徘徊しており、連戦になりやすい。"] },
     { no: 3, id: "greed", name: "グリード・バンク", sin: "強慾", c: "#f2c14e", district: "高層ビル群", where: "下",
@@ -266,14 +268,15 @@ svg text { font-family: var(--font-body); }
   const arcPath = (d1, d2) => { let s = ""; for (let d = d1; d <= d2 + .01; d += 2) { const p = pt(Math.min(d, d2)); s += (s ? "L" : "M") + p.x.toFixed(1) + " " + p.y.toFixed(1); } return s; };
 
   function draw() {
-    const gap = 13; // degrees kept clear around each city on the route
+    const gap = i => CITIES[i % 7].img ? 22 : 13; // degrees kept clear around each city on the route
     const segs = CITIES.map((c, i) => {
-      const d1 = ang(i) + gap, d2 = ang(i + 1) - gap;
+      const d1 = ang(i) + gap(i), d2 = ang(i + 1) - gap(i + 1);
       const lit = i < cleared; // route from city i to the next is lit once city i is cleared
       return `<path class="seg ${lit ? "lit" : ""}" d="${arcPath(d1, d2)}" stroke="${lit ? c.c : "rgba(160,150,210,.28)"}" ${lit ? 'filter="url(#glow)"' : 'stroke-dasharray="4 8"'} marker-end="url(#arrow${lit ? "Lit" : ""})"/>`;
     }).join("");
     const nodes = CITIES.map((c, i) => {
       const s = stateOf(i);
+      if (c.img) return tileNode(c, i, s);
       return `<g class="node ${s}" data-i="${i}" tabindex="0" role="button" aria-label="${c.no} ${c.name}（${c.sin}・${STATE_JP[s]}）">
         <polygon class="ring" points="${hexPath(c.x, c.y, 58)}" stroke="${c.c}"/>
         <polygon class="hex hexfill" points="${hexPath(c.x, c.y, 50)}" fill="url(#hexg${i})" stroke="${s === "locked" ? "rgba(200,190,240,.45)" : c.c}" stroke-width="3" ${s !== "locked" ? 'filter="url(#glow)"' : ""}/>
@@ -297,6 +300,9 @@ svg text { font-family: var(--font-body); }
         <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
         <filter id="glowStrong" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="9" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
         <filter id="soft"><feGaussianBlur stdDeviation="6"/></filter>
+        <filter id="gray"><feColorMatrix type="saturate" values=".15"/></filter>
+        <radialGradient id="tileFade" cx="50%" cy="50%" r="50%"><stop offset="72%" stop-color="#fff"/><stop offset="100%" stop-color="#000"/></radialGradient>
+        <mask id="tileMask" maskContentUnits="objectBoundingBox"><ellipse cx=".5" cy=".5" rx=".5" ry=".5" fill="url(#tileFade)"/></mask>
         <marker id="arrow" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="rgba(160,150,210,.5)"/></marker>
         <marker id="arrowLit" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#fff"/></marker>
       </defs>
@@ -308,7 +314,7 @@ svg text { font-family: var(--font-body); }
       ${[200, 300, 420].map(r => `<circle cx="${CX}" cy="${CY}" r="${r}" fill="none" stroke="rgba(120,110,220,.12)"/>`).join("")}
       <!-- the route round the 7 cities (clockwise) -->
       <g>${segs}</g>
-      <text x="${CX + RX * .74 + 40}" y="${CY + RY * .74 + 26}" font-size="12" fill="#a7a2c6" font-weight="700">時計回り</text>
+      <text x="${pt(64).x + 34}" y="${pt(64).y - 6}" font-size="12" fill="#a7a2c6" font-weight="700">時計回り ↻</text>
       <!-- ring road (the old Shuto Expressway inner circular route) -->
       <circle cx="${CX}" cy="${CY}" r="150" fill="none" stroke="rgba(200,190,240,.55)" stroke-width="7" opacity=".35"/>
       <circle cx="${CX}" cy="${CY}" r="150" fill="none" stroke="#d9e6ff" stroke-width="1.5" stroke-dasharray="10 8" opacity=".7"/>
@@ -324,10 +330,10 @@ svg text { font-family: var(--font-body); }
         <text x="${CX}" y="${CY + 40}" text-anchor="middle" font-size="11" font-weight="700" fill="${done ? "#4ce39a" : "#ff9aa8"}">${done ? "バリア解除・侵入可能" : "バリア（干渉ノイズ）で封鎖"}</text>
       </g>
       <!-- bridge from 怠惰 to the crater (after the full loop) -->
-      <line class="bridge" x1="${sl.x - 56}" y1="${sl.y}" x2="${CX + 128}" y2="${CY}" stroke="${done ? "#fff" : "rgba(200,190,240,.35)"}" stroke-width="${done ? 5 : 3}" stroke-dasharray="${done ? "0" : "6 7"}" ${done ? 'filter="url(#glowStrong)"' : ""}/>
-      <text x="${(sl.x + CX + 70) / 2}" y="${CY - 12}" text-anchor="middle" font-size="12" font-weight="700" fill="${done ? "#fff" : "#a7a2c6"}">${done ? "橋が繋がった" : "一周後に橋"}</text>
+      <line class="bridge" x1="${sl.x - (sl.img ? TW / 2 + 4 : 56)}" y1="${sl.y}" x2="${CX + 128}" y2="${CY}" stroke="${done ? "#fff" : "rgba(200,190,240,.35)"}" stroke-width="${done ? 5 : 3}" stroke-dasharray="${done ? "0" : "6 7"}" ${done ? 'filter="url(#glowStrong)"' : ""}/>
+      <text x="${(sl.x - (sl.img ? TW / 2 : 56) + CX + 128) / 2}" y="${CY - 12}" text-anchor="middle" font-size="12" font-weight="700" fill="${done ? "#fff" : "#a7a2c6"}">${done ? "橋が繋がった" : "一周後に橋"}</text>
       <!-- link and the hideout -->
-      <line x1="${sl.x + 56}" y1="${sl.y}" x2="${HIDE.x - 74}" y2="${HIDE.y}" stroke="#d9e6ff" stroke-width="2" stroke-dasharray="3 5" opacity=".7"/>
+      <line x1="${sl.x + (sl.img ? TW / 2 + 4 : 56)}" y1="${sl.y}" x2="${HIDE.x - 74}" y2="${HIDE.y}" stroke="#d9e6ff" stroke-width="2" stroke-dasharray="3 5" opacity=".7"/>
       <g class="node home" id="hideNode" tabindex="0" role="button" aria-label="HIDEOUT アジト（拠点）">
         <rect x="${HIDE.x - 74}" y="${HIDE.y - 70}" width="148" height="140" rx="14" fill="rgba(25,14,52,.92)" stroke="#fff" stroke-width="2.5" filter="url(#glow)" class="hex"/>
         <path transform="translate(${HIDE.x - 22} ${HIDE.y - 58})" d="M2 22L22 6l20 16v20H30V30H14v12H2z" fill="rgba(155,92,255,.5)" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>
@@ -348,6 +354,26 @@ svg text { font-family: var(--font-body); }
     bindTap($("gzNode"), openGZ);
     $("locks").innerHTML = CITIES.map((c, i) => `<i class="${i < cleared ? "on" : ""}" style="--c:${c.c}" title="${c.sin}"></i>`).join("") + `<b>${cleared}/7</b>`;
   }
+  // a city with its own illustration: the picture cut to a soft-edged oval, outlined in the sin's colour
+  const TW = 236, TH = 132;
+  function tileNode(c, i, s) {
+    const x = c.x - TW / 2, y = c.y - TH / 2, lockC = "rgba(200,190,240,.45)";
+    return `<g class="node tile ${s}" data-i="${i}" tabindex="0" role="button" aria-label="${c.no} ${c.name}（${c.title}・${c.sin}・${STATE_JP[s]}）">
+      <ellipse class="ring" cx="${c.x}" cy="${c.y}" rx="${TW / 2 + 6}" ry="${TH / 2 + 6}" stroke="${c.c}"/>
+      <ellipse cx="${c.x}" cy="${c.y}" rx="${TW / 2}" ry="${TH / 2}" fill="#05030b"/>
+      <image class="hex" href="${A(c.img)}" x="${x}" y="${y}" width="${TW}" height="${TH}" preserveAspectRatio="xMidYMid slice" mask="url(#tileMask)" ${s === "locked" ? 'filter="url(#gray)"' : ""}/>
+      <ellipse cx="${c.x}" cy="${c.y}" rx="${TW / 2}" ry="${TH / 2}" fill="none" stroke="${s === "locked" ? lockC : c.c}" stroke-width="2.5" ${s !== "locked" ? 'filter="url(#glow)"' : ""}/>
+      <circle cx="${x + 18}" cy="${y + 14}" r="14" fill="#0b0716" stroke="${s === "locked" ? lockC : c.c}" stroke-width="2"/>
+      <text x="${x + 18}" y="${y + 19}" text-anchor="middle" font-size="14" font-weight="700" font-family="Chakra Petch, sans-serif" fill="#fff">${c.no}</text>
+      <circle cx="${x + 46}" cy="${y + 8}" r="14" fill="${s === "locked" ? "#2a2440" : c.c}" stroke="#fff" stroke-width="1.5"/>
+      <text x="${x + 46}" y="${y + 14}" text-anchor="middle" font-size="15" font-weight="900" fill="${s === "locked" ? "#bdb6e0" : "#0b0716"}">${c.sin[0]}</text>
+      ${s === "cleared" ? `<circle cx="${x + TW - 18}" cy="${y + 14}" r="14" fill="#f2c14e"/><path d="M${x + TW - 25} ${y + 14}l5 5 9-10" fill="none" stroke="#0b0716" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>` : ""}
+      ${s === "locked" ? `<g transform="translate(${x + TW - 30} ${y - 2})"><rect x="0" y="9" width="20" height="15" rx="3" fill="#2a2440" stroke="#bdb6e0" stroke-width="1.5"/><path d="M4 9V6a6 6 0 0 1 12 0v3" fill="none" stroke="#bdb6e0" stroke-width="1.8"/></g>` : ""}
+      <rect x="${c.x - 100}" y="${c.y + TH / 2 + 4}" width="200" height="46" rx="8" fill="rgba(8,5,18,.9)" stroke="${s === "locked" ? lockC : c.c}" stroke-width="1.5"/>
+      <text x="${c.x}" y="${c.y + TH / 2 + 24}" text-anchor="middle" font-size="15" font-weight="700" fill="${s === "locked" ? "#a7a2c6" : "#fff"}">${c.name}</text>
+      <text x="${c.x}" y="${c.y + TH / 2 + 41}" text-anchor="middle" font-size="11" fill="#d9e6ff">${c.title} ・ ${c.district}</text>
+    </g>`;
+  }
   function bindTap(el, fn) {
     el.addEventListener("click", e => { e.stopPropagation(); if (moved) return; fn(); });
     el.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fn(); } });
@@ -362,7 +388,7 @@ svg text { font-family: var(--font-body); }
   function closeSheet() { $("sheet").classList.remove("on"); }
   function openCity(i) {
     const c = CITIES[i], s = stateOf(i); decide(); focusOn(c.x, c.y);
-    sheet(c.c, `<div class="sh-head"><span class="no">CITY ${c.no} / 7 ・ ${esc(c.where)}</span><h2>${esc(c.name)}</h2><div class="sub">大罪：${esc(c.sin)} ・ ${esc(c.district)}</div><span class="state ${s}">${STATE_JP[s]}</span><button class="x" type="button" aria-label="閉じる">${closeIco}</button></div>
+    sheet(c.c, `${c.img ? `<img class="sh-img" src="${A(c.img)}" alt="${esc(c.title)}の景色">` : ""}<div class="sh-head"><span class="no">CITY ${c.no} / 7 ・ ${esc(c.where)}</span><h2>${esc(c.name)}</h2><div class="sub">${c.title ? esc(c.title) + " ・ " : ""}大罪：${esc(c.sin)} ・ ${esc(c.district)}</div><span class="state ${s}">${STATE_JP[s]}</span><button class="x" type="button" aria-label="閉じる">${closeIco}</button></div>
       <div class="sh-body"><div><h3>LANDMARK — ランドマーク・景観</h3><p>${esc(c.view)}</p></div>
       <div><h3>GIMMICK — ギミック・探索要素</h3><ul>${c.gimmicks.map(g => `<li>${esc(g)}</li>`).join("")}</ul></div>
       ${s === "locked" ? `<p style="color:var(--dim)">ひとつ前の都市（${esc(CITIES[i - 1].name)}）を攻略すると解放されます。</p>` : ""}</div>
@@ -375,7 +401,7 @@ svg text { font-family: var(--font-body); }
     sheet(done ? "#c25cff" : "#ff4d5e", `<div class="sh-head"><span class="no">FINAL DESTINATION</span><h2>GROUND ZERO</h2><div class="sub">爆心地 ・ マップ中心（東京の中心）</div><span class="state ${done ? "open" : "locked"}" style="--c:#c25cff">${done ? "侵入可能" : "封鎖中"}</span><button class="x" type="button" aria-label="閉じる">${closeIco}</button></div>
       <div class="sh-body"><div><h3>VIEW — 外観</h3><p>東京の中心にぽっかりと空いた巨大なクレーターと、紫色のエネルギーが渦巻く領域。高速道路のような環状線（かつての首都高都心環状線）が取り囲む。</p></div>
       <div><h3>LOCK — 封鎖</h3><p>強力なバリア（干渉ノイズ）で閉ざされている。七つの大罪の都市をすべて攻略し、記憶のロックを解除すると入れる。</p></div>
-      <div><h3>ENTRANCE — 入り口</h3><p>7都市を一周し、12時の怠惰（スロース・アーケード）に戻ると、そこから爆心地への橋が繋がる。</p></div>
+      <div><h3>ENTRANCE — 入り口</h3><p>7都市を一周し、12時の怠惰（${esc(CITIES[0].name)}）に戻ると、そこから爆心地への橋が繋がる。</p></div>
       <p>記憶のロック：<b>${cleared} / 7</b> 解除</p></div>
       <div class="sh-foot"><button class="act" type="button" id="goGZ" ${done ? "" : "disabled"}>${done ? "爆心地へ侵入する" : "まだ入れない"}</button></div>`);
     if (done) $("goGZ").addEventListener("click", () => { decide(); toast("GROUND ZERO は準備中です"); });
