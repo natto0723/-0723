@@ -495,12 +495,18 @@ input[type=range] { width: 150px; accent-color: var(--violet); }
       nav.append(b);
     }
   }
+  // links between the three pages; the standalone build links to the neighbouring .html files instead
+  const PAGE = (url, file) => (window.__ASSETS ? file : url);
+  function openPage(href) { const a = document.createElement("a"); a.href = href; a.target = "_blank"; a.rel = "noopener"; document.body.append(a); a.click(); a.remove(); }
+  const MAP_URL = PAGE("https://claude.ai/artifact/S3nJDwsvuc8SdeXZjbYr2f", "selectear_map.html");
   const SOON = { selectear: ["SELECTEAR", "本編は準備中です。もう少し待っててね。"], story: ["STORY", "ストーリーは準備中です。"], gacha: ["GACHA", "ガチャは準備中です。"], shop: ["SHOP", "ショップは準備中です。"] };
   function openSoon(k) { $("soonTitle").textContent = SOON[k][0]; $("soonText").textContent = SOON[k][1]; openPanel("p-soon"); }
   for (const b of document.querySelectorAll(".hmenu .mb")) b.addEventListener("click", e => {
     e.stopPropagation(); audio(); const a = b.dataset.act;
     if (a === "selectear") gameStartSE(); else decide();
-    buzz(15); closeTalk(); openSoon(a);
+    buzz(15); closeTalk();
+    if (a === "story") { openPage(MAP_URL); return; }
+    openSoon(a);
   });
   $("coinPlus").addEventListener("click", () => { audio(); decide(); openSoon("shop"); });
 

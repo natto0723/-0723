@@ -188,7 +188,7 @@ canvas.fx { position: absolute; inset: 0; width: 100%; height: 100%; pointer-eve
   <div class="room"></div>
   <div class="floor"></div>
   <div class="topbar">
-    <a class="back" id="toMap" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg><span>マップ</span></a>
+    <div class="right" style="justify-content:flex-start"><a class="back" id="toMap" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg><span>マップ</span></a><a class="back" id="toHome" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M4 21V9l8-6 8 6v12h-6v-7h-4v7z"/></svg><span>ホーム</span></a></div>
     <div class="place"><b>HIDEOUT</b><small>アジト</small></div>
     <div class="right"><button class="snd" type="button" data-snd aria-pressed="true" aria-label="BGMと環境音"><svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4z"/><path class="on" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/><path class="off" d="M16 9l6 6M22 9l-6 6"/></svg></button><div class="coins" aria-label="有料コイン"><span class="coin-ic" aria-hidden="true"></span><span class="lb">有料<br>コイン</span><span class="val" data-coins>0</span></div></div>
   </div>
@@ -293,8 +293,13 @@ canvas.fx { position: absolute; inset: 0; width: 100%; height: 100%; pointer-eve
   let scene = "gate";
   function show(id) { $("toast").hidden = true; for (const s of ["gate", "hideout"]) $(s).classList.toggle("on", s === id); scene = id; if (id === "hideout") rainSize(); syncMusic(); }
   // the map page (separate artifact); the map's own link back is set there
-  const MAP_URL = "https://claude.ai/artifact/S3nJDwsvuc8SdeXZjbYr2f";
-  $("toMap").href = MAP_URL;
+  // links between the three pages; the standalone build links to the neighbouring .html files instead
+  const PAGE = (url, file) => (window.__ASSETS ? file : url);
+  function openPage(href) { const a = document.createElement("a"); a.href = href; a.target = "_blank"; a.rel = "noopener"; document.body.append(a); a.click(); a.remove(); }
+  const MAP_URL = PAGE("https://claude.ai/artifact/S3nJDwsvuc8SdeXZjbYr2f", "selectear_map.html");
+  const HOME_URL = PAGE("https://claude.ai/artifact/C6nAaQ9HWy8Vj4py9BMBDB", "selectear.html");
+  $("toMap").href = MAP_URL; $("toHome").href = HOME_URL;
+  for (const id of ["toMap", "toHome"]) $(id).addEventListener("click", () => decide());
   $("enterBtn").addEventListener("click", () => { audio(); if (st.bgm) { music.start(); ambience.start(); } gameStartSE(); buzz([30, 30, 60]); flash(); setTimeout(() => show("hideout"), reduce ? 0 : 250); });
 
   /* =========================================================

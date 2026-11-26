@@ -90,8 +90,8 @@ canvas#water { position: absolute; inset: 0; width: 100%; height: 100%; }
 .ci.pic .art > img:first-child { filter: drop-shadow(0 0 10px var(--c)) drop-shadow(0 14px 18px rgba(0, 0, 0, .85)) brightness(.82); }
 /* neon: the city's lights sit on their own layers and flicker on and off */
 .ci .art .lt { position: absolute; left: 0; top: 0; width: 100%; height: auto; mix-blend-mode: screen; opacity: .6; pointer-events: none; }
-.ci .art .lt.la { animation: neonA 4.3s linear infinite; }
-.ci .art .lt.lb { animation: neonB 5.9s linear infinite; }
+.ci .art .lt.la { animation: neonA var(--na, 4.3s) linear infinite; animation-delay: var(--nd, 0s); }
+.ci .art .lt.lb { animation: neonB var(--nb, 5.9s) linear infinite; animation-delay: calc(var(--nd, 0s) * 1.7 - 1.3s); }
 .ci.front .art .lt { filter: brightness(1.35) saturate(1.2); }
 .ci.front.pic .art > img:first-child { animation: glow 3.4s ease-in-out infinite; }
 @keyframes glow { 50% { filter: drop-shadow(0 0 22px var(--c)) drop-shadow(0 14px 18px rgba(0, 0, 0, .85)) brightness(.95); } }
@@ -158,14 +158,39 @@ canvas#water { position: absolute; inset: 0; width: 100%; height: 100%; }
 #overview.pan { touch-action: pan-y; cursor: grab; }
 #overview.pan .ov-hint { display: block; left: 50%; right: auto; transform: translateX(-50%); bottom: calc(66px + env(safe-area-inset-bottom, 0px)); white-space: nowrap; }
 .ov-wrap.fly { transition: transform .8s cubic-bezier(.5, 0, .2, 1), opacity .8s; }
-.ov-wrap img { display: block; width: 100%; height: 100%; -webkit-user-drag: none; -webkit-mask-image: radial-gradient(ellipse 70% 72% at 50% 50%, #000 75%, transparent 100%); mask-image: radial-gradient(ellipse 70% 72% at 50% 50%, #000 75%, transparent 100%); }
+.ov-wrap img { display: block; width: 100%; height: 100%; -webkit-user-drag: none;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 14%, #000 86%, transparent 100%), linear-gradient(90deg, transparent 0%, #000 10%, #000 90%, transparent 100%);
+  -webkit-mask-composite: source-in; mask-image: linear-gradient(180deg, transparent 0%, #000 14%, #000 86%, transparent 100%), linear-gradient(90deg, transparent 0%, #000 10%, #000 90%, transparent 100%); mask-composite: intersect; }
 .hs { position: absolute; transform: translate(-50%, -50%); border: 0; background: transparent; padding: 0; cursor: pointer; border-radius: 50%; }
-.hs::after { content: ""; position: absolute; inset: 10%; border-radius: 50%; box-shadow: 0 0 0 2px var(--c), 0 0 30px var(--c); opacity: 0; transition: opacity .2s; }
-.hs:hover::after, .hs:focus-visible::after { opacity: .8; }
+/* touch / hover: a soft bloom of light in the island's colour instead of a thin ring */
+.hs .halo { position: absolute; inset: -18% -10%; border-radius: 50%; background: radial-gradient(ellipse at 50% 55%, color-mix(in srgb, var(--c) 75%, #fff) 0%, color-mix(in srgb, var(--c) 45%, transparent) 30%, transparent 68%); mix-blend-mode: screen; opacity: 0; transform: scale(.85); transition: opacity .25s, transform .35s; pointer-events: none; }
+.hs:hover .halo, .hs:focus-visible .halo, .hs:active .halo { opacity: 1; transform: scale(1.05); }
+.hs:active .halo { opacity: 1; filter: brightness(1.4); }
+/* state: cleared = golden crest and a calm glow, next = pulsing light, locked = darkened under a veil */
+.hs .veil { position: absolute; inset: -8% -4%; border-radius: 50%; background: radial-gradient(ellipse at 50% 50%, rgba(4, 3, 12, .72) 35%, rgba(4, 3, 12, .3) 60%, transparent 72%); pointer-events: none; }
+.hs:not(.locked) .veil { display: none; }
+.hs.locked:hover .veil { opacity: .6; }
+.hs.open .halo { opacity: .55; animation: pulseHalo 2.4s ease-in-out infinite; animation-delay: var(--dl); }
+@keyframes pulseHalo { 50% { opacity: .95; transform: scale(1.04); } }
+.hs.cleared .halo { opacity: .28; background: radial-gradient(ellipse at 50% 55%, rgba(242, 193, 78, .7) 0%, color-mix(in srgb, var(--c) 30%, transparent) 35%, transparent 68%); }
+.hs.cleared:hover .halo { opacity: 1; }
+.hs .crest { position: absolute; left: 50%; top: 2%; transform: translateX(-50%); width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: radial-gradient(circle, #fff6d0, #f2c14e 60%, #b9801a); box-shadow: 0 0 14px #f2c14e, 0 0 30px rgba(242, 193, 78, .6); animation: crest 3.2s ease-in-out infinite; animation-delay: var(--dl); pointer-events: none; }
+.hs .crest svg { width: 17px; height: 17px; fill: #2a1600; }
+@keyframes crest { 50% { transform: translateX(-50%) translateY(-4px); box-shadow: 0 0 20px #f2c14e, 0 0 44px rgba(242, 193, 78, .8); } }
+.hs .lbl .mk { margin-left: 6px; padding: 1px 6px; border-radius: 999px; font: 700 .72em/1.4 var(--font-num); letter-spacing: .1em; background: #f2c14e; color: #2a1600; }
+.hs .lbl .mk.nx { background: var(--c); color: #0b0716; animation: blink 1.6s ease-in-out infinite; }
+.hs .lbl .mk.lk { background: #2a2440; color: #a7a2c6; }
+.hs.cleared .lbl { border-color: #f2c14e; box-shadow: 0 0 12px rgba(242, 193, 78, .5); }
+/* drifting fog that hides the picture's edges */
+.ov-fog { position: absolute; inset: -12% -8%; pointer-events: none; z-index: 2; }
+.ov-fog i { position: absolute; border-radius: 50%; background: radial-gradient(ellipse, rgba(78, 70, 100, .7) 0%, rgba(44, 38, 66, .45) 42%, transparent 70%); filter: blur(16px); animation: fogMove var(--t, 30s) ease-in-out infinite alternate; animation-delay: var(--d0, 0s); }
+@keyframes fogMove { from { transform: translate(var(--fx0, 0), var(--fy0, 0)) scale(1); } to { transform: translate(var(--fx1, 30px), var(--fy1, -10px)) scale(1.12); } }
+.ov-wrap .rim { display: none; }
 .hs:focus-visible { outline: none; }
 .hs .lbl { position: absolute; left: 50%; top: 100%; transform: translate(-50%, -60%); padding: 3px 10px; border-radius: 999px; background: rgba(6, 4, 16, .85); border: 1px solid var(--c); font: 700 var(--fs, 12px) var(--font-body); white-space: nowrap; color: #fff; box-shadow: 0 0 10px color-mix(in srgb, var(--c) 50%, transparent); pointer-events: none; }
 .hs .lbl i { font-style: normal; margin-right: 4px; color: var(--c); font-family: var(--font-num); }
 .hs.locked .lbl { color: var(--dim); border-color: rgba(200, 190, 240, .4); box-shadow: none; }
+.hs { z-index: 3; }
 .ov-home { position: absolute; z-index: 9; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 20px; border-radius: 999px; border: 1px solid #fff; background: linear-gradient(90deg, rgba(155, 92, 255, .75), rgba(8, 5, 18, .9)); font: 800 14px var(--font-body); cursor: pointer; box-shadow: 0 0 18px rgba(155, 92, 255, .6); }
 .ov-home svg { width: 18px; height: 18px; stroke: #fff; fill: none; stroke-width: 2; stroke-linejoin: round; }
 .ov-hint { position: absolute; z-index: 9; right: max(14px, env(safe-area-inset-right, 0px)); bottom: calc(24px + env(safe-area-inset-bottom, 0px)); margin: 0; font: 700 12px var(--font-body); color: var(--ice); animation: blink 2.4s ease-in-out infinite; }
@@ -231,7 +256,17 @@ canvas#water { position: absolute; inset: 0; width: 100%; height: 100%; }
 <!-- OVERVIEW: the whole outside world in one picture; tap a city to fly in -->
 <section class="scene" id="overview" aria-label="外の世界の全体図">
   <div class="ov-sea"></div>
-  <div class="ov-wrap" id="ovWrap"><img id="ovImg" src="img/overview.webp" alt="外の世界の全体図。7つの都市が爆心地を囲んでいる" draggable="false"></div>
+  <div class="ov-wrap" id="ovWrap"><img id="ovImg" src="img/overview.webp" alt="外の世界の全体図。7つの都市が爆心地を囲んでいる" draggable="false"><span class="rim"></span>
+    <div class="ov-fog" aria-hidden="true">
+      <i style="left:-6%;top:-6%;width:44%;height:40%;--t:34s;--fx1:60px;--fy1:20px"></i>
+      <i style="right:-6%;top:-8%;width:46%;height:42%;--t:41s;--fx1:-70px;--fy1:24px;--d0:-9s"></i>
+      <i style="left:-8%;bottom:-8%;width:48%;height:44%;--t:38s;--fx1:70px;--fy1:-26px;--d0:-5s"></i>
+      <i style="right:-8%;bottom:-6%;width:46%;height:42%;--t:45s;--fx1:-64px;--fy1:-18px;--d0:-14s"></i>
+      <i style="left:28%;top:-14%;width:44%;height:28%;--t:36s;--fx1:-80px;--fy1:10px;--d0:-20s"></i>
+      <i style="left:26%;bottom:-16%;width:48%;height:30%;--t:43s;--fx1:90px;--fy1:-8px;--d0:-11s"></i>
+      <i style="left:-14%;top:30%;width:26%;height:44%;--t:32s;--fx1:40px;--fy1:30px;--d0:-7s"></i>
+      <i style="right:-14%;top:28%;width:26%;height:46%;--t:39s;--fx1:-40px;--fy1:-30px;--d0:-17s"></i>
+    </div></div>
   <div class="topbar">
     <button class="back" type="button" id="ovBack"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg><span>戻る</span></button>
     <div class="place"><b>NEON RUIN CITY</b><small>外の世界</small></div>
@@ -289,7 +324,10 @@ canvas#water { position: absolute; inset: 0; width: 100%; height: 100%; }
   const st = Object.assign({ bgm: true, sound: true, vol: 70, vib: true }, store.get("selectear_settings2", {}));
   $("coinVal").textContent = (Number(store.get("selectear_coins", 0)) || 0).toLocaleString("ja-JP");
   // the hideout is its own page
-  const HIDEOUT_URL = "https://claude.ai/artifact/3GSx5C75eQ4oDq7jjGWaa5";
+  // links between the three pages; the standalone build links to the neighbouring .html files instead
+  const PAGE = (url, file) => (window.__ASSETS ? file : url);
+  function openPage(href) { const a = document.createElement("a"); a.href = href; a.target = "_blank"; a.rel = "noopener"; document.body.append(a); a.click(); a.remove(); }
+  const HIDEOUT_URL = PAGE("https://claude.ai/artifact/3GSx5C75eQ4oDq7jjGWaa5", "selectear_hideout.html");
 
   /* =========================================================
      DATA — from the spec (all provisional there)
@@ -418,6 +456,9 @@ canvas#water { position: absolute; inset: 0; width: 100%; height: 100%; }
       }
       d.classList.add(...[pic ? "pic" : "", ...state.split(" ")].filter(Boolean));
       d.style.setProperty("--c", placeColor(p)); d.style.setProperty("--d", (-k * .8) + "s");
+      // each place's neon gets its own speed and starting point, so they never flash together
+      d.style.setProperty("--na", (3.6 + (k * 0.73) % 2.2).toFixed(2) + "s"); d.style.setProperty("--nb", (5 + (k * 1.21) % 2.6).toFixed(2) + "s");
+      d.style.setProperty("--nd", (-(k * 2.37) % 5).toFixed(2) + "s");
       d.setAttribute("aria-label", placeName(p));
       d.innerHTML = `<span class="float"><span class="glow"></span><span class="ripple"></span><span class="art">${inner}</span><span class="refl" aria-hidden="true">${refl || inner}</span></span><span class="tag">${p.kind === "city" ? CITIES[p.i].no + " " : ""}${esc(placeName(p))}</span>`;
       d.addEventListener("click", () => { if (dragMoved) return; if (k === sel) openDetail(); else go(k); });
@@ -484,7 +525,7 @@ canvas#water { position: absolute; inset: 0; width: 100%; height: 100%; }
     if (a === "go") { decide(); toast("バトルと探索は準備中です"); }
     if (a === "demo") clearCity(p.i);
     if (a === "gz") { decide(); toast("GROUND ZERO は準備中です"); }
-    if (a === "home") { decide(); window.open(HIDEOUT_URL, "_blank", "noopener"); }
+    if (a === "home") { decide(); openPage(HIDEOUT_URL); }
   }
   function openDetail() { const p = PLACES[sel]; if (p.kind === "city") openCity(p.i); else if (p.kind === "gz") openGZ(); else openHideout(); }
   function draw() { build(); }
@@ -650,11 +691,13 @@ canvas#water { position: absolute; inset: 0; width: 100%; height: 100%; }
     const wrap = $("ovWrap"); wrap.querySelectorAll(".hs").forEach(n => n.remove());
     for (const [k, x, y, sz] of OV_SPOTS) {
       const p = PLACES[k], b = document.createElement("button"); b.type = "button"; b.className = "hs"; b.dataset.s = sz;
-      const locked = p.kind === "city" ? stateOf(p.i) === "locked" : p.kind === "gz" ? cleared < 7 : false;
-      b.classList.toggle("locked", locked); b.style.left = x + "%"; b.style.top = y + "%"; b.style.setProperty("--c", placeColor(p));
-      const label = p.kind === "city" ? `<i>${CITIES[p.i].no}</i>${esc(CITIES[p.i].name)}` : "GROUND ZERO";
+      const stt = p.kind === "city" ? stateOf(p.i) : p.kind === "gz" ? (cleared >= 7 ? "open" : "locked") : "open";
+      const locked = stt === "locked";
+      b.classList.add(stt); b.style.setProperty("--dl", (-(k * 1.37) % 4) + "s"); b.style.left = x + "%"; b.style.top = y + "%"; b.style.setProperty("--c", placeColor(p));
+      const mark = stt === "cleared" ? '<b class="mk">CLEAR</b>' : stt === "open" && p.kind === "city" ? '<b class="mk nx">NEXT</b>' : stt === "locked" ? '<b class="mk lk">LOCK</b>' : "";
+      const label = (p.kind === "city" ? `<i>${CITIES[p.i].no}</i>${esc(CITIES[p.i].name)}` : "GROUND ZERO") + mark;
       b.setAttribute("aria-label", (p.kind === "city" ? CITIES[p.i].no + " " + CITIES[p.i].name : "GROUND ZERO") + (locked ? "（未解放）" : ""));
-      b.innerHTML = `<span class="lbl">${label}</span>`;
+      b.innerHTML = `<span class="veil"></span><span class="halo"></span>${stt === "cleared" ? '<span class="crest" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 15.6 6.6 18.5l1.2-6L3.3 8.3l6.1-.7z"/></svg></span>' : ""}<span class="lbl">${label}</span>`;
       b.addEventListener("click", () => { if (!ovMoved) flyTo(k, x, y); });
       wrap.append(b);
     }
