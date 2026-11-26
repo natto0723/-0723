@@ -77,7 +77,7 @@ button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 
 /* ---------- MENU ---------- */
 #menu { background: radial-gradient(ellipse at 50% 30%, #1d1040 0%, #07050c 70%); }
-#menu .bgimg { position: absolute; inset: -30px; background: url(img/bg_charge.webp) center / cover; filter: blur(16px) brightness(.35) saturate(1.3); }
+#menu .bgimg { position: absolute; inset: -30px; background: url(img/st_charge.webp) center / cover; filter: blur(16px) brightness(.35) saturate(1.3); }
 .wrap { position: absolute; inset: 0; overflow-y: auto; padding: calc(70px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(110px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; align-items: center; gap: 16px; }
 .seg { display: inline-flex; padding: 4px; border-radius: 999px; background: rgba(8, 5, 18, .8); border: 1px solid var(--line); }
 .seg button { border: 0; background: transparent; padding: 9px 16px; border-radius: 999px; font: 700 13px var(--font-body); color: var(--dim); cursor: pointer; display: flex; gap: 6px; align-items: center; }
@@ -161,19 +161,68 @@ button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 #summon .bg { position: absolute; inset: 0; background: center / cover no-repeat; transition: opacity .5s; }
 #summon .bg.charge { animation: charge 1.6s ease-in-out infinite alternate; }
 @keyframes charge { to { filter: brightness(1.25) saturate(1.2); transform: scale(1.02); } }
-.card3d { position: absolute; z-index: 5; left: 50%; top: 47%; width: min(36vh, 64vw); aspect-ratio: 5 / 7; transform: translate(-50%, -50%); perspective: 1200px; cursor: pointer; }
-.card3d .in { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform .9s cubic-bezier(.3, 1.3, .5, 1); }
+#summon { --cw: min(36vh, 60vw); --cy: 43%; }
+@media (orientation: portrait) { #summon { --cw: min(31vh, 58vw); --cy: 38%; } }
+@media (orientation: landscape) {
+  #summon { --cw: min(44vh, 30vw); --cy: 47%; }
+  #summon .card3d { left: 38%; }
+  #summon .rays { left: 38%; }
+  #summon .fliphint { left: 38%; }
+  #summon .slam { left: calc(38% + var(--cw) * .5 + 6vw); right: auto; top: calc(var(--cy) - 90px); text-align: left; width: min(40vw, 460px); }
+  #summon .sum-info { left: calc(38% + var(--cw) * .5 + 6vw); top: calc(var(--cy) - 6px); transform: none; text-align: left; width: min(40vw, 420px); }
+}
+.card3d { position: absolute; z-index: 5; left: 50%; top: var(--cy); width: var(--cw); aspect-ratio: 5 / 7; transform: translate(-50%, -50%); perspective: 1100px; cursor: pointer; }
+.card3d .tilt { position: absolute; inset: 0; transform-style: preserve-3d; transform: rotateZ(-14deg) rotateX(12deg); transition: transform 1.2s cubic-bezier(.2, .9, .2, 1); }
+.card3d.idle .tilt { animation: hover 2.6s ease-in-out infinite; }
+@keyframes hover { 0%, 100% { transform: rotateZ(-14deg) rotateX(12deg) rotateY(-18deg) translateY(0); } 50% { transform: rotateZ(-10deg) rotateX(8deg) rotateY(18deg) translateY(-10px); } }
+.card3d.shake .tilt { animation: shake .07s linear infinite; }
+.card3d.shake.hard .tilt { animation-duration: .04s; }
+@keyframes shake { 0% { transform: rotateZ(-14deg) rotateX(12deg) translate(-3px, 2px); } 50% { transform: rotateZ(-12deg) rotateX(12deg) translate(3px, -2px); } 100% { transform: rotateZ(-15deg) rotateX(12deg) translate(-2px, -1px); } }
+.card3d.landed .tilt { transform: rotateZ(-4deg) rotateX(4deg); }
+.card3d .in { position: absolute; inset: 0; transform-style: preserve-3d; }
+.card3d .in.spin { animation: spin 2.1s cubic-bezier(.12, .7, .18, 1) forwards; }
+@keyframes spin { 0% { transform: rotateY(0) scale(.7); } 35% { transform: rotateY(900deg) scale(1.08); } 100% { transform: rotateY(1260deg) scale(1); } }
 .card3d.open .in { transform: rotateY(180deg); }
+.card3d.open .in.spin { transform: none; }
+.card3d .in.flipped { transform: rotateY(1260deg); }
+.card3d .in.flipped.back2 { transform: rotateY(1080deg); transition: transform .7s cubic-bezier(.3, 1.3, .5, 1); }
+.card3d .in.flipped.fwd { transition: transform .7s cubic-bezier(.3, 1.3, .5, 1); }
+#summon .bg { transition: filter .4s; }
+#summon.dark .bg { filter: brightness(.25) saturate(.5); }
+.black { position: absolute; inset: 0; z-index: 8; background: #000; opacity: 0; pointer-events: none; transition: opacity .25s; }
+.black.on { opacity: 1; transition: opacity .08s; }
+.rays { position: absolute; z-index: 1; left: 50%; top: var(--cy); width: 220vmax; height: 220vmax; margin: -110vmax 0 0 -110vmax; opacity: 0; pointer-events: none; background: repeating-conic-gradient(from 0deg, color-mix(in srgb, var(--tc, #fff) 70%, transparent) 0deg 4deg, transparent 4deg 16deg); -webkit-mask-image: radial-gradient(circle, #000 0%, transparent 45%); mask-image: radial-gradient(circle, #000 0%, transparent 45%); mix-blend-mode: screen; }
+.rays.on { animation: rays 6s linear infinite, raysIn .6s ease-out forwards; }
+@keyframes rays { to { rotate: 360deg; } }
+@keyframes raysIn { from { opacity: 0; scale: .3; } to { opacity: .9; scale: 1; } }
+.cracks { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 7; pointer-events: none; }
+.cracks path { fill: none; stroke: #fff; stroke-width: .35; vector-effect: non-scaling-stroke; filter: drop-shadow(0 0 3px var(--tc, #fff)) drop-shadow(0 0 8px var(--tc, #fff)); stroke-dasharray: 200; stroke-dashoffset: 200; animation: crack .28s ease-out forwards; }
+.cracks path { stroke-width: 2.4px; }
+@keyframes crack { to { stroke-dashoffset: 0; } }
+.shards { position: absolute; inset: 0; z-index: 6; pointer-events: none; }
+.shards i { position: absolute; inset: 0; background: center / cover no-repeat; will-change: transform, opacity; }
+.shards i.go { transition: transform 1.1s cubic-bezier(.2, .6, .3, 1), opacity 1.1s ease-in; }
+canvas.spark { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 9; pointer-events: none; }
+.slam { position: absolute; z-index: 10; left: 0; right: 0; top: calc(var(--cy) + var(--cw) * .72 + 4px); text-align: center; pointer-events: none; opacity: 0; display: grid; gap: 2px; }
+.slam b { font: 900 clamp(24px, 6vw, 44px)/1.1 var(--font-body); color: #fff; letter-spacing: .04em; text-shadow: 0 0 10px var(--tc), 0 0 30px var(--tc), 0 2px 0 #000; }
+.slam small { font: 800 clamp(13px, 3vw, 18px) var(--font-latin); letter-spacing: .4em; color: var(--tc); text-shadow: 0 0 10px #000; }
+.slam.on { animation: slam .55s cubic-bezier(.2, 1.6, .4, 1) forwards; }
+@keyframes slam { 0% { opacity: 0; transform: scale(3); filter: blur(6px); } 60% { opacity: 1; transform: scale(.92); filter: none; } 100% { opacity: 1; transform: scale(1); } }
+#summon.quake { animation: quake .45s linear; }
+@keyframes quake { 10%, 50%, 90% { transform: translate(-8px, 4px); } 30%, 70% { transform: translate(8px, -5px); } }
+.tease { position: absolute; z-index: 10; left: 0; right: 0; top: 16%; text-align: center; font: 800 clamp(18px, 5vw, 30px) var(--font-latin); letter-spacing: .35em; color: #fff; text-shadow: 0 0 14px var(--tc); opacity: 0; pointer-events: none; }
+.tease.on { animation: tease 1s ease-out forwards; }
+@keyframes tease { 0% { opacity: 0; letter-spacing: 1em; } 40% { opacity: 1; letter-spacing: .35em; } 100% { opacity: 0; } }
 .card3d .back, .card3d .front { position: absolute; inset: 0; border-radius: 14px; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
 .card3d .back { background: center / contain no-repeat; filter: drop-shadow(0 0 24px var(--tc)); }
 .card3d .front, .card3d .back { transition: opacity .2s; }
-.fliphint { position: absolute; z-index: 7; left: 50%; top: calc(47% + min(25vh, 45vw) + 8px); transform: translateX(-50%); padding: 4px 12px; border-radius: 999px; background: rgba(0, 0, 0, .55); border: 1px solid rgba(255, 255, 255, .35); font: 700 11px var(--font-body); white-space: nowrap; }
+.fliphint { position: absolute; z-index: 10; left: 50%; top: calc(var(--cy) - var(--cw) * .72 - 30px); transform: translateX(-50%); padding: 4px 12px; border-radius: 999px; background: rgba(0, 0, 0, .55); border: 1px solid rgba(255, 255, 255, .35); font: 700 11px var(--font-body); white-space: nowrap; }
 .card3d .front { transform: rotateY(180deg); border: 2px solid #fff; background: linear-gradient(160deg, color-mix(in srgb, var(--tc) 45%, #0b0716), #0b0716 70%); box-shadow: 0 0 30px var(--tc), 0 0 80px color-mix(in srgb, var(--tc) 60%, transparent); overflow: hidden; display: flex; flex-direction: column; }
 .card3d.oshi .front { border-image: linear-gradient(135deg, #ff4d5e, #f2c14e, #3ddc84, #4f8cff, #c25cff) 1; }
 .card3d .front .face { flex: 1; }
 .card3d .front img.art, .tc img.art { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .card3d .front { border: 0 !important; background: #0b0716; }
-.sum-info { position: absolute; z-index: 7; left: 50%; top: calc(47% + min(25vh, 45vw) + 36px); transform: translateX(-50%); width: min(420px, 92vw); text-align: center; display: grid; gap: 2px; padding: 8px 12px; border-radius: 12px; background: rgba(4, 3, 12, .72); border: 1px solid var(--tc, #fff); }
+.sum-info { position: absolute; z-index: 10; left: 50%; top: calc(var(--cy) + var(--cw) * .72 + 64px); transform: translateX(-50%); width: min(420px, 92vw); text-align: center; display: grid; gap: 2px; padding: 8px 12px; border-radius: 12px; background: rgba(4, 3, 12, .72); border: 1px solid var(--tc, #fff); }
 .sum-info b { font: 900 18px var(--font-body); }
 .sum-info small { font: 700 11px var(--font-body); color: var(--tc); }
 .sum-info em { font: 500 11.5px var(--font-body); font-style: normal; color: var(--ice); }
@@ -195,7 +244,7 @@ button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 
 /* ---------- RESULT ---------- */
 #result { background: radial-gradient(ellipse at 50% 30%, #1d1040 0%, #07050c 70%); }
-#result .bgimg { position: absolute; inset: -30px; background: url(img/bg_charge.webp) center / cover; filter: blur(14px) brightness(.3) saturate(1.3); }
+#result .bgimg { position: absolute; inset: -30px; background: url(img/st_charge.webp) center / cover; filter: blur(14px) brightness(.3) saturate(1.3); }
 .team { display: grid; grid-template-columns: repeat(3, minmax(0, 220px)); gap: 14px; justify-content: center; width: 100%; }
 .tcw { perspective: 1000px; cursor: pointer; animation: rise .6s cubic-bezier(.2, .9, .3, 1.2) both; }
 .tcw:nth-child(2) { animation-delay: .12s; } .tcw:nth-child(3) { animation-delay: .24s; }
@@ -315,8 +364,15 @@ button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 <!-- PATTERN 2: SELECTEAR SUMMON -->
 <section class="scene" id="summon" aria-label="召喚">
   <div class="bg" id="sumBg"></div>
+  <div class="rays" id="rays"></div>
+  <svg class="cracks" id="cracks" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
+  <div class="shards" id="shards"></div>
+  <canvas class="spark" id="spark" aria-hidden="true"></canvas>
+  <div class="black" id="black"></div>
   <div class="pips" id="pips"></div>
-  <div class="card3d" id="card3d"><div class="in"><div class="back" id="cardBack"></div><div class="front" id="cardFront"></div></div></div>
+  <div class="card3d" id="card3d"><div class="tilt" id="tilt"><div class="in" id="cardIn"><div class="back" id="cardBack"></div><div class="front" id="cardFront"></div></div></div></div>
+  <div class="tease" id="tease"></div>
+  <div class="slam" id="slam"><small id="slamType"></small><b id="slamName"></b></div>
   <span class="fliphint" id="flipHint" hidden>カードをタップで裏表を確認</span>
   <div class="sum-info" id="sumInfo" hidden></div>
   <div class="sumtxt"><b id="sumTitle">SUMMON</b><span id="sumCue">タップして召喚</span></div>
@@ -363,32 +419,32 @@ button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
      DATA (provisional — names from the talk spec; types are a first guess)
      ========================================================= */
   const TYPES = {
-    atk: { en: "ATTACK", jp: "アタック", c: "#ff4d5e", bg: "img/bg_attack.webp" },
-    def: { en: "DEFENSE", jp: "ディフェンス", c: "#4f8cff", bg: "img/bg_defense.webp" },
-    sup: { en: "SUPPORT", jp: "サポート", c: "#f2c14e", bg: "img/bg_support.webp" },
-    heal: { en: "HEAL", jp: "ヒール", c: "#ff6ec8", bg: "img/bg_heal.webp" },
-    spd: { en: "SPEED", jp: "スピード", c: "#3ddc84", bg: "img/bg_speed.webp" }
+    atk: { en: "ATTACK", jp: "アタック", c: "#ff4d5e", bg: "img/st_atk.webp" },
+    def: { en: "DEFENSE", jp: "ディフェンス", c: "#4f8cff", bg: "img/st_def.webp" },
+    sup: { en: "SUPPORT", jp: "サポート", c: "#f2c14e", bg: "img/st_sup.webp" },
+    heal: { en: "HEAL", jp: "ヒール", c: "#ff6ec8", bg: "img/st_heal.webp" },
+    spd: { en: "SPEED", jp: "スピード", c: "#3ddc84", bg: "img/st_spd.webp" }
   };
-  // the 16 SELECTEAR members (full names, rank and HP from the character sheet; type = provisional, from each card's colour)
-  // [id, full name, reading, type, rank, HP, ability, intercom line]
+  // the 16 SELECTEAR members (full names, HP from the character sheet; type and battle style from the type table; 西田 has no card yet)
+  // [id, full name, reading, type, battle style, HP, ability, intercom line]
   const ROSTER = [
-    ["kazano", "風野 桐嗚", "かざの きりお", "sup", "B", 11, "乞食：アイテムを2枚引く（HP3以下なら3枚）", "どうもー！ 製作者兼、案内役でーす！ 開けて開けて！"],
-    ["hirabayashi", "平林 頼生", "ひらばやし らお", "def", "B", 10, "計画：ジョブを選んで仲間に付ける", "段取りはできてる。2回押したら倍返しね。"],
-    ["utsugi", "卯都木 海渡", "うつぎ かいと", "sup", "A", 10, "泥酔：酔うほど強い。4杯目で潰れる", "もう3杯目……4杯目は付き合ってくれる？"],
-    ["kobukuda", "小福田 彪流", "こふくだ たける", "spd", "C", 8, "脱獄：敵のabilityをそのターンだけ盗む", "……データはもう取ってある。開けてくれるよね？"],
-    ["sakayori", "酒寄 将龍", "さかより きりゅう", "atk", "S", 9, "亀甲：場の1人にランダムで状態を付ける", "お値段以上〜？ ……ヒトリ！！"],
-    ["endo", "遠藤 龍", "えんどう りゅう", "spd", "B", 10, "フルカスタム：台パンかエナドリを手札に", "チューニング終わった。背後から失礼するね。"],
-    ["kashima", "鹿島 咲恵", "かしま さえ", "heal", "A", 10, "暴食：3回復。あふれた分は最大HPに", "ご飯おごってくれるなら、開けてあげてもいいけど？"],
-    ["fujikura", "藤倉 琉海", "ふじくら るみ", "atk", "B", 8, "我慢：3回やられたら敵に4ダメージ", "……我慢してるうちに開けて。限界近いから。"],
-    ["yamanaka", "山中 雅文", "やまなか まさふみ", "atk", "C", 13, "銀行：敵1人に借金を押し付ける", "紗彩いる？ ……いない？ じゃあ取り立てに来た。"],
-    ["yanai", "柳井 紗彩", "やない さあや", "heal", "C", 8, "横取：敵のバフを全部奪う", "あれ？ なんで来たんだっけ。忘れた。"],
-    ["sato", "佐藤 麗皇", "さとう れの", "atk", "A", 11, "聖力：50%でHP1で耐える", "悪く思うなよ。……用があって来ただけだ。"],
-    ["morooka", "諸岡 星南", "もろおか せな", "def", "S", 10, "降霊：ロストした仲間の力をもらう", "HP1京の男、参上。……嘘じゃないって。"],
-    ["ohashi", "大橋 央玲", "おおはし ひろあ", "heal", "C", 9, "夜逃：借金して◆+2。取り立て前に飛ぶ", "ねえ、このあと時間ある？"],
-    ["ushida", "牛田 苺花", "うしだ いちか", "atk", "C", 9, "醒：自分以外の全員に1ダメージ", "押したの自分じゃないです。自分は悪くないんで。"],
-    ["chou", "チョウ・ヤン", "チョウ・ヤン", "atk", "A", 12, "龍炎：HPがいちばん低い敵に2ダメージ", "……シマを広げに来た。開けろ。"],
-    ["ogawa", "小川 結菜", "おがわ ゆうな", "heal", "B", 9, "蝶の加護：いちばん弱った仲間を2回復", "推し以外興味ないので✌ ……でも開けて？"]
-  ].map(([id, name, kana, type, rank, hp, abil, line]) => ({ id, name, kana, type, rank, hp, abil, line, img: `img/f_${id}.webp` }));
+    ["kazano", "風野 桐嗚", "かざの きりお", "sup", "プラスドロー（手札使い）", 11, "乞食：アイテムを2枚引く（HP3以下なら3枚）", "どうもー！ 製作者兼、案内役でーす！ 開けて開けて！"],
+    ["hirabayashi", "平林 頼生", "ひらばやし らお", "sup", "マネジメント（策士）", 10, "計画：ジョブを選んで仲間に付ける", "段取りはできてる。2回押したら倍返しね。"],
+    ["utsugi", "卯都木 海渡", "うつぎ かいと", "atk", "ドランクファイター（酔拳士）", 10, "泥酔：酔うほど強い。4杯目で潰れる", "もう3杯目……4杯目は付き合ってくれる？"],
+    ["kobukuda", "小福田 彪流", "こふくだ たける", "spd", "ハッカー（コピー使い）", 8, "脱獄：敵のabilityをそのターンだけ盗む", "……データはもう取ってある。開けてくれるよね？"],
+    ["sakayori", "酒寄 将龍", "さかより きりゅう", "atk", "トリックスター（奇人）", 9, "亀甲：場の1人にランダムで状態を付ける", "お値段以上〜？ ……ヒトリ！！"],
+    ["endo", "遠藤 龍", "えんどう りゅう", "sup", "メカニック（改造屋）", 10, "フルカスタム：台パンかエナドリを手札に", "チューニング終わった。背後から失礼するね。"],
+    ["kashima", "鹿島 咲恵", "かしま さえ", "def", "ヘビータンク（大食い）", 10, "暴食：3回復。あふれた分は最大HPに", "ご飯おごってくれるなら、開けてあげてもいいけど？"],
+    ["fujikura", "藤倉 琉海", "ふじくら るみ", "atk", "バーサーカー（覚醒）", 8, "我慢：3回やられたら敵に4ダメージ", "……我慢してるうちに開けて。限界近いから。"],
+    ["yamanaka", "山中 雅文", "やまなか まさふみ", "sup", "バンカー（銀行家）", 13, "銀行：敵1人に借金を押し付ける", "紗彩いる？ ……いない？ じゃあ取り立てに来た。"],
+    ["yanai", "柳井 紗彩", "やない さあや", "spd", "シーフ（横取り屋）", 8, "横取：敵のバフを全部奪う", "あれ？ なんで来たんだっけ。忘れた。"],
+    ["sato", "佐藤 麗皇", "さとう れの", "def", "パラディン（聖騎士）", 11, "聖力：50%でHP1で耐える", "悪く思うなよ。……用があって来ただけだ。"],
+    ["morooka", "諸岡 星南", "もろおか せな", "sup", "ネクロマンサー（死者使い）", 10, "降霊：ロストした仲間の力をもらう", "HP1京の男、参上。……嘘じゃないって。"],
+    ["ohashi", "大橋 央玲", "おおはし ひろあ", "spd", "エスケープ（夜逃げ屋）", 9, "夜逃：借金して◆+2。取り立て前に飛ぶ", "ねえ、このあと時間ある？"],
+    ["ushida", "牛田 苺花", "うしだ いちか", "atk", "スケープゴート（巻き込み屋）", 9, "醒：自分以外の全員に1ダメージ", "押したの自分じゃないです。自分は悪くないんで。"],
+    ["chou", "チョウ・ヤン", "チョウ・ヤン", "atk", "ドン（マフィアのボス）", 12, "龍炎：HPがいちばん低い敵に2ダメージ", "……シマを広げに来た。開けろ。"],
+    ["ogawa", "小川 結菜", "おがわ ゆうな", "heal", "ヒーラー（推し活）", 9, "蝶の加護：いちばん弱った仲間を2回復", "推し以外興味ないので✌ ……でも開けて？"]
+  ].map(([id, name, kana, type, style, hp, abil, line]) => ({ id, name, kana, type, style, hp, abil, line, img: `img/f_${id}.webp` }));
   const byType = t => ROSTER.filter(r => r.type === t);
   const SIL = '<svg viewBox="0 0 100 110" aria-hidden="true"><circle cx="50" cy="34" r="22"/><path d="M8 110c2-30 20-46 42-46s40 16 42 46z"/></svg>';
   const faceHTML = r => `<div class="face" style="--tc:${TYPES[r.type].c}">${r.img ? `<img src="${A(r.img)}" alt="">` : SIL}</div>`;
@@ -427,7 +483,7 @@ button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
     for (const b of document.querySelectorAll("[data-s]")) b.addEventListener("click", () => { slots.splice(+b.dataset.s, 1); se("tap"); paintSlots(); paintDraw(); });
   }
   function paintRoster() {
-    $("roster").innerHTML = ROSTER.map(r => `<button class="pick" type="button" data-r="${r.id}" aria-pressed="${oshi === r.id}" style="--tc:${TYPES[r.type].c}">${faceHTML(r)}<b>${esc(r.name)}</b><small>${r.rank} ・ ${TYPES[r.type].jp}</small></button>`).join("");
+    $("roster").innerHTML = ROSTER.map(r => `<button class="pick" type="button" data-r="${r.id}" aria-pressed="${oshi === r.id}" style="--tc:${TYPES[r.type].c}">${faceHTML(r)}<b>${esc(r.name)}</b><small>${TYPES[r.type].jp}</small></button>`).join("");
     for (const b of document.querySelectorAll("[data-r]")) b.addEventListener("click", () => { oshi = b.dataset.r; se("tap"); paintRoster(); paintDraw(); });
   }
   function paintDraw() {
@@ -503,36 +559,131 @@ button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
   /* =========================================================
      PATTERN 2: SELECTEAR summon — purple charge, then a card in the type colour (rainbow for the oshi)
      ========================================================= */
-  let si = 0, sumStage = "charge";
+  /* ---- big synthesized sounds (Web Audio) ---- */
+  let ac = null, master = null;
+  function audio() { try { if (!ac) { ac = new (window.AudioContext || window.webkitAudioContext)(); master = ac.createGain(); master.gain.value = st.vol / 100; const comp = ac.createDynamicsCompressor(); master.connect(comp).connect(ac.destination); } if (ac.state === "suspended") ac.resume(); return st.sound ? ac : null; } catch { return null; } }
+  function noise(dur) { const b = ac.createBuffer(1, ac.sampleRate * dur, ac.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; const n = ac.createBufferSource(); n.buffer = b; return n; }
+  function env(node, t, a, peak, d) { const g = ac.createGain(); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + a); g.gain.exponentialRampToValueAtTime(.0001, t + a + d); node.connect(g).connect(master); return g; }
+  const SFX = {
+    riser(dur) { if (!audio()) return; const t = ac.currentTime;
+      const n = noise(dur + .1), f = ac.createBiquadFilter(); f.type = "bandpass"; f.Q.value = 6; f.frequency.setValueAtTime(300, t); f.frequency.exponentialRampToValueAtTime(7000, t + dur); n.connect(f); const g = ac.createGain(); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.5, t + dur); g.gain.exponentialRampToValueAtTime(.0001, t + dur + .08); f.connect(g).connect(master); n.start(t); n.stop(t + dur + .1);
+      for (const k of [0, 7, 12]) { const o = ac.createOscillator(); o.type = "sawtooth"; o.frequency.setValueAtTime(110 * Math.pow(2, k / 12), t); o.frequency.exponentialRampToValueAtTime(440 * Math.pow(2, k / 12), t + dur); const og = ac.createGain(); og.gain.setValueAtTime(.0001, t); og.gain.exponentialRampToValueAtTime(.07, t + dur); og.gain.exponentialRampToValueAtTime(.0001, t + dur + .05); const lp = ac.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 2400; o.connect(lp).connect(og).connect(master); o.start(t); o.stop(t + dur + .1); } },
+    crack() { if (!audio()) return; const t = ac.currentTime; const n = noise(.25), f = ac.createBiquadFilter(); f.type = "highpass"; f.frequency.value = 2500; n.connect(f); env(f, t, .002, .9, .2); n.start(t); n.stop(t + .25); const o = ac.createOscillator(); o.type = "square"; o.frequency.setValueAtTime(2400, t); o.frequency.exponentialRampToValueAtTime(400, t + .08); env(o, t, .002, .15, .08); o.start(t); o.stop(t + .1); },
+    shatter() { if (!audio()) return; const t = ac.currentTime; const n = noise(1.2), f = ac.createBiquadFilter(); f.type = "highpass"; f.frequency.setValueAtTime(1500, t); f.frequency.exponentialRampToValueAtTime(5000, t + 1); n.connect(f); env(f, t, .003, 1, 1); n.start(t); n.stop(t + 1.2);
+      for (let i = 0; i < 18; i++) { const tt = t + .05 + Math.random() * .8, o = ac.createOscillator(); o.type = "sine"; o.frequency.value = 2500 + Math.random() * 4000; env(o, tt, .002, .12, .25); o.start(tt); o.stop(tt + .3); }
+      SFX.boom(.8); },
+    boom(v = 1) { if (!audio()) return; const t = ac.currentTime; const o = ac.createOscillator(); o.type = "sine"; o.frequency.setValueAtTime(140, t); o.frequency.exponentialRampToValueAtTime(32, t + 1.2); env(o, t, .005, 1.1 * v, 1.3); o.start(t); o.stop(t + 1.4); const n = noise(.6), f = ac.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = 900; n.connect(f); env(f, t, .002, .7 * v, .5); n.start(t); n.stop(t + .6); },
+    choir(color) { if (!audio()) return; const t = ac.currentTime; const roots = { atk: 0, def: 2, sup: 4, heal: 7, spd: 5, oshi: 9 }; const r = 220 * Math.pow(2, (roots[color] || 0) / 12);
+      for (const k of [0, 4, 7, 12, 16, 19]) for (const det of [-6, 6]) { const o = ac.createOscillator(); o.type = "sawtooth"; o.frequency.value = r * Math.pow(2, k / 12); o.detune.value = det; const lp = ac.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.setValueAtTime(600, t); lp.frequency.exponentialRampToValueAtTime(4000, t + .5); o.connect(lp); const g = ac.createGain(); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.035, t + .15); g.gain.setValueAtTime(.035, t + 1.4); g.gain.exponentialRampToValueAtTime(.0001, t + 3.2); lp.connect(g).connect(master); o.start(t); o.stop(t + 3.3); }
+      [0, 4, 7, 12, 16, 19, 24].forEach((k, i) => { const tt = t + .1 + i * .06, o = ac.createOscillator(); o.type = "triangle"; o.frequency.value = r * 2 * Math.pow(2, k / 12); env(o, tt, .005, .12, .6); o.start(tt); o.stop(tt + .7); }); },
+    whoosh() { if (!audio()) return; const t = ac.currentTime; const n = noise(1.2), f = ac.createBiquadFilter(); f.type = "bandpass"; f.Q.value = 2; f.frequency.setValueAtTime(400, t); f.frequency.exponentialRampToValueAtTime(3000, t + .4); f.frequency.exponentialRampToValueAtTime(300, t + 1.1); n.connect(f); env(f, t, .05, .6, 1); n.start(t); n.stop(t + 1.2); }
+  };
+
+  /* ---- sparks / confetti ---- */
+  const cv = $("spark"), g = cv.getContext("2d"); let parts = [], cw = 0, ch = 0;
+  function cvSize() { const r = Math.min(devicePixelRatio || 1, 2); cw = innerWidth; ch = innerHeight; cv.width = cw * r; cv.height = ch * r; g.setTransform(r, 0, 0, r, 0, 0); }
+  cvSize(); addEventListener("resize", cvSize);
+  function burstAt(x, y, colors, n = 140, power = 14) { if (reduce) return; for (let i = 0; i < n; i++) { const a = Math.random() * 6.283, sp = 2 + Math.random() * power; parts.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 2, life: 1, dec: .008 + Math.random() * .014, s: 2 + Math.random() * 5, c: colors[i % colors.length], rot: Math.random() * 6, vr: (Math.random() - .5) * .4, kind: Math.random() < .5 ? 0 : 1 }); } }
+  (function tick() { g.clearRect(0, 0, cw, ch); for (const p of parts) { p.x += p.vx; p.y += p.vy; p.vx *= .985; p.vy = p.vy * .985 + .12; p.rot += p.vr; p.life -= p.dec; g.globalAlpha = Math.max(0, p.life); g.fillStyle = p.c; g.save(); g.translate(p.x, p.y); g.rotate(p.rot); if (p.kind) g.fillRect(-p.s, -p.s / 3, p.s * 2, p.s / 1.5); else { g.beginPath(); g.moveTo(0, -p.s * 1.6); g.lineTo(p.s * .5, 0); g.lineTo(0, p.s * 1.6); g.lineTo(-p.s * .5, 0); g.fill(); } g.restore(); } g.globalAlpha = 1; parts = parts.filter(p => p.life > 0); requestAnimationFrame(tick); })();
+
+  /* ---- cracks and shatter ---- */
+  function crackLines(cx, cy, n) {
+    const svg = $("cracks"); let h = "";
+    for (let i = 0; i < n; i++) { let x = cx, y = cy, a = Math.random() * 6.283, d = `M${x} ${y}`; for (let k = 0; k < 6; k++) { a += (Math.random() - .5) * .9; const L = 5 + Math.random() * 12; x += Math.cos(a) * L; y += Math.sin(a) * L * 1.2; d += `L${x.toFixed(1)} ${y.toFixed(1)}`; } h += `<path d="${d}" style="animation-delay:${(Math.random() * .15).toFixed(2)}s"/>`; }
+    svg.insertAdjacentHTML("beforeend", h);
+  }
+  function shatter(oldBg) {
+    const box = $("shards"); box.innerHTML = ""; $("cracks").innerHTML = "";
+    const cx = innerWidth > innerHeight ? 38 : 50, cy = innerWidth > innerHeight ? 47 : 38, N = 18, pts = [];
+    for (let i = 0; i < N; i++) { const a = i / N * 6.283 + Math.random() * .2; pts.push([cx + Math.cos(a) * 160, cy + Math.sin(a) * 160]); }
+    for (let i = 0; i < N; i++) {
+      const p1 = pts[i], p2 = pts[(i + 1) % N], el = document.createElement("i");
+      el.style.backgroundImage = `url(${oldBg})`;
+      el.style.clipPath = `polygon(${cx}% ${cy}%, ${p1[0]}% ${p1[1]}%, ${p2[0]}% ${p2[1]}%)`;
+      box.append(el);
+      const mx = (p1[0] + p2[0]) / 2 - cx, my = (p1[1] + p2[1]) / 2 - cy, L = Math.hypot(mx, my);
+      requestAnimationFrame(() => requestAnimationFrame(() => { el.classList.add("go"); el.style.transform = `translate(${mx / L * 70}vw, ${my / L * 70}vh) rotate(${(Math.random() - .5) * 120}deg) scale(${.6 + Math.random() * .5})`; el.style.opacity = "0"; }));
+    }
+    setTimeout(() => { box.innerHTML = ""; }, 1300);
+  }
+
+  /* =========================================================
+     SELECTEAR summon: idle card → shaking + cracks → shatter into a colour (sometimes a fake colour first)
+     → blackout → the card spins in 3D and lands on the front
+     ========================================================= */
+  const wait = ms => new Promise(r => setTimeout(r, reduce ? Math.min(ms, 60) : ms));
+  let si = 0, sumStage = "charge", runId = 0;
+  const bgOf = m => A(m.oshi ? "img/st_oshi.webp" : TYPES[m.type].bg);
   function startSummon() { show("summon"); si = 0; chargeFor(0); }
   function chargeFor(i) {
-    si = i; sumStage = "charge"; const bg = $("sumBg");
-    bg.style.backgroundImage = `url(${A("img/bg_charge.webp")})`; bg.classList.add("charge");
-    $("card3d").classList.remove("open", "oshi"); $("card3d").style.visibility = "hidden"; $("flipHint").hidden = true; $("sumInfo").hidden = true; $("summon").classList.remove("info");
-    $("sumTitle").textContent = `SUMMON ${i + 1} / 3`; $("sumCue").textContent = "タップして召喚";
+    si = i; sumStage = "charge"; runId++;
+    const bg = $("sumBg"); bg.style.backgroundImage = `url(${A("img/st_charge.webp")})`; bg.classList.add("charge");
+    $("summon").style.setProperty("--tc", "#b48cff"); $("summon").classList.remove("dark", "info");
+    const c = $("card3d"); c.className = "card3d idle"; c.style.visibility = "visible"; c.style.setProperty("--tc", "#b48cff");
+    $("cardIn").className = "in"; $("cardBack").style.backgroundImage = `url(${A("img/back_charge.webp")})`; $("cardFront").innerHTML = "";
+    $("rays").classList.remove("on"); $("slam").classList.remove("on"); $("cracks").innerHTML = ""; $("shards").innerHTML = "";
+    $("flipHint").hidden = true; $("sumInfo").hidden = true;
+    $("sumTitle").textContent = `SUMMON ${i + 1} / 3`; $("sumCue").textContent = "カードをタップして召喚";
     $("pips").innerHTML = [0, 1, 2].map(k => `<i class="${k < i ? "on" : ""}"></i>`).join("");
   }
-  function reveal() {
-    const m = team[si], t = TYPES[m.type]; sumStage = "open";
-    flash(); se("fly"); buzz([40, 20, 40]);
-    const bg = $("sumBg"); bg.classList.remove("charge"); bg.style.backgroundImage = `url(${A(m.oshi ? "img/bg_oshi.webp" : t.bg)})`;
-    $("summon").style.setProperty("--tc", m.oshi ? "#c25cff" : t.c);
-    const c = $("card3d"); c.style.visibility = "visible"; c.style.setProperty("--tc", t.c); c.classList.toggle("oshi", !!m.oshi);
-    $("cardBack").style.backgroundImage = `url(${backOf(m)})`; c.classList.remove("open");
+  function setColor(col, bgUrl, backUrl) {
+    $("summon").style.setProperty("--tc", col); $("card3d").style.setProperty("--tc", col);
+    $("sumBg").style.backgroundImage = `url(${bgUrl})`; $("cardBack").style.backgroundImage = `url(${backUrl})`;
+  }
+  function tease(text) { const t = $("tease"); t.textContent = text; t.classList.remove("on"); void t.offsetWidth; t.classList.add("on"); }
+  function quake() { const s = $("summon"); s.classList.remove("quake"); void s.offsetWidth; s.classList.add("quake"); }
+  async function reveal() {
+    const my = ++runId, m = team[si], t = TYPES[m.type], live = () => my === runId;
+    sumStage = "anim"; $("sumCue").textContent = ""; $("sumTitle").textContent = "";
+    const c = $("card3d"), mid = () => { const r = c.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; };
+    // 1. charge up: the card shakes harder and the screen cracks
+    $("sumBg").classList.remove("charge"); $("summon").classList.add("dark"); c.className = "card3d shake";
+    SFX.riser(1.7); buzz([20, 60, 20, 60, 20]);
+    await wait(700); if (!live()) return; SFX.crack(); crackLines(innerWidth > innerHeight ? 38 : 50, innerWidth > innerHeight ? 47 : 38, 4); c.classList.add("hard");
+    await wait(450); if (!live()) return; SFX.crack(); crackLines(innerWidth > innerHeight ? 38 : 50, innerWidth > innerHeight ? 47 : 38, 6); quake();
+    await wait(450); if (!live()) return; SFX.crack(); crackLines(innerWidth > innerHeight ? 38 : 50, innerWidth > innerHeight ? 47 : 38, 8);
+    await wait(150); if (!live()) return;
+    // 2. shatter into a colour. Sometimes a fake colour first, then it breaks again and goes up
+    const steps = [];
+    if (m.oshi) steps.push(["#f2c14e", A("img/st_gold.webp"), A("img/back_gold.webp"), "???"]);
+    else if (Math.random() < .4) { const others = Object.keys(TYPES).filter(k => k !== m.type); const f = TYPES[others[Math.floor(Math.random() * others.length)]]; steps.push([f.c, A(f.bg), A(BACK[others.find(k => TYPES[k] === f)]), "……？"]); }
+    steps.push([m.oshi ? "#c25cff" : t.c, bgOf(m), backOf(m), m.oshi ? "OSHI !!" : t.en]);
+    let old = A("img/st_charge.webp");
+    for (let k = 0; k < steps.length; k++) {
+      const [col, bg, back, label] = steps[k];
+      $("summon").classList.remove("dark"); setColor(col, bg, back); shatter(old); old = bg;
+      SFX.shatter(); quake(); flash(); buzz([60, 30, 120]); const [x, y] = mid(); burstAt(x, y, [col, "#fff", col], 90, 16);
+      tease(label); c.className = "card3d idle";
+      if (k < steps.length - 1) { await wait(1000); if (!live()) return; c.className = "card3d shake hard"; SFX.riser(.8); await wait(380); if (!live()) return; SFX.crack(); crackLines(innerWidth > innerHeight ? 38 : 50, innerWidth > innerHeight ? 47 : 38, 9); await wait(420); if (!live()) return; }
+    }
+    await wait(900); if (!live()) return;
+    // 3. blackout, then the slanted card spins and lands on its front
+    $("black").classList.add("on"); SFX.boom(.6); await wait(380); if (!live()) return;
+    $("black").classList.remove("on"); flash();
     $("cardFront").innerHTML = `<img class="art" src="${A(m.img)}" alt="${esc(m.name)}のカード">${m.oshi ? '<span class="dup">推し確定</span>' : m.dup ? '<span class="dup">ダブり</span>' : ""}`;
-    $("sumInfo").innerHTML = `<span class="rk">${m.rank}</span><b>${esc(m.name)}</b><small>${esc(m.kana)} ・ ${t.jp} ・ HP ${m.hp}</small><em>${esc(m.abil)}</em>`; $("sumInfo").hidden = false; $("summon").classList.add("info");
-    // show the back first, then turn it over
-    clearTimeout(reveal.t); reveal.t = setTimeout(() => { c.classList.add("open"); $("flipHint").hidden = false; }, reduce ? 0 : 900);
-    $("sumTitle").textContent = m.oshi ? "OSHI ✦ GET" : t.en; $("sumCue").textContent = si < 2 ? "タップで次へ" : "タップでチーム確認";
+    c.className = "card3d"; const inn = $("cardIn"); inn.className = "in"; void inn.offsetWidth; inn.classList.add("spin"); SFX.whoosh();
+    $("rays").classList.remove("on"); void $("rays").offsetWidth; $("rays").classList.add("on");
+    await wait(1350); if (!live()) return;
+    c.classList.add("landed"); SFX.boom(1); SFX.choir(m.oshi ? "oshi" : m.type); quake(); buzz([80, 40, 160]);
+    const col = m.oshi ? ["#ff4d5e", "#f2c14e", "#3ddc84", "#4f8cff", "#c25cff", "#fff"] : [t.c, "#fff", t.c, "#ffe9a8"];
+    { const [x, y] = mid(); burstAt(x, y, col, 220, 20); setTimeout(() => burstAt(x, y - 40, col, 120, 12), 250); }
+    $("slamType").textContent = m.oshi ? "OSHI ✦ " + t.en : t.en; $("slamName").textContent = m.name;
+    $("slam").classList.remove("on"); void $("slam").offsetWidth; $("slam").classList.add("on");
+    await wait(800); if (!live()) return;
+    inn.classList.remove("spin"); inn.classList.add("flipped");
+    $("sumInfo").innerHTML = `<b>${esc(m.style)}</b><small>${esc(m.kana)} ・ ${t.jp} ・ HP ${m.hp}</small><em>${esc(m.abil)}</em>`; $("sumInfo").hidden = false;
+    $("flipHint").hidden = false; sumStage = "open";
+    $("sumTitle").textContent = ""; $("sumCue").textContent = si < 2 ? "画面をタップで次へ" : "画面をタップでチーム確認";
     $("pips").innerHTML = [0, 1, 2].map(k => `<i class="${k <= si ? "on" : ""}"></i>`).join("");
   }
   $("summon").addEventListener("click", e => {
     if (e.target.closest("#skipSum")) return;
-    if (sumStage === "open" && e.target.closest("#card3d")) { clearTimeout(reveal.t); $("card3d").classList.toggle("open"); se("switch"); return; }
-    if (sumStage === "charge") reveal();
+    if (sumStage === "anim") return;
+    if (sumStage === "open" && e.target.closest("#card3d")) { const inn = $("cardIn"); const b = inn.classList.toggle("back2"); inn.classList.toggle("fwd", !b); se("switch"); return; }
+    if (sumStage === "charge") { audio(); reveal(); }
     else { se("switch"); if (si < 2) chargeFor(si + 1); else toResult(); }
   });
-  $("skipSum").addEventListener("click", () => { se("tap"); toResult(); });
+  $("skipSum").addEventListener("click", () => { runId++; $("black").classList.remove("on"); se("tap"); toResult(); });
 
   /* =========================================================
      RESULT
@@ -542,7 +693,7 @@ button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
     vDoor.pause(); vMon.pause(); doorStage = 0;
     show("result"); se("decide");
     $("resMode").textContent = MODE_JP[lastMode] + " の結果";
-    $("team").innerHTML = team.map(m => { const t = TYPES[m.type]; return `<div class="tcw" role="button" tabindex="0" aria-label="${esc(m.name)}のカード（タップで裏表）" style="--tc:${t.c}"><div class="in"><div class="tc"><img class="art" src="${A(m.img)}" alt=""><span class="badge">${m.rank} ・ ${t.en}</span>${m.oshi ? '<span class="oshi">推し</span>' : ""}</div><div class="tb" style="background-image:url(${backOf(m)})"></div></div><div class="nm"><b>${esc(m.name)}${m.dup ? " ×2" : ""}</b><small>${t.jp} ・ HP ${m.hp}</small></div></div>`; }).join("");
+    $("team").innerHTML = team.map(m => { const t = TYPES[m.type]; return `<div class="tcw" role="button" tabindex="0" aria-label="${esc(m.name)}のカード（タップで裏表）" style="--tc:${t.c}"><div class="in"><div class="tc"><img class="art" src="${A(m.img)}" alt=""><span class="badge">${t.en}</span>${m.oshi ? '<span class="oshi">推し</span>' : ""}</div><div class="tb" style="background-image:url(${backOf(m)})"></div></div><div class="nm"><b>${esc(m.name)}${m.dup ? " ×2" : ""}</b><small>${t.jp} ・ HP ${m.hp}</small></div></div>`; }).join("");
     for (const w of $("team").querySelectorAll(".tcw")) { const f = () => { w.classList.toggle("flip"); se("switch"); }; w.addEventListener("click", f); w.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); f(); } }); }
     const counts = {}; for (const m of team) counts[m.type] = (counts[m.type] || 0) + 1;
     $("mix").innerHTML = Object.entries(counts).map(([k, n]) => `<span style="--tc:${TYPES[k].c}">${TYPES[k].jp} ×${n}</span>`).join("");
