@@ -123,7 +123,7 @@ svg text { font-family: var(--font-body); }
 .sheet { position: absolute; z-index: 20; right: max(12px, env(safe-area-inset-right, 0px)); top: calc(66px + env(safe-area-inset-top, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); width: min(380px, calc(100% - 24px)); display: none; flex-direction: column; border-radius: 16px; background: var(--panel); border: 1px solid var(--c, var(--line)); box-shadow: 0 0 40px rgba(0, 0, 0, .6), 0 0 24px color-mix(in srgb, var(--c, #9b5cff) 35%, transparent); overflow: hidden; }
 .sheet.on { display: flex; animation: slideIn .3s cubic-bezier(.2, .8, .2, 1); }
 @keyframes slideIn { from { transform: translateX(30px); opacity: 0; } }
-.sh-img { display: block; width: 100%; aspect-ratio: 16 / 7; object-fit: cover; flex: none; border-bottom: 1px solid var(--c); }
+.sh-img { display: block; width: 100%; aspect-ratio: 16 / 8; object-fit: contain; flex: none; padding: 8px 12px 0; background: radial-gradient(ellipse at 50% 70%, color-mix(in srgb, var(--c) 30%, transparent), transparent 70%); filter: drop-shadow(0 0 8px var(--c)); }
 .sh-head { position: relative; padding: 16px 48px 14px 16px; background: linear-gradient(135deg, color-mix(in srgb, var(--c, #9b5cff) 40%, transparent), transparent 70%); border-bottom: 1px solid rgba(255, 255, 255, .1); }
 .sh-head .no { font: 700 11px var(--font-num); letter-spacing: .2em; color: var(--c, var(--ice)); }
 .sh-head h2 { margin: 4px 0 2px; font: 900 22px/1.2 var(--font-body); }
@@ -300,7 +300,8 @@ svg text { font-family: var(--font-body); }
         <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
         <filter id="glowStrong" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="9" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
         <filter id="soft"><feGaussianBlur stdDeviation="6"/></filter>
-        <filter id="gray"><feColorMatrix type="saturate" values=".15"/></filter>
+        <filter id="gray"><feColorMatrix type="saturate" values=".12"/><feComponentTransfer><feFuncR type="linear" slope=".6"/><feFuncG type="linear" slope=".6"/><feFuncB type="linear" slope=".6"/></feComponentTransfer></filter>
+        ${CITIES.map((c, i) => `<filter id="cityGlow${i}" x="-15%" y="-15%" width="130%" height="130%"><feMorphology in="SourceAlpha" operator="dilate" radius="1.5" result="d"/><feFlood flood-color="${c.c}" flood-opacity=".85"/><feComposite in2="d" operator="in"/><feGaussianBlur stdDeviation="5" result="g"/><feMerge><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`).join("")}
         <radialGradient id="tileFade" cx="50%" cy="50%" r="50%"><stop offset="72%" stop-color="#fff"/><stop offset="100%" stop-color="#000"/></radialGradient>
         <mask id="tileMask" maskContentUnits="objectBoundingBox"><ellipse cx=".5" cy=".5" rx=".5" ry=".5" fill="url(#tileFade)"/></mask>
         <marker id="arrow" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="rgba(160,150,210,.5)"/></marker>
@@ -354,15 +355,13 @@ svg text { font-family: var(--font-body); }
     bindTap($("gzNode"), openGZ);
     $("locks").innerHTML = CITIES.map((c, i) => `<i class="${i < cleared ? "on" : ""}" style="--c:${c.c}" title="${c.sin}"></i>`).join("") + `<b>${cleared}/7</b>`;
   }
-  // a city with its own illustration: the picture cut to a soft-edged oval, outlined in the sin's colour
-  const TW = 236, TH = 132;
+  // a city with its own illustration: the city itself cut out (transparent around it), glowing in the sin's colour
+  const TW = 250, TH = 142;
   function tileNode(c, i, s) {
     const x = c.x - TW / 2, y = c.y - TH / 2, lockC = "rgba(200,190,240,.45)";
     return `<g class="node tile ${s}" data-i="${i}" tabindex="0" role="button" aria-label="${c.no} ${c.name}（${c.title}・${c.sin}・${STATE_JP[s]}）">
-      <ellipse class="ring" cx="${c.x}" cy="${c.y}" rx="${TW / 2 + 6}" ry="${TH / 2 + 6}" stroke="${c.c}"/>
-      <ellipse cx="${c.x}" cy="${c.y}" rx="${TW / 2}" ry="${TH / 2}" fill="#05030b"/>
-      <image class="hex" href="${A(c.img)}" x="${x}" y="${y}" width="${TW}" height="${TH}" preserveAspectRatio="xMidYMid slice" mask="url(#tileMask)" ${s === "locked" ? 'filter="url(#gray)"' : ""}/>
-      <ellipse cx="${c.x}" cy="${c.y}" rx="${TW / 2}" ry="${TH / 2}" fill="none" stroke="${s === "locked" ? lockC : c.c}" stroke-width="2.5" ${s !== "locked" ? 'filter="url(#glow)"' : ""}/>
+      <ellipse cx="${c.x}" cy="${c.y + TH * .32}" rx="${TW * .46}" ry="${TH * .16}" fill="${s === "locked" ? "rgba(120,110,170,.18)" : c.c}" opacity="${s === "locked" ? 1 : .28}" filter="url(#soft)"/>
+      <image class="hex" href="${A(c.img)}" x="${x}" y="${y}" width="${TW}" height="${TH}" preserveAspectRatio="xMidYMid meet" filter="url(#${s === "locked" ? "gray" : "cityGlow" + i})"/>
       <circle cx="${x + 18}" cy="${y + 14}" r="14" fill="#0b0716" stroke="${s === "locked" ? lockC : c.c}" stroke-width="2"/>
       <text x="${x + 18}" y="${y + 19}" text-anchor="middle" font-size="14" font-weight="700" font-family="Chakra Petch, sans-serif" fill="#fff">${c.no}</text>
       <circle cx="${x + 46}" cy="${y + 8}" r="14" fill="${s === "locked" ? "#2a2440" : c.c}" stroke="#fff" stroke-width="1.5"/>
@@ -371,7 +370,7 @@ svg text { font-family: var(--font-body); }
       ${s === "locked" ? `<g transform="translate(${x + TW - 30} ${y - 2})"><rect x="0" y="9" width="20" height="15" rx="3" fill="#2a2440" stroke="#bdb6e0" stroke-width="1.5"/><path d="M4 9V6a6 6 0 0 1 12 0v3" fill="none" stroke="#bdb6e0" stroke-width="1.8"/></g>` : ""}
       <rect x="${c.x - 100}" y="${c.y + TH / 2 + 4}" width="200" height="46" rx="8" fill="rgba(8,5,18,.9)" stroke="${s === "locked" ? lockC : c.c}" stroke-width="1.5"/>
       <text x="${c.x}" y="${c.y + TH / 2 + 24}" text-anchor="middle" font-size="15" font-weight="700" fill="${s === "locked" ? "#a7a2c6" : "#fff"}">${c.name}</text>
-      <text x="${c.x}" y="${c.y + TH / 2 + 41}" text-anchor="middle" font-size="11" fill="#d9e6ff">${c.title} ・ ${c.district}</text>
+      <text x="${c.x}" y="${c.y + TH / 2 + 41}" text-anchor="middle" font-size="11" fill="#d9e6ff">${c.title}</text>
     </g>`;
   }
   function bindTap(el, fn) {
@@ -388,9 +387,9 @@ svg text { font-family: var(--font-body); }
   function closeSheet() { $("sheet").classList.remove("on"); }
   function openCity(i) {
     const c = CITIES[i], s = stateOf(i); decide(); focusOn(c.x, c.y);
-    sheet(c.c, `${c.img ? `<img class="sh-img" src="${A(c.img)}" alt="${esc(c.title)}の景色">` : ""}<div class="sh-head"><span class="no">CITY ${c.no} / 7 ・ ${esc(c.where)}</span><h2>${esc(c.name)}</h2><div class="sub">${c.title ? esc(c.title) + " ・ " : ""}大罪：${esc(c.sin)} ・ ${esc(c.district)}</div><span class="state ${s}">${STATE_JP[s]}</span><button class="x" type="button" aria-label="閉じる">${closeIco}</button></div>
-      <div class="sh-body"><div><h3>LANDMARK — ランドマーク・景観</h3><p>${esc(c.view)}</p></div>
-      <div><h3>GIMMICK — ギミック・探索要素</h3><ul>${c.gimmicks.map(g => `<li>${esc(g)}</li>`).join("")}</ul></div>
+    sheet(c.c, `${c.img ? `<img class="sh-img" src="${A(c.img)}" alt="${esc(c.title)}の景色">` : ""}<div class="sh-head"><span class="no">CITY ${c.no} / 7 ・ ${esc(c.where)}</span><h2>${esc(c.name)}</h2><div class="sub">${c.title ? esc(c.title) + " ・ 大罪：" + esc(c.sin) : "大罪：" + esc(c.sin) + " ・ " + esc(c.district)}</div><span class="state ${s}">${STATE_JP[s]}</span><button class="x" type="button" aria-label="閉じる">${closeIco}</button></div>
+      <div class="sh-body">${c.img ? "" : `<div><h3>LANDMARK — ランドマーク・景観</h3><p>${esc(c.view)}</p></div>
+      <div><h3>GIMMICK — ギミック・探索要素</h3><ul>${c.gimmicks.map(g => `<li>${esc(g)}</li>`).join("")}</ul></div>`}
       ${s === "locked" ? `<p style="color:var(--dim)">ひとつ前の都市（${esc(CITIES[i - 1].name)}）を攻略すると解放されます。</p>` : ""}</div>
       <div class="sh-foot"><button class="act" type="button" id="goCity" ${s === "locked" ? "disabled" : ""}>${s === "cleared" ? "もう一度探索する" : "攻略に出発する"}</button>${s === "open" ? '<button class="act ghost" type="button" id="demoClear">攻略済みにする（デモ）</button>' : ""}</div>`);
     const go = $("goCity"); if (go && !go.disabled) go.addEventListener("click", () => { decide(); toast("バトルと探索は準備中です"); });
