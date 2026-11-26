@@ -274,6 +274,10 @@ canvas.spark { position: absolute; inset: 0; width: 100%; height: 100%; z-index:
 :root { --font-sf: "Orbitron", "Chakra Petch", sans-serif; --font-cut: "Shippori Mincho B1", serif; }
 .cutin { position: absolute; z-index: 12; inset: 0; pointer-events: none; display: none; }
 .cutin.on { display: block; }
+.battleLayer { position: fixed; inset: 0; z-index: 200; background: #0a0810; }
+.battleLayer iframe { width: 100%; height: 100%; border: 0; display: block; }
+.battleLayer.in { animation: blIn .5s ease-out; }
+@keyframes blIn { from { opacity: 0; transform: scale(1.04); filter: brightness(2); } }
 .cutin .band { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%) scaleY(0); height: clamp(120px, 22vh, 170px); display: flex; align-items: center; justify-content: center; gap: clamp(14px, 3vw, 30px); padding: 0 max(18px, 6vw);
   border-top: 2px solid var(--tc); border-bottom: 2px solid var(--tc); box-shadow: 0 0 14px var(--tc), 0 0 34px color-mix(in srgb, var(--tc) 45%, transparent), inset 0 0 40px rgba(0, 0, 0, .6);
   background: repeating-linear-gradient(115deg, color-mix(in srgb, var(--tc) 14%, transparent) 0 2px, transparent 2px 26px), linear-gradient(90deg, rgba(6, 5, 18, .96), color-mix(in srgb, var(--tc) 18%, #0a0820) 50%, rgba(6, 5, 18, .96));
@@ -499,6 +503,8 @@ canvas.spark { position: absolute; inset: 0; width: 100%; height: 100%; z-index:
 
 <div class="flash" id="flash"></div>
 <div class="toast" id="toast" role="status" hidden></div>
+<!-- battle / developer mode: the battle engine, effects and sounds from the old SELECTEAR build -->
+<div class="battleLayer" id="battleLayer" hidden><iframe id="battleFrame" title="バトル" allow="autoplay"></iframe></div>
 
 <script>
 (() => {
@@ -537,14 +543,14 @@ canvas.spark { position: absolute; inset: 0; width: 100%; height: 100%; z-index:
     ["endo", "遠藤 龍", "えんどう りゅう", "sup", "メカニック（改造屋）", 10, "フルカスタム：台パンかエナドリを手札に", "チューニング終わった。背後から失礼するね。"],
     ["kashima", "鹿島 咲恵", "かしま さえ", "def", "ヘビータンク（大食い）", 10, "暴食：3回復。あふれた分は最大HPに", "ご飯おごってくれるなら、開けてあげてもいいけど？"],
     ["fujikura", "藤倉 琉海", "ふじくら るみ", "atk", "バーサーカー（覚醒）", 8, "我慢：3回やられたら敵に4ダメージ", "……我慢してるうちに開けて。限界近いから。"],
-    ["yamanaka", "山中 雅文", "やまなか まさふみ", "sup", "バンカー（銀行家）", 13, "銀行：敵1人に借金を押し付ける", "紗彩いる？ ……いない？ じゃあ取り立てに来た。"],
+    ["yamanaka", "山中 雅文", "やまなか まさふみ", "sup", "バンカー（銀行家）", 11, "銀行：敵1人に借金を押し付ける", "紗彩いる？ ……いない？ じゃあ取り立てに来た。"],
     ["yanai", "柳井 紗彩", "やない さあや", "spd", "シーフ（横取り屋）", 8, "横取：敵のバフを全部奪う", "あれ？ なんで来たんだっけ。忘れた。"],
     ["sato", "佐藤 麗皇", "さとう れの", "def", "パラディン（聖騎士）", 11, "聖力：50%でHP1で耐える", "悪く思うなよ。……用があって来ただけだ。"],
     ["morooka", "諸岡 星南", "もろおか せな", "sup", "ネクロマンサー（死者使い）", 10, "降霊：ロストした仲間の力をもらう", "HP1京の男、参上。……嘘じゃないって。"],
-    ["ohashi", "大橋 央玲", "おおはし ひろあ", "spd", "エスケープ（夜逃げ屋）", 9, "夜逃：借金して◆+2。取り立て前に飛ぶ", "ねえ、このあと時間ある？"],
+    ["ohashi", "大橋 央玲", "おおはし ひろあ", "spd", "エスケープ（夜逃げ屋）", 10, "夜逃：借金して◆+2。取り立て前に飛ぶ", "ねえ、このあと時間ある？"],
     ["ushida", "牛田 苺花", "うしだ いちか", "atk", "スケープゴート（巻き込み屋）", 9, "醒：自分以外の全員に1ダメージ", "押したの自分じゃないです。自分は悪くないんで。"],
     ["chou", "チョウ・ヤン", "チョウ・ヤン", "atk", "ドン（マフィアのボス）", 12, "龍炎：HPがいちばん低い敵に2ダメージ", "……シマを広げに来た。開けろ。"],
-    ["nishida", "西田 晃季", "にしだ こうき", "sup", "ギャンブラー（賭博師）", 13, "賭狂：1〜9のルーレット。7なら◆+7、外れたら借金+1", "次は7が来る。……開けてくれたら倍にして返すって。"],
+    ["nishida", "西田 晃季", "にしだ こうき", "def", "ギャンブラー（博打ち）", 13, "賭狂：1〜9のルーレット。7なら◆+7、外れたら借金+1", "次は7が来る。……開けてくれたら倍にして返すって。"],
     ["ogawa", "小川 結菜", "おがわ ゆうな", "heal", "ヒーラー（推し活）", 9, "蝶の加護：いちばん弱った仲間を2回復", "推し以外興味ないので✌ ……でも開けて？"]
   ].map(([id, name, kana, type, style, hp, abil, line]) => ({ id, name, kana, type, style, hp, abil, line, img: `img/f_${id}.webp` }));
   const byType = t => ROSTER.filter(r => r.type === t);
@@ -837,13 +843,23 @@ canvas.spark { position: absolute; inset: 0; width: 100%; height: 100%; z-index:
     const locked = lastMode === "oshi";
     $("redraw").disabled = locked; $("lockMsg").hidden = !locked;
   }
-  $("toBattle").addEventListener("click", () => { se("decide"); toast("バトルは準備中です。このチームは保存しました"); });
+  // card id in the battle build (old numbering p01..p17)
+  const PID = { kazano: "p01", ushida: "p02", sato: "p03", yanai: "p04", hirabayashi: "p05", fujikura: "p06", morooka: "p07", nishida: "p08", yamanaka: "p09", ohashi: "p10", kobukuda: "p11", utsugi: "p12", sakayori: "p13", kashima: "p14", ogawa: "p15", endo: "p16", chou: "p17" };
+  let backTo = "holo";
+  function openBattle(hash, from) {
+    backTo = from; holoSE(false);
+    const L = $("battleLayer"), f = $("battleFrame");
+    f.src = A("battle.html") + "#" + hash; L.hidden = false; retrig(L, "in");
+  }
+  function closeBattle() { const L = $("battleLayer"); L.hidden = true; $("battleFrame").src = "about:blank"; show(backTo); }
+  addEventListener("message", e => { if (e.data && e.data.selectear === "battleBack") closeBattle(); });
+  $("toBattle").addEventListener("click", () => { se("decide"); openBattle("battle=" + team.map(m => PID[m.id]).join(","), "result"); });
   $("redraw").addEventListener("click", () => { if ($("redraw").disabled) return; mode = lastMode; paintMode(); $("drawBtn").click(); });
   $("toMenu").addEventListener("click", () => { se("tap"); show("menu"); });
 
   /* hologram select: SELECTEAR opens the gacha; the developer hologram comes later */
   for (const h of document.querySelectorAll("[data-holo]")) h.addEventListener("click", () => {
-    if (h.dataset.holo === "dev") { se("tap"); toast("開発者ホログラムは準備中です"); return; }
+    if (h.dataset.holo === "dev") { se("fly"); buzz([30, 30, 60]); h.classList.add("go"); setTimeout(() => { flash(); h.classList.remove("go"); openBattle("dev", "holo"); }, reduce ? 0 : 600); return; }
     se("fly"); buzz([30, 30, 60]); h.classList.add("go");
     setTimeout(() => { flash(); show("menu"); h.classList.remove("go"); }, reduce ? 0 : 600);
   });
