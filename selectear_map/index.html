@@ -44,7 +44,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid #fff; outline-offset:
 #start { background: radial-gradient(ellipse at 50% 60%, #1a0d33 0%, #07050c 70%); }
 #start .bg { position: absolute; inset: -30px; background: url(img/map.webp) center / cover; filter: blur(14px) brightness(.35) saturate(1.3); }
 #start .col { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding: 24px max(16px, env(safe-area-inset-right, 0px)) 24px max(16px, env(safe-area-inset-left, 0px)); text-align: center; }
-.logo { width: min(480px, 84vw); -webkit-mask-image: radial-gradient(ellipse 52% 60% at 50% 50%, #000 78%, transparent 100%); mask-image: radial-gradient(ellipse 52% 60% at 50% 50%, #000 78%, transparent 100%); filter: drop-shadow(0 0 18px rgba(155, 92, 255, .55)); }
+.logo { width: min(480px, 84vw);  filter: drop-shadow(0 0 18px rgba(155, 92, 255, .55)); }
 .eyebrow { margin: 0; font: 600 12px var(--font-latin); letter-spacing: .45em; padding-left: .45em; color: var(--dim); }
 .note { margin: 0; font-size: 12px; color: var(--dim); }
 .mb { --k: 165, 110, 255; position: relative; height: 64px; width: min(320px, 80vw); border: 0; padding: 0 14% 0 16%; background: none; cursor: pointer; display: flex; align-items: center; gap: 12px; text-align: left; color: #f6ecff; text-decoration: none; }
@@ -162,25 +162,29 @@ canvas#water { position: absolute; inset: 0; width: 100%; height: 100%; }
   -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 14%, #000 86%, transparent 100%), linear-gradient(90deg, transparent 0%, #000 10%, #000 90%, transparent 100%);
   -webkit-mask-composite: source-in; mask-image: linear-gradient(180deg, transparent 0%, #000 14%, #000 86%, transparent 100%), linear-gradient(90deg, transparent 0%, #000 10%, #000 90%, transparent 100%); mask-composite: intersect; }
 .hs { position: absolute; transform: translate(-50%, -50%); border: 0; background: transparent; padding: 0; cursor: pointer; border-radius: 50%; }
-/* touch / hover: a soft bloom of light in the island's colour instead of a thin ring */
-.hs .halo { position: absolute; inset: -18% -10%; border-radius: 50%; background: radial-gradient(ellipse at 50% 55%, color-mix(in srgb, var(--c) 75%, #fff) 0%, color-mix(in srgb, var(--c) 45%, transparent) 30%, transparent 68%); mix-blend-mode: screen; opacity: 0; transform: scale(.85); transition: opacity .25s, transform .35s; pointer-events: none; }
-.hs:hover .halo, .hs:focus-visible .halo, .hs:active .halo { opacity: 1; transform: scale(1.05); }
-.hs:active .halo { opacity: 1; filter: brightness(1.4); }
-/* state: cleared = golden crest and a calm glow, next = pulsing light, locked = darkened under a veil */
-.hs .veil { position: absolute; inset: -8% -4%; border-radius: 50%; background: radial-gradient(ellipse at 50% 50%, rgba(4, 3, 12, .72) 35%, rgba(4, 3, 12, .3) 60%, transparent 72%); pointer-events: none; }
-.hs:not(.locked) .veil { display: none; }
-.hs.locked:hover .veil { opacity: .6; }
-.hs.open .halo { opacity: .55; animation: pulseHalo 2.4s ease-in-out infinite; animation-delay: var(--dl); }
-@keyframes pulseHalo { 50% { opacity: .95; transform: scale(1.04); } }
-.hs.cleared .halo { opacity: .28; background: radial-gradient(ellipse at 50% 55%, rgba(242, 193, 78, .7) 0%, color-mix(in srgb, var(--c) 30%, transparent) 35%, transparent 68%); }
-.hs.cleared:hover .halo { opacity: 1; }
-.hs .crest { position: absolute; left: 50%; top: 2%; transform: translateX(-50%); width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: radial-gradient(circle, #fff6d0, #f2c14e 60%, #b9801a); box-shadow: 0 0 14px #f2c14e, 0 0 30px rgba(242, 193, 78, .6); animation: crest 3.2s ease-in-out infinite; animation-delay: var(--dl); pointer-events: none; }
-.hs .crest svg { width: 17px; height: 17px; fill: #2a1600; }
-@keyframes crest { 50% { transform: translateX(-50%) translateY(-4px); box-shadow: 0 0 20px #f2c14e, 0 0 44px rgba(242, 193, 78, .8); } }
-.hs .lbl .mk { margin-left: 6px; padding: 1px 6px; border-radius: 999px; font: 700 .72em/1.4 var(--font-num); letter-spacing: .1em; background: #f2c14e; color: #2a1600; }
-.hs .lbl .mk.nx { background: var(--c); color: #0b0716; animation: blink 1.6s ease-in-out infinite; }
-.hs .lbl .mk.lk { background: #2a2440; color: #a7a2c6; }
-.hs.cleared .lbl { border-color: #f2c14e; box-shadow: 0 0 12px rgba(242, 193, 78, .5); }
+/* islands: the art itself is never tinted or glowed. State is shown with HUD corner brackets and the name plate,
+   and the touched island is picked out by dimming everything around it (a spotlight). */
+.hs .br { position: absolute; inset: 4% 2% 14%; pointer-events: none; --bc: rgba(200, 190, 240, .45); --bl: 16px;
+  background:
+    linear-gradient(var(--bc), var(--bc)) left top / var(--bl) 2px, linear-gradient(var(--bc), var(--bc)) left top / 2px var(--bl),
+    linear-gradient(var(--bc), var(--bc)) right top / var(--bl) 2px, linear-gradient(var(--bc), var(--bc)) right top / 2px var(--bl),
+    linear-gradient(var(--bc), var(--bc)) left bottom / var(--bl) 2px, linear-gradient(var(--bc), var(--bc)) left bottom / 2px var(--bl),
+    linear-gradient(var(--bc), var(--bc)) right bottom / var(--bl) 2px, linear-gradient(var(--bc), var(--bc)) right bottom / 2px var(--bl);
+  background-repeat: no-repeat; opacity: .75; transition: inset .3s, opacity .3s; }
+.hs.cleared .br { --bc: #f2c14e; opacity: .95; }
+.hs.open .br { --bc: var(--c); opacity: 1; animation: lockOn 2.2s ease-in-out infinite; animation-delay: var(--dl); }
+@keyframes lockOn { 0%, 100% { inset: 4% 2% 14%; } 50% { inset: 0% -2% 10%; } }
+.hs.locked .br { --bl: 10px; opacity: .45; }
+.hs:hover .br, .hs:focus-visible .br { --bc: #fff; --bl: 22px; inset: -2% -4% 8%; opacity: 1; animation: none; }
+.ov-spot { position: absolute; inset: 0; z-index: 2; pointer-events: none; opacity: 0; transition: opacity .35s;
+  background: radial-gradient(ellipse var(--sw, 20%) var(--sh, 20%) at var(--sx, 50%) var(--sy, 50%), transparent 0%, transparent 70%, rgba(3, 2, 10, .62) 100%); }
+.ov-spot.on { opacity: 1; }
+.ov-spot { -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 14%, #000 86%, transparent 100%), linear-gradient(90deg, transparent 0%, #000 10%, #000 90%, transparent 100%); -webkit-mask-composite: source-in; mask-image: linear-gradient(180deg, transparent 0%, #000 14%, #000 86%, transparent 100%), linear-gradient(90deg, transparent 0%, #000 10%, #000 90%, transparent 100%); mask-composite: intersect; }
+.hs .lbl .mk { margin-left: 6px; padding: 1px 6px; border-radius: 3px; font: 700 .72em/1.4 var(--font-num); letter-spacing: .12em; background: #f2c14e; color: #2a1600; }
+.hs .lbl .mk.nx { background: transparent; color: var(--c); border: 1px solid var(--c); }
+.hs .lbl .mk.lk { background: transparent; color: #a7a2c6; border: 1px solid rgba(200, 190, 240, .35); }
+.hs .lbl .st { color: #f2c14e; margin-right: 4px; }
+.hs.cleared .lbl { border-color: #f2c14e; }
 /* drifting fog that hides the picture's edges */
 .ov-fog { position: absolute; inset: -12% -8%; pointer-events: none; z-index: 2; }
 .ov-fog i { position: absolute; border-radius: 50%; background: radial-gradient(ellipse, rgba(78, 70, 100, .7) 0%, rgba(44, 38, 66, .45) 42%, transparent 70%); filter: blur(16px); animation: fogMove var(--t, 30s) ease-in-out infinite alternate; animation-delay: var(--d0, 0s); }
@@ -256,7 +260,7 @@ canvas#water { position: absolute; inset: 0; width: 100%; height: 100%; }
 <!-- OVERVIEW: the whole outside world in one picture; tap a city to fly in -->
 <section class="scene" id="overview" aria-label="外の世界の全体図">
   <div class="ov-sea"></div>
-  <div class="ov-wrap" id="ovWrap"><img id="ovImg" src="img/overview.webp" alt="外の世界の全体図。7つの都市が爆心地を囲んでいる" draggable="false"><span class="rim"></span>
+  <div class="ov-wrap" id="ovWrap"><img id="ovImg" src="img/overview.webp" alt="外の世界の全体図。7つの都市が爆心地を囲んでいる" draggable="false"><span class="rim"></span><span class="ov-spot" id="ovSpot"></span>
     <div class="ov-fog" aria-hidden="true">
       <i style="left:-6%;top:-6%;width:44%;height:40%;--t:34s;--fx1:60px;--fy1:20px"></i>
       <i style="right:-6%;top:-8%;width:46%;height:42%;--t:41s;--fx1:-70px;--fy1:24px;--d0:-9s"></i>
@@ -510,7 +514,7 @@ canvas#water { position: absolute; inset: 0; width: 100%; height: 100%; }
     } else {
       eyebrow = "HOME BASE"; title = "HIDEOUT"; sub = `アジト ・ 広い屋敷 ・ 電脳世界の入口`;
       chip = `<span class="chip open">拠点</span>`;
-      acts = `<button type="button" class="sec" data-a="detail">詳しく</button><button type="button" data-a="home">アジトに入る</button>`;
+      acts = `<button type="button" class="sec" data-a="detail">詳しく</button><button type="button" data-a="home">アジトに帰る</button>`;
     }
     $("card").innerHTML = `<span class="eyebrow2">${esc(eyebrow)}</span><h2>${esc(title)}</h2><span class="sub">${esc(sub)}</span>${chip}`;
     $("acts").innerHTML = acts;
@@ -529,7 +533,7 @@ canvas#water { position: absolute; inset: 0; width: 100%; height: 100%; }
     if (a === "go") { decide(); toast("バトルと探索は準備中です"); }
     if (a === "demo") clearCity(p.i);
     if (a === "gz") { decide(); toast("GROUND ZERO は準備中です"); }
-    if (a === "home") { decide(); if (EMB) toParent("hideout"); else openPage(HIDEOUT_URL); }
+    if (a === "home") { decide(); if (EMB) toParent("home"); else openPage(HIDEOUT_URL); }
   }
   function openDetail() { const p = PLACES[sel]; if (p.kind === "city") openCity(p.i); else if (p.kind === "gz") openGZ(); else openHideout(); }
   function draw() { build(); }
@@ -615,8 +619,8 @@ canvas#water { position: absolute; inset: 0; width: 100%; height: 100%; }
     sheet("#9b5cff", `<div class="sh-head"><span class="no">HOME BASE</span><h2>HIDEOUT（アジト）</h2><div class="sub">広い屋敷 ・ ${esc(CITIES[0].name)}のすぐ下</div><span class="state open" style="--c:#9b5cff">拠点</span><button class="x" type="button" aria-label="閉じる">${closeIco}</button></div>
       <div class="sh-body"><p>プレイヤーの拠点である広い屋敷。外の世界への出発点で、電脳世界への入り口でもある。ホーム画面への帰還ポイント。</p>
       <div><h3>WHAT YOU CAN DO — アジトでできること</h3><ul><li>デッキ構築</li><li>記憶の解放（スキルツリー）</li><li>相棒との会話</li><li>電脳世界へ入る（インターネット対戦・CPU対戦など）</li></ul></div></div>
-      <div class="sh-foot"><a class="act" href="${HIDEOUT_URL}" target="_blank" rel="noopener" id="goHide">アジトに入る</a></div>`);
-    $("goHide").addEventListener("click", e => { decide(); if (EMB) { e.preventDefault(); closeSheet(); toParent("hideout"); } });
+      <div class="sh-foot"><a class="act" href="${HIDEOUT_URL}" target="_blank" rel="noopener" id="goHide">アジトに帰る</a></div>`);
+    $("goHide").addEventListener("click", e => { decide(); if (EMB) { e.preventDefault(); closeSheet(); toParent("home"); } });
   }
   function clearCity(i) {
     if (i !== cleared) return;
@@ -701,7 +705,10 @@ canvas#water { position: absolute; inset: 0; width: 100%; height: 100%; }
       const mark = stt === "cleared" ? '<b class="mk">CLEAR</b>' : stt === "open" && p.kind === "city" ? '<b class="mk nx">NEXT</b>' : stt === "locked" ? '<b class="mk lk">LOCK</b>' : "";
       const label = (p.kind === "city" ? `<i>${CITIES[p.i].no}</i>${esc(CITIES[p.i].name)}` : "GROUND ZERO") + mark;
       b.setAttribute("aria-label", (p.kind === "city" ? CITIES[p.i].no + " " + CITIES[p.i].name : "GROUND ZERO") + (locked ? "（未解放）" : ""));
-      b.innerHTML = `<span class="veil"></span><span class="halo"></span>${stt === "cleared" ? '<span class="crest" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 15.6 6.6 18.5l1.2-6L3.3 8.3l6.1-.7z"/></svg></span>' : ""}<span class="lbl">${label}</span>`;
+      b.innerHTML = `<span class="br" aria-hidden="true"></span><span class="lbl">${stt === "cleared" ? '<span class="st">★</span>' : ""}${label}</span>`;
+      const spot = on => { const sp = $("ovSpot"); if (on) { sp.style.setProperty("--sx", x + "%"); sp.style.setProperty("--sy", y + "%"); sp.style.setProperty("--sw", sz * .75 + "%"); sp.style.setProperty("--sh", sz * .75 * OV_RATIO * .62 + "%"); } sp.classList.toggle("on", on); };
+      b.addEventListener("pointerenter", () => spot(true)); b.addEventListener("pointerleave", () => spot(false));
+      b.addEventListener("focus", () => spot(true)); b.addEventListener("blur", () => spot(false));
       b.addEventListener("click", () => { if (!ovMoved) flyTo(k, x, y); });
       wrap.append(b);
     }

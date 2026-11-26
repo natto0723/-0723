@@ -49,7 +49,7 @@ canvas#fx { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 40; p
 /* ---------- splash + title ---------- */
 #splash { background: #000; cursor: pointer; }
 .sp-logo { width: min(420px, 78vw); opacity: .9; }
-.sp-logo, .logo img { -webkit-mask-image: radial-gradient(ellipse 52% 60% at 50% 50%, #000 78%, transparent 100%); mask-image: radial-gradient(ellipse 52% 60% at 50% 50%, #000 78%, transparent 100%); }
+.sp-logo, .logo img {  }
 .sp-note { font-size: 12px; color: var(--dim); margin: 0; }
 .eyebrow { font-family: var(--font-latin); letter-spacing: .45em; font-size: 12px; color: var(--dim); margin: 0; padding-left: .45em; }
 .logo { margin: 0; line-height: 0; position: relative; }
@@ -418,8 +418,11 @@ iframe.layer.on { display: block; animation: sceneIn .45s ease-out; }
     if (!st.sound || !audio()) return;
     try { const t = ac.currentTime + delay, o = ac.createOscillator(), g = ac.createGain(); o.type = type; o.frequency.setValueAtTime(f, t); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g); g.connect(master); o.start(t); o.stop(t + d + .02); } catch {}
   }
-  const decide = () => { tone(1046, .06, "square", .07); tone(1568, .1, "square", .06, .05); };
-  const sfx = { move: () => tone(1320, .05, "triangle", .08), back: () => { tone(784, .08, "triangle", .08); tone(523, .12, "triangle", .06, .06); }, type: () => tone(620 + Math.random() * 80, .03, "square", .025) };
+  // the four shared sound effects: fly (big moves), decide (main buttons), switch (moving between things), tap (small buttons, back)
+  const SE = {}; for (const k of ["fly", "decide", "switch", "tap"]) { SE[k] = new Audio(A(`se_${k}.mp3`)); SE[k].preload = "auto"; }
+  function se(k) { if (!st.sound) return; try { const a = SE[k].cloneNode(); a.volume = Math.min(1, st.vol / 100); const p = a.play(); if (p && p.catch) p.catch(() => {}); } catch {} }
+  const decide = () => se("decide");
+  const sfx = { move: () => se("switch"), back: () => se("tap"), type: () => tone(620 + Math.random() * 80, .03, "square", .025) };
   const buzz = ms => { if (st.vib) try { navigator.vibrate && navigator.vibrate(ms); } catch {} };
   function toast(t) { const e = $("toast"); e.textContent = t; e.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => e.hidden = true, 2200); }
   function flash() { const f = $("flash"); f.classList.remove("go"); void f.offsetWidth; f.classList.add("go"); }
@@ -506,7 +509,7 @@ iframe.layer.on { display: block; animation: sceneIn .45s ease-out; }
   const LAYER_SRC = { map: "map.html#embedded", hideout: "hideout.html#embedded" };
   function frameFor(name) {
     if (frames[name]) return frames[name];
-    const f = document.createElement("iframe"); f.className = "layer"; f.title = name === "map" ? "マップ" : "アジト"; f.allow = "autoplay";
+    const f = document.createElement("iframe"); f.className = "layer"; f.title = name === "map" ? "マップ" : "ガチャ"; f.allow = "autoplay";
     if (window.__LAYERS && window.__LAYERS[name]) f.srcdoc = window.__LAYERS[name]; else f.src = LAYER_SRC[name];
     document.body.append(f); frames[name] = f; return f;
   }
@@ -530,7 +533,8 @@ iframe.layer.on { display: block; animation: sceneIn .45s ease-out; }
     e.stopPropagation(); audio(); const a = b.dataset.act;
     if (a === "selectear") gameStartSE(); else decide();
     buzz(15); closeTalk();
-    if (a === "story") { openLayer("map"); return; }
+    if (a === "story") { se("fly"); openLayer("map"); return; }
+    if (a === "selectear" || a === "gacha") { openLayer("hideout"); return; }
     openSoon(a);
   });
   $("coinPlus").addEventListener("click", () => { audio(); decide(); openSoon("shop"); });
