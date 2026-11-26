@@ -53,7 +53,14 @@ canvas.fx { position: absolute; inset: 0; width: 100%; height: 100%; pointer-eve
 .coin-ic { width: 20px; height: 20px; flex: none; background: linear-gradient(135deg, #fff6d0, var(--gold) 45%, #b9801a); clip-path: polygon(50% 0, 100% 38%, 82% 100%, 18% 100%, 0 38%); filter: drop-shadow(0 0 4px var(--gold)); }
 .coins .lb { font: 700 10px/1.1 var(--font-body); color: var(--dim); }
 .coins .val { font: 700 17px/1 var(--font-num); color: #fff; min-width: 2ch; text-align: right; font-variant-numeric: tabular-nums; }
-@media (max-width: 420px) { .coins .lb, .back span { display: none; } .back { padding: 0 10px; } }
+.right { display: flex; align-items: center; gap: 8px; }
+.snd { width: 42px; height: 42px; border-radius: 12px; border: 1px solid rgba(201, 198, 214, .45); background: rgba(8, 5, 18, .78); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); cursor: pointer; display: grid; place-items: center; padding: 0; }
+.snd svg { width: 22px; height: 22px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.snd .off { display: none; }
+.snd[aria-pressed="false"] .on { display: none; }
+.snd[aria-pressed="false"] .off { display: inline; }
+.snd[aria-pressed="false"] { opacity: .7; }
+@media (max-width: 420px) { .coins .lb, .back span { display: none; } .back { padding: 0 10px; } .place small { display: none; } }
 
 /* ---------- START ---------- */
 #start { background: radial-gradient(ellipse at 50% 60%, #1a0d33 0%, #07050c 70%); }
@@ -211,7 +218,7 @@ canvas.fx { position: absolute; inset: 0; width: 100%; height: 100%; pointer-eve
   <div class="topbar">
     <button class="back" type="button" data-go="start"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg><span>戻る</span></button>
     <div class="place"><b>NEON RUIN CITY</b><small>崩壊都市マップ</small></div>
-    <div class="coins" aria-label="有料コイン"><span class="coin-ic" aria-hidden="true"></span><span class="lb">有料<br>コイン</span><span class="val" data-coins>0</span></div>
+    <div class="right"><button class="snd" type="button" data-snd aria-pressed="true" aria-label="BGMと環境音"><svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4z"/><path class="on" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/><path class="off" d="M16 9l6 6M22 9l-6 6"/></svg></button><div class="coins" aria-label="有料コイン"><span class="coin-ic" aria-hidden="true"></span><span class="lb">有料<br>コイン</span><span class="val" data-coins>0</span></div></div>
   </div>
   <div class="maphint" id="maphint">アジトをタップ ／ ドラッグで見回せます</div>
 </section>
@@ -226,7 +233,7 @@ canvas.fx { position: absolute; inset: 0; width: 100%; height: 100%; pointer-eve
   <div class="topbar">
     <button class="back" type="button" data-go="map"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg><span>マップ</span></button>
     <div class="place"><b>HIDEOUT</b><small>アジト</small></div>
-    <div class="coins" aria-label="有料コイン"><span class="coin-ic" aria-hidden="true"></span><span class="lb">有料<br>コイン</span><span class="val" data-coins>0</span></div>
+    <div class="right"><button class="snd" type="button" data-snd aria-pressed="true" aria-label="BGMと環境音"><svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4z"/><path class="on" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/><path class="off" d="M16 9l6 6M22 9l-6 6"/></svg></button><div class="coins" aria-label="有料コイン"><span class="coin-ic" aria-hidden="true"></span><span class="lb">有料<br>コイン</span><span class="val" data-coins>0</span></div></div>
   </div>
   <div class="sign"><b>SELECTEAR</b><small>ようこそ、アジトへ</small></div>
   <div class="machines" id="machines"></div>
@@ -258,16 +265,64 @@ canvas.fx { position: absolute; inset: 0; width: 100%; height: 100%; pointer-eve
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const store = { get(k, d) { try { const v = JSON.parse(localStorage.getItem(k) || "null"); return v ?? d; } catch { return d; } } };
   // same settings and coins as the home page (shared once both pages are combined)
-  const st = Object.assign({ sound: true, vol: 70, vib: true }, store.get("selectear_settings2", {}));
+  const st = Object.assign({ bgm: true, sound: true, vol: 70, vib: true }, store.get("selectear_settings2", {}));
   const coins = Number(store.get("selectear_coins", 0)) || 0;
   for (const el of document.querySelectorAll("[data-coins]")) el.textContent = coins.toLocaleString("ja-JP");
 
   /* sound */
-  let ac = null;
-  function tone(f, d, type = "square", v = .1, delay = 0) {
-    if (!st.sound) return;
-    try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === "suspended") ac.resume(); const t = ac.currentTime + delay, o = ac.createOscillator(), g = ac.createGain(); o.type = type; o.frequency.setValueAtTime(f, t); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v * st.vol / 70, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g).connect(ac.destination); o.start(t); o.stop(t + d + .02); } catch {}
+  let ac = null, master = null;
+  function audio() {
+    try {
+      if (!ac) { ac = new (window.AudioContext || window.webkitAudioContext)(); master = ac.createGain(); master.connect(ac.destination); }
+      master.gain.value = st.vol / 100; if (ac.state === "suspended") ac.resume(); return ac;
+    } catch { return null; }
   }
+  function tone(f, d, type = "square", v = .1, delay = 0) {
+    if (!st.sound || !audio()) return;
+    try { const t = ac.currentTime + delay, o = ac.createOscillator(), g = ac.createGain(); o.type = type; o.frequency.setValueAtTime(f, t); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g).connect(master); o.start(t); o.stop(t + d + .02); } catch {}
+  }
+  const fadeGain = (g, v, sec) => { const now = ac.currentTime; g.cancelScheduledValues(now); g.setValueAtTime(Math.max(g.value, .0001), now); g.exponentialRampToValueAtTime(Math.max(v, .0001), now + sec); };
+  // map → hideout music (コンクリートタイル): an <audio> routed through Web Audio so volume also works on iPhone
+  const music = (() => {
+    const el = new Audio(A("map_bgm.mp3")); el.loop = true; el.preload = "auto"; el.setAttribute("playsinline", "");
+    let gain = null, on = false, t = 0;
+    function route() { if (gain || !audio()) return; try { const s = ac.createMediaElementSource(el); gain = ac.createGain(); gain.gain.value = .0001; s.connect(gain).connect(master); } catch { gain = null; } }
+    return {
+      start() { if (on) return; on = true; clearTimeout(t); route(); const p = el.play(); if (p && p.catch) p.catch(() => { on = false; }); if (gain) fadeGain(gain.gain, .75, 1.5); else el.volume = .75; },
+      stop() { if (!on) return; on = false; if (gain) fadeGain(gain.gain, 0, .8); t = setTimeout(() => { if (!on) el.pause(); }, 900); }
+    };
+  })();
+  // city ambience (大都会): a short clip looped seamlessly; muffled through a filter while inside the hideout
+  const ambience = (() => {
+    let buf = null, loading = false, src = null, gain = null, filt = null, want = false;
+    function load() {
+      if (buf || loading || !audio()) return; loading = true;
+      fetch(A("city_ambience.mp3")).then(r => r.arrayBuffer()).then(b => new Promise((ok, ng) => ac.decodeAudioData(b, ok, ng))).then(b => { buf = b; if (want) { want = false; api.start(); } }).catch(() => { loading = false; });
+    }
+    const api = {
+      start() {
+        if (!audio()) return; if (!buf) { want = true; load(); return; } if (src) return;
+        filt = filt || ac.createBiquadFilter(); filt.type = "lowpass";
+        gain = gain || (() => { const g = ac.createGain(); g.gain.value = .0001; filt.connect(g).connect(master); return g; })();
+        src = ac.createBufferSource(); src.buffer = buf; src.loop = true; src.connect(filt); src.start();
+        api.room(scene === "hideout"); fadeGain(gain.gain, .4, 1.5);
+      },
+      stop() { want = false; if (!src) return; const s = src; src = null; fadeGain(gain.gain, 0, .8); setTimeout(() => { try { s.stop(); } catch {} }, 900); },
+      // outside: open city noise; inside the hideout: quieter and muffled, as if through the window
+      room(inside) { if (!filt) return; const now = ac.currentTime; filt.frequency.cancelScheduledValues(now); filt.frequency.setTargetAtTime(inside ? 900 : 18000, now, .4); if (gain && src) fadeGain(gain.gain, inside ? .28 : .4, .8); }
+    };
+    return api;
+  })();
+  function syncMusic() {
+    const on = st.bgm && !document.hidden && (scene === "map" || scene === "hideout");
+    if (on) { music.start(); ambience.start(); ambience.room(scene === "hideout"); } else { music.stop(); ambience.stop(); }
+    for (const b of document.querySelectorAll("[data-snd]")) b.setAttribute("aria-pressed", String(st.bgm));
+  }
+  document.addEventListener("visibilitychange", syncMusic);
+  for (const b of document.querySelectorAll("[data-snd]")) b.addEventListener("click", () => {
+    audio(); st.bgm = !st.bgm; syncMusic();
+    try { const all = JSON.parse(localStorage.getItem("selectear_settings2") || "{}"); all.bgm = st.bgm; localStorage.setItem("selectear_settings2", JSON.stringify(all)); } catch {}
+  });
   const decide = () => { tone(1046, .06, "square", .07); tone(1568, .1, "square", .06, .05); };
   const back = () => { tone(784, .08, "triangle", .08); tone(523, .12, "triangle", .06, .06); };
   const seEl = new Audio(A("se_gamestart.mp3")); seEl.preload = "auto";
@@ -279,9 +334,9 @@ canvas.fx { position: absolute; inset: 0; width: 100%; height: 100%; pointer-eve
 
   /* scenes */
   let scene = "start";
-  function show(id) { $("toast").hidden = true; for (const s of ["start", "map", "hideout"]) $(s).classList.toggle("on", s === id); scene = id; if (id === "map") enterMap(); if (id === "hideout") rainSize(); }
+  function show(id) { $("toast").hidden = true; for (const s of ["start", "map", "hideout"]) $(s).classList.toggle("on", s === id); scene = id; if (id === "map") enterMap(); if (id === "hideout") rainSize(); syncMusic(); }
   for (const b of document.querySelectorAll("[data-go]")) b.addEventListener("click", () => { back(); show(b.dataset.go); });
-  $("startBtn").addEventListener("click", () => { gameStartSE(); buzz([30, 30, 60]); flash(); setTimeout(() => show("map"), reduce ? 0 : 250); });
+  $("startBtn").addEventListener("click", () => { audio(); if (st.bgm) { music.start(); ambience.start(); } gameStartSE(); buzz([30, 30, 60]); flash(); setTimeout(() => show("map"), reduce ? 0 : 250); });
 
   /* =========================================================
      MAP: the picture covers the screen; drag to look around. Spots in % of the picture.
