@@ -3,7 +3,7 @@
 <title>SELECTEAR Gacha</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Orbitron:wght@700;900&family=Dela+Gothic+One&family=Cormorant+Garamond:wght@600;700&family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Chakra+Petch:wght@600;700&family=DotGothic16&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Orbitron:wght@700;900&family=Shippori+Mincho+B1:wght@500;700&family=Cormorant+Garamond:wght@600;700&family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Chakra+Petch:wght@600;700&family=DotGothic16&display=swap">
 <style>
 /* Gacha: pick a mode (normal / balance / oshi), draw 3, watch them arrive in one of two styles
    (intercom gag or SELECTEAR card summon), then see the team of three. Single dark neon look. */
@@ -271,34 +271,39 @@ canvas.spark { position: absolute; inset: 0; width: 100%; height: 100%; z-index:
 @keyframes nudgeR { 50% { transform: translateX(6px); } }
 .attrtag { position: absolute; z-index: 10; left: 50%; top: calc(var(--cy) - var(--cw) * .72 - 40px); transform: translateX(-50%); font: 900 clamp(14px, 3.4vw, 20px) var(--font-sf); letter-spacing: .4em; padding-left: .4em; color: #fff; text-shadow: 0 0 10px var(--tc), 0 0 24px var(--tc); white-space: nowrap; }
 /* the cut-in: a slanted band slams across the screen with the name and the attribute */
-:root { --font-sf: "Orbitron", "Chakra Petch", sans-serif; --font-cut: "Dela Gothic One", "Zen Kaku Gothic New", sans-serif; }
+:root { --font-sf: "Orbitron", "Chakra Petch", sans-serif; --font-cut: "Shippori Mincho B1", serif; }
 .cutin { position: absolute; z-index: 12; inset: 0; pointer-events: none; display: none; }
 .cutin.on { display: block; }
-.cutin .band { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%) scaleY(0); height: clamp(150px, 30vh, 230px); display: flex; align-items: center; gap: clamp(14px, 3vw, 34px); padding: 0 max(18px, 7vw);
-  border-top: 3px solid var(--cg); border-bottom: 3px solid var(--cg); box-shadow: 0 0 18px var(--cg), 0 0 40px color-mix(in srgb, var(--cg) 50%, transparent), inset 0 0 40px rgba(0, 0, 0, .6);
-  background: repeating-linear-gradient(115deg, rgba(255, 255, 255, .07) 0 2px, transparent 2px 26px), linear-gradient(90deg, rgba(6, 5, 18, .96), rgba(10, 8, 28, .88) 50%, rgba(6, 5, 18, .96)); --cg: #f2b33d; }
-.cutin.on .band { animation: bandOpen .35s cubic-bezier(.2, 1.4, .4, 1) forwards; }
+.cutin .band { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%) scaleY(0); height: clamp(120px, 22vh, 170px); display: flex; align-items: center; justify-content: center; gap: clamp(14px, 3vw, 30px); padding: 0 max(18px, 6vw);
+  border-top: 2px solid var(--tc); border-bottom: 2px solid var(--tc); box-shadow: 0 0 14px var(--tc), 0 0 34px color-mix(in srgb, var(--tc) 45%, transparent), inset 0 0 40px rgba(0, 0, 0, .6);
+  background: repeating-linear-gradient(115deg, color-mix(in srgb, var(--tc) 14%, transparent) 0 2px, transparent 2px 26px), linear-gradient(90deg, rgba(6, 5, 18, .96), color-mix(in srgb, var(--tc) 18%, #0a0820) 50%, rgba(6, 5, 18, .96));
+  background-size: 120px 100%, 100% 100%; }
+.cutin.on .band { animation: bandOpen .3s cubic-bezier(.2, 1.4, .4, 1) forwards, stripes 1.2s linear .3s infinite; }
 @keyframes bandOpen { to { transform: translateY(-50%) scaleY(1); } }
-.cutin .band::before, .cutin .band::after { content: ""; position: absolute; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, #fff 20%, var(--cg) 50%, #fff 80%, transparent); opacity: 0; }
-.cutin .band::before { top: -9px; } .cutin .band::after { bottom: -9px; }
-.cutin.on .band::before, .cutin.on .band::after { animation: rule .6s .2s ease-out forwards; }
-@keyframes rule { 0% { opacity: 1; clip-path: inset(0 100% 0 0); } 100% { opacity: .8; clip-path: inset(0 0 0 0); } }
-.cutin .thumb2 { height: 112%; aspect-ratio: 5 / 7; object-fit: cover; border-radius: 8px; border: 2px solid #fff; box-shadow: 0 0 18px var(--tc), 0 0 40px var(--tc); transform: translateX(-60vw) rotate(-8deg); }
-.cutin.on .thumb2 { animation: thumbIn .5s .15s cubic-bezier(.2, 1.3, .4, 1) forwards; }
+@keyframes stripes { from { background-position: 0 0, 0 0; } to { background-position: -120px 0, 0 0; } }
+/* rails: dashed light flowing along the top and bottom edges */
+.cutin .rail { position: absolute; left: 0; right: 0; height: 3px; top: 50%; opacity: 0; background: repeating-linear-gradient(90deg, var(--tc) 0 34px, transparent 34px 52px, #fff 52px 58px, transparent 58px 90px); background-size: 180px 100%; filter: drop-shadow(0 0 6px var(--tc)); }
+.cutin .r1 { margin-top: calc(clamp(120px, 22vh, 170px) / -2 - 9px); }
+.cutin .r2 { margin-top: calc(clamp(120px, 22vh, 170px) / 2 + 6px); }
+.cutin.on .rail { animation: railIn .3s .15s forwards, railR 1s linear infinite; }
+.cutin.on .r2 { animation: railIn .3s .15s forwards, railL 1s linear infinite; }
+@keyframes railIn { to { opacity: .9; } }
+@keyframes railR { to { background-position: 180px 0; } }
+@keyframes railL { to { background-position: -180px 0; } }
+.cutin .thumb2 { height: 116%; aspect-ratio: 5 / 7; object-fit: cover; border-radius: 6px; border: 1.5px solid var(--tc); box-shadow: 0 0 14px var(--tc); transform: translateX(-60vw) rotate(-6deg); }
+.cutin.on .thumb2 { animation: thumbIn .45s .12s cubic-bezier(.2, 1.3, .4, 1) forwards; }
 @keyframes thumbIn { to { transform: none; } }
-.cutin .txt { display: grid; gap: 4px; min-width: 0; }
-.cutin .attr { font: 400 clamp(13px, 2.6vw, 20px) var(--font-cut); letter-spacing: .08em; color: var(--tc); text-shadow: 0 0 8px var(--tc); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-@media (max-width: 600px) { .cutin .attr { font-size: 11px; letter-spacing: 0; } .cutin .code { font-size: 10px; } }
-.cutin b { font: 400 clamp(40px, 10vw, 96px)/1.05 var(--font-cut); font-weight: 400; color: #fff7d6; letter-spacing: .02em; white-space: nowrap;
-  -webkit-text-stroke: 1.5px #ffd47a; text-shadow: 0 0 6px #ffcf6a, 0 0 16px #f2b33d, 0 0 34px #e0801c, 0 0 60px rgba(242, 179, 61, .6); }
-.cutin.on b { animation: nameIn .55s .3s cubic-bezier(.2, 1.4, .4, 1) both; }
-@keyframes nameIn { 0% { opacity: 0; transform: translateX(40vw) skewX(-20deg); filter: blur(6px); } 70% { opacity: 1; transform: translateX(-10px) skewX(4deg); filter: none; } 100% { opacity: 1; transform: none; } }
-.cutin .code { font: 400 clamp(11px, 2vw, 15px) var(--font-cut); color: rgba(255, 240, 210, .78); letter-spacing: .06em; }
-.cutin.on .attr, .cutin.on .code { animation: fadeUp .4s .45s both; }
+.cutin .txt { display: grid; gap: 6px; min-width: 0; }
+.cutin .attr { font: 700 clamp(10px, 1.8vw, 13px) var(--font-sf); letter-spacing: .32em; color: var(--tc); text-shadow: 0 0 8px var(--tc); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cutin b { font: 500 clamp(22px, 4.6vw, 40px)/1.15 "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif; letter-spacing: .14em; white-space: nowrap; color: color-mix(in srgb, var(--tc) 55%, #fff); text-shadow: 0 0 10px color-mix(in srgb, var(--tc) 80%, transparent), 0 0 26px color-mix(in srgb, var(--tc) 50%, transparent); }
+.cutin.on b { animation: nameIn .6s .28s cubic-bezier(.2, 1, .3, 1) both; }
+@keyframes nameIn { 0% { opacity: 0; letter-spacing: .6em; filter: blur(6px); } 100% { opacity: 1; letter-spacing: .14em; filter: none; } }
+.cutin.on .attr { animation: fadeUp .4s .4s both; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } }
-.cutin.rb .band { --cg: #fff; border-image: linear-gradient(90deg, #ff4d5e, #f2c14e, #3ddc84, #4f8cff, #c25cff) 1; }
-.cutin.rb b { -webkit-text-stroke-color: #fff; text-shadow: 0 0 6px #fff, 0 0 18px #ff6ec8, 0 0 34px #4f8cff, 0 0 60px #c25cff; }
-@media (max-width: 600px) { .cutin .band { height: 22vh; } .cutin b { font-size: clamp(30px, 9.5vw, 48px); } }
+.cutin.rb .band { border-image: linear-gradient(90deg, #ff4d5e, #f2c14e, #3ddc84, #4f8cff, #c25cff) 1; }
+.cutin.rb .rail { background: repeating-linear-gradient(90deg, #ff4d5e 0 18px, #f2c14e 18px 36px, #3ddc84 36px 54px, #4f8cff 54px 72px, #c25cff 72px 90px); background-size: 180px 100%; }
+.cutin.rb b { color: #fff; text-shadow: 0 0 10px #ff6ec8, 0 0 24px #4f8cff; }
+@media (max-width: 600px) { .cutin b { font-size: clamp(20px, 6.4vw, 28px); letter-spacing: .08em; } }
 #summon.holo-mode .slam, #summon.holo-mode .sum-info { display: none !important; }
 
 #summon.sway .bg { animation: sway 5s ease-in-out infinite; }
@@ -449,7 +454,7 @@ canvas.spark { position: absolute; inset: 0; width: 100%; height: 100%; z-index:
   <div class="card3d" id="card3d"><div class="tilt" id="tilt"><div class="in" id="cardIn"><div class="back" id="cardBack"></div><div class="front" id="cardFront"></div></div></div></div>
   <div class="tease" id="tease"></div>
   <div class="glitchbars" id="gbars" aria-hidden="true"></div>
-  <div class="cutin" id="cutin" aria-live="polite"><div class="band"><img class="thumb2" id="ciImg" alt=""><div class="txt"><span class="attr" id="ciAttr"></span><b id="ciName"></b><span class="code" id="ciCode"></span></div></div></div>
+  <div class="cutin" id="cutin" aria-live="polite"><div class="band"><img class="thumb2" id="ciImg" alt=""><div class="txt"><span class="attr" id="ciAttr"></span><b id="ciName"></b></div></div><i class="rail r1"></i><i class="rail r2"></i></div>
   <div class="swipehint" id="swipeHint" hidden><span>⟵</span> スワイプで回転 <span>⟶</span></div>
   <div class="slam" id="slam"><small id="slamType"></small><b id="slamName"></b></div>
   <span class="fliphint" id="flipHint" hidden>カードをタップで裏表を確認</span>
@@ -531,8 +536,11 @@ canvas.spark { position: absolute; inset: 0; width: 100%; height: 100%; z-index:
   /* =========================================================
      SOUND
      ========================================================= */
-  const SE = {}; for (const k of ["fly", "decide", "switch", "tap", "gamestart"]) { SE[k] = new Audio(A(`se_${k}.mp3`)); SE[k].preload = "auto"; }
+  const SE = {}; for (const k of ["fly", "decide", "switch", "tap", "gamestart", "holo", "confirm", "attr", "reveal", "open", "cutin"]) { SE[k] = new Audio(A(`se_${k}.mp3`)); SE[k].preload = "auto"; }
   function se(k) { if (!st.sound) return; try { const a = SE[k].cloneNode(); a.volume = Math.min(1, st.vol / 100); const p = a.play(); if (p && p.catch) p.catch(() => {}); } catch {} }
+  // ① played while the hologram is up (stopped once the card is confirmed)
+  let holoEl = null;
+  function holoSE(on) { try { if (holoEl) { holoEl.pause(); holoEl = null; } if (on && st.sound) { holoEl = SE.holo.cloneNode(); holoEl.volume = Math.min(1, st.vol / 100) * .8; const p = holoEl.play(); if (p && p.catch) p.catch(() => {}); } } catch {} }
   const buzz = ms => { if (st.vib) try { navigator.vibrate && navigator.vibrate(ms); } catch {} };
   function toast(t) { const e = $("toast"); e.textContent = t; e.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => e.hidden = true, 2200); }
   function flash() { const f = $("flash"); f.classList.remove("go"); void f.offsetWidth; f.classList.add("go"); }
@@ -541,7 +549,7 @@ canvas.spark { position: absolute; inset: 0; width: 100%; height: 100%; z-index:
   const RAINBOW = ["chou", "ogawa"]; // these two turn rainbow on the second tap
   const isRainbow = m => RAINBOW.includes(m.id);
   const backOf = m => A(isRainbow(m) ? "img/back_oshi.webp" : BACK[m.type]);
-  function show(id) { for (const s of ["holo", "menu", "door", "summon", "result"]) $(s).classList.toggle("on", s === id); }
+  function show(id) { for (const s of ["holo", "menu", "door", "summon", "result"]) $(s).classList.toggle("on", s === id); if (id === "holo") se("open"); if (id !== "summon") holoSE(false); }
 
   /* =========================================================
      MENU
@@ -712,53 +720,59 @@ canvas.spark { position: absolute; inset: 0; width: 100%; height: 100%; z-index:
     $("cardBack").style.backgroundImage = `url(${A("img/back_charge.webp")})`; $("cardFront").innerHTML = "";
     $("rays").classList.remove("on"); $("cutin").classList.remove("on", "rb"); $("swipeHint").hidden = true; $("flipHint").hidden = true; $("sumInfo").hidden = true;
     const at = $("attrTag"); if (at) at.remove();
-    $("sumTitle").textContent = `HOLOGRAM ${i + 1} / 3`; $("sumCue").textContent = "ホログラムをタップ";
+    $("sumTitle").textContent = `HOLOGRAM ${i + 1} / 3`; $("sumCue").textContent = "ホログラムをタップ"; holoSE(true);
     $("pips").innerHTML = [0, 1, 2].map(k => `<i class="${k < i ? "on" : ""}"></i>`).join("");
   }
   function snapSE() { if (!audio()) return; const t = ac.currentTime; const o = ac.createOscillator(); o.type = "square"; o.frequency.setValueAtTime(1600, t); o.frequency.exponentialRampToValueAtTime(90, t + .06); env(o, t, .001, .35, .07); o.start(t); o.stop(t + .09); const n = noise(.08), f = ac.createBiquadFilter(); f.type = "highpass"; f.frequency.value = 3000; n.connect(f); env(f, t, .001, .5, .05); n.start(t); n.stop(t + .08); }
 
-  // 1. tap → プツン: the colour switches in one cut, the hologram turns into a solid card
+  // tap 1 → プツン: the hologram switches to the attribute's colour (still a hologram). ③
   async function cutTo() {
     const my = ++runId, m = team[si], t = TYPES[m.type], live = () => my === runId;
     sumStage = "anim"; $("sumCue").textContent = ""; $("sumTitle").textContent = "";
     const c = $("card3d"), sm = $("summon");
-    snapSE(); SFX.boom(.45); buzz(25);
+    se("attr"); buzz(25);
     retrig(c, "cut"); retrig(sm, "cutbg");
     c.style.setProperty("--tc", t.c); sm.style.setProperty("--tc", t.c);
     $("sumBg").style.backgroundImage = `url(${bgOf(m)})`; $("cardBack").style.backgroundImage = `url(${A(BACK[m.type])})`;
     $("cardFront").innerHTML = `<img class="art" src="${A(m.img)}" alt="${esc(m.name)}のカード">${m.oshi ? '<span class="dup">推し確定</span>' : m.dup ? '<span class="dup">ダブり</span>' : ""}`;
     const tag = document.createElement("div"); tag.className = "attrtag"; tag.id = "attrTag"; tag.textContent = attrOf(m); sm.append(tag);
-    await wait(380); if (!live()) return;
-    c.classList.remove("holo", "cut"); c.classList.add("solid"); retrig(c, "materialize"); SFX.whoosh();
-    await wait(500); if (!live()) return;
-    sumStage = "card"; $("sumCue").textContent = "カードをタップしてひっくり返す";
+    await wait(450); if (!live()) return;
+    c.classList.remove("cut");
+    sumStage = "holo2"; $("sumCue").textContent = "もう一度タップでカード確定";
   }
-
-  // 2. tap again → (rainbow for チョウ・ヤン and 小川 結菜) → the card turns over → cut-in
-  async function turnOver() {
-    const my = ++runId, m = team[si], t = TYPES[m.type], live = () => my === runId, rb = isRainbow(m);
-    sumStage = "anim"; $("sumCue").textContent = ""; const tag = $("attrTag"); const c = $("card3d"), sm = $("summon");
+  // tap 2 → the hologram becomes a solid card (チョウ・ヤン and 小川 結菜 turn rainbow here). ②
+  async function confirmCard() {
+    const my = ++runId, m = team[si], live = () => my === runId, rb = isRainbow(m);
+    sumStage = "anim"; $("sumCue").textContent = ""; const c = $("card3d"), sm = $("summon"), tag = $("attrTag");
+    holoSE(false);
     if (rb) {
-      snapSE(); retrig(c, "rainbow"); retrig(sm, "cutbg"); flash(); SFX.riser(.7);
+      se("attr"); retrig(c, "rainbow"); retrig(sm, "cutbg"); flash();
       c.style.setProperty("--tc", "#c25cff"); sm.style.setProperty("--tc", "#c25cff");
       $("sumBg").style.backgroundImage = `url(${A("img/st_oshi.webp")})`; $("cardBack").style.backgroundImage = `url(${A("img/back_oshi.webp")})`;
       if (tag) tag.textContent = "✦ RAINBOW ✦";
       const r = c.getBoundingClientRect(); burstAt(r.left + r.width / 2, r.top + r.height / 2, ["#ff4d5e", "#f2c14e", "#3ddc84", "#4f8cff", "#c25cff", "#fff"], 160, 16);
-      await wait(900); if (!live()) return;
+      await wait(850); if (!live()) return;
     }
+    se("confirm"); buzz([30, 20, 60]);
+    c.classList.remove("holo"); c.classList.add("solid"); retrig(c, "materialize");
+    await wait(600); if (!live()) return;
+    sumStage = "card"; $("sumCue").textContent = "タップで表にする";
+  }
+  // tap 3 → the card turns face up ④, then the cut-in ⑥ with the name and the attribute
+  async function turnOver() {
+    const my = ++runId, m = team[si], t = TYPES[m.type], live = () => my === runId, rb = isRainbow(m);
+    sumStage = "anim"; $("sumCue").textContent = ""; const tag = $("attrTag"); const c = $("card3d"), sm = $("summon");
     sm.classList.remove("sway"); if (tag) tag.remove();
-    inn().classList.add("flip"); setAng(180); SFX.whoosh();
+    inn().classList.add("flip"); setAng(180); se("reveal");
     await wait(650); if (!live()) return;
-    inn().classList.remove("flip");
-    SFX.boom(1); SFX.choir(rb ? "oshi" : m.type); quake(); flash(); buzz([80, 40, 160]);
+    inn().classList.remove("flip"); quake(); flash(); buzz([80, 40, 160]);
     const r = c.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
     const cols = rb ? ["#ff4d5e", "#f2c14e", "#3ddc84", "#4f8cff", "#c25cff", "#fff"] : [t.c, "#fff", t.c, "#ffe9a8"];
     burstAt(cx, cy, cols, 200, 18);
     await wait(500); if (!live()) return;
-    // cut-in: card on the left, attribute, the name in big glowing letters, and the battle style
-    $("ciImg").src = A(m.img); $("ciAttr").textContent = `[${attrOf(m)}] ${t.jp}${m.oshi ? " ・ 推し確定" : ""}`;
-    $("ciName").textContent = m.name; $("ciCode").textContent = m.style;
-    const ci = $("cutin"); ci.classList.toggle("rb", rb); ci.style.setProperty("--tc", rb ? "#ff9be0" : t.c); retrig(ci, "on"); SFX.whoosh(); SFX.boom(.5);
+    $("ciImg").src = A(m.img); $("ciAttr").textContent = `${attrOf(m)} ・ ${t.jp}${m.oshi ? " ・ 推し確定" : ""}`;
+    $("ciName").textContent = m.name;
+    const ci = $("cutin"); ci.classList.toggle("rb", rb); ci.style.setProperty("--tc", rb ? "#ff9be0" : t.c); retrig(ci, "on"); se("cutin");
     await wait(1100); if (!live()) return;
     sumStage = "open"; $("flipHint").hidden = false;
     $("sumCue").textContent = si < 2 ? "画面をタップで次へ" : "画面をタップでチーム確認";
@@ -768,13 +782,14 @@ canvas.spark { position: absolute; inset: 0; width: 100%; height: 100%; z-index:
   $("summon").addEventListener("click", e => {
     if (e.target.closest("#skipSum")) return;
     if (sumStage === "charge") { if (e.target.closest("#card3d")) { audio(); cutTo(); } return; }
+    if (sumStage === "holo2") { if (e.target.closest("#card3d")) confirmCard(); return; }
     if (sumStage === "card") { if (e.target.closest("#card3d")) turnOver(); return; }
     if (sumStage === "open") {
       if (e.target.closest("#card3d")) { $("cutin").classList.remove("on"); flipCard(); return; }
       se("switch"); if (si < 2) chargeFor(si + 1); else toResult();
     }
   });
-  $("skipSum").addEventListener("click", () => { runId++; cancelAnimationFrame(spinRAF); $("black").classList.remove("on"); $("summon").classList.remove("gl"); se("tap"); toResult(); });
+  $("skipSum").addEventListener("click", () => { runId++; holoSE(false); cancelAnimationFrame(spinRAF); $("black").classList.remove("on"); $("summon").classList.remove("gl"); se("tap"); toResult(); });
 
   /* =========================================================
      RESULT
