@@ -98,6 +98,7 @@ canvas#water { position: absolute; inset: 0; width: 100%; height: 100%; }
 @keyframes neonA { 0% { opacity: .25; } 6% { opacity: 1; } 7% { opacity: .15; } 8% { opacity: 1; } 40% { opacity: .9; } 55% { opacity: .35; } 70% { opacity: 1; } 71% { opacity: .2; } 72.5% { opacity: 1; } 100% { opacity: .25; } }
 @keyframes neonB { 0% { opacity: 1; } 22% { opacity: .85; } 23% { opacity: .1; } 24% { opacity: .95; } 25.5% { opacity: .2; } 27% { opacity: 1; } 60% { opacity: .3; } 80% { opacity: 1; } 100% { opacity: 1; } }
 .ci.locked .art .lt { display: none; }
+.ci .seal { position: absolute; left: -2%; top: -4%; width: 104%; height: auto; pointer-events: none; animation: noise 2.6s steps(1) infinite; }
 .ci .art svg { overflow: visible; filter: drop-shadow(0 0 8px color-mix(in srgb, var(--c) 70%, transparent)) drop-shadow(0 12px 16px rgba(0, 0, 0, .85)); }
 .ci .refl { position: absolute; left: 0; right: 0; top: 76%; z-index: 1; transform: scaleY(-.5); transform-origin: top; opacity: .3; filter: blur(2.5px) saturate(1.3); -webkit-mask-image: linear-gradient(0deg, rgba(0, 0, 0, .9), transparent 70%); mask-image: linear-gradient(0deg, rgba(0, 0, 0, .9), transparent 70%); pointer-events: none; }
 .ci .refl img, .ci .refl svg { display: block; width: 100%; height: auto; }
@@ -149,6 +150,27 @@ canvas#water { position: absolute; inset: 0; width: 100%; height: 100%; }
 .reset { position: absolute; z-index: 9; left: max(10px, env(safe-area-inset-left, 0px)); top: calc(62px + env(safe-area-inset-top, 0px)); padding: 5px 10px; border-radius: 999px; border: 1px solid rgba(201, 198, 214, .3); background: rgba(8, 5, 18, .7); color: var(--dim); font: 700 10px var(--font-body); cursor: pointer; }
 @media (max-width: 600px) { .arrow { width: 40px; height: 40px; } .dots { gap: 5px; } .dots button { width: 26px; height: 26px; font-size: 11px; } .dots .pill { padding: 0 9px; font-size: 10px; } .acts button { height: 44px; font-size: 13px; } }
 @media (max-height: 520px) { .title-card .sub, .title-card .eyebrow2 { display: none; } .title-card h2 { font-size: 20px; } .foot { gap: 6px; } .acts button { height: 38px; } .dots button { width: 24px; height: 24px; } .stage { top: calc(50px + env(safe-area-inset-top, 0px)); } .reset { display: none; } }
+/* ---------- OVERVIEW ---------- */
+#overview { background: #05040b; }
+.ov-sea { position: absolute; inset: -20px; background: url(img/sea.webp) center / cover; filter: brightness(.8); animation: drift 40s ease-in-out infinite alternate; }
+@keyframes drift { to { transform: translate(-14px, 8px) scale(1.04); } }
+.ov-wrap { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+#overview.pan { touch-action: pan-y; cursor: grab; }
+#overview.pan .ov-hint { display: block; left: 50%; right: auto; transform: translateX(-50%); bottom: calc(66px + env(safe-area-inset-bottom, 0px)); white-space: nowrap; }
+.ov-wrap.fly { transition: transform .8s cubic-bezier(.5, 0, .2, 1), opacity .8s; }
+.ov-wrap img { display: block; width: 100%; height: 100%; -webkit-user-drag: none; -webkit-mask-image: radial-gradient(ellipse 70% 72% at 50% 50%, #000 75%, transparent 100%); mask-image: radial-gradient(ellipse 70% 72% at 50% 50%, #000 75%, transparent 100%); }
+.hs { position: absolute; transform: translate(-50%, -50%); border: 0; background: transparent; padding: 0; cursor: pointer; border-radius: 50%; }
+.hs::after { content: ""; position: absolute; inset: 10%; border-radius: 50%; box-shadow: 0 0 0 2px var(--c), 0 0 30px var(--c); opacity: 0; transition: opacity .2s; }
+.hs:hover::after, .hs:focus-visible::after { opacity: .8; }
+.hs:focus-visible { outline: none; }
+.hs .lbl { position: absolute; left: 50%; top: 100%; transform: translate(-50%, -60%); padding: 3px 10px; border-radius: 999px; background: rgba(6, 4, 16, .85); border: 1px solid var(--c); font: 700 var(--fs, 12px) var(--font-body); white-space: nowrap; color: #fff; box-shadow: 0 0 10px color-mix(in srgb, var(--c) 50%, transparent); pointer-events: none; }
+.hs .lbl i { font-style: normal; margin-right: 4px; color: var(--c); font-family: var(--font-num); }
+.hs.locked .lbl { color: var(--dim); border-color: rgba(200, 190, 240, .4); box-shadow: none; }
+.ov-home { position: absolute; z-index: 9; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 20px; border-radius: 999px; border: 1px solid #fff; background: linear-gradient(90deg, rgba(155, 92, 255, .75), rgba(8, 5, 18, .9)); font: 800 14px var(--font-body); cursor: pointer; box-shadow: 0 0 18px rgba(155, 92, 255, .6); }
+.ov-home svg { width: 18px; height: 18px; stroke: #fff; fill: none; stroke-width: 2; stroke-linejoin: round; }
+.ov-hint { position: absolute; z-index: 9; right: max(14px, env(safe-area-inset-right, 0px)); bottom: calc(24px + env(safe-area-inset-bottom, 0px)); margin: 0; font: 700 12px var(--font-body); color: var(--ice); animation: blink 2.4s ease-in-out infinite; }
+@media (max-width: 600px) { .ov-hint { display: none; } }
+
 /* info sheet: a side panel on wide screens, a bottom sheet on phones */
 .sheet { position: absolute; z-index: 20; right: max(12px, env(safe-area-inset-right, 0px)); top: calc(66px + env(safe-area-inset-top, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); width: min(380px, calc(100% - 24px)); display: none; flex-direction: column; border-radius: 16px; background: var(--panel); border: 1px solid var(--c, var(--line)); box-shadow: 0 0 40px rgba(0, 0, 0, .6), 0 0 24px color-mix(in srgb, var(--c, #9b5cff) 35%, transparent); overflow: hidden; }
 .sheet.on { display: flex; animation: slideIn .3s cubic-bezier(.2, .8, .2, 1); }
@@ -206,6 +228,19 @@ canvas#water { position: absolute; inset: 0; width: 100%; height: 100%; }
   </div>
 </section>
 
+<!-- OVERVIEW: the whole outside world in one picture; tap a city to fly in -->
+<section class="scene" id="overview" aria-label="外の世界の全体図">
+  <div class="ov-sea"></div>
+  <div class="ov-wrap" id="ovWrap"><img id="ovImg" src="img/overview.webp" alt="外の世界の全体図。7つの都市が爆心地を囲んでいる" draggable="false"></div>
+  <div class="topbar">
+    <button class="back" type="button" id="ovBack"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg><span>戻る</span></button>
+    <div class="place"><b>NEON RUIN CITY</b><small>外の世界</small></div>
+    <div class="right"><div class="coins" aria-label="有料コイン"><span class="coin-ic" aria-hidden="true"></span><span class="lb">有料<br>コイン</span><span class="val" id="coinVal2">0</span></div></div>
+  </div>
+  <button class="ov-home" type="button" id="ovHome"><svg viewBox="0 0 24 24"><path d="M4 21V9l8-6 8 6v12h-6v-7h-4v7z"/></svg>アジト</button>
+  <p class="ov-hint" id="ovHint">都市をタップ ／ 左右にドラッグで見回せます</p>
+</section>
+
 <!-- MAP -->
 <section class="scene" id="map" aria-label="外の世界のマップ">
   <canvas id="water" aria-hidden="true"></canvas>
@@ -219,7 +254,7 @@ canvas#water { position: absolute; inset: 0; width: 100%; height: 100%; }
     <div class="dots" id="dots" aria-label="場所を選ぶ"></div>
   </div>
   <div class="topbar">
-    <button class="back" type="button" id="toStart"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg><span>戻る</span></button>
+    <button class="back" type="button" id="toStart"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg><span>全体図</span></button>
     <div class="place"><b>NEON RUIN CITY</b><small>外の世界</small></div>
     <div class="right">
       <button class="snd" type="button" id="snd" aria-pressed="true" aria-label="BGMと環境音"><svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4z"/><path class="on" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/><path class="off" d="M16 9l6 6M22 9l-6 6"/></svg></button>
@@ -278,7 +313,7 @@ canvas#water { position: absolute; inset: 0; width: 100%; height: 100%; }
     { no: 6, id: "wrath", name: "アンガー・ストリート", title: "戦と憤怒の監獄", img: "img/city_wrath.webp", sin: "憤怒", c: "#ff4d5e", district: "EAST 郊外周辺〜ドーム跡", where: "上",
       view: "鉄骨がむき出しになり、火花と赤い警告灯が点滅する闘技場エリア。",
       gimmicks: ["強制バトルゾーン：回復ポイントが少なく、強敵（大罪の守護者）との連続バトルが待ち受ける戦闘特化エリア。"] },
-    { no: 7, id: "pride", name: "プライド・キャピトル", sin: "傲慢", c: "#a98bff", district: "CLINIC 医療区〜中枢議事堂", where: "右上",
+    { no: 7, id: "pride", name: "プライド・ネオ", title: "経済と傲慢の城", img: "img/city_pride.webp", sin: "傲慢", c: "#a98bff", district: "CLINIC 医療区〜中枢議事堂", where: "右上",
       view: "巨大な十字のマークが光る研究施設と、その奥にそびえる旧中枢機関。",
       gimmicks: ["最深部の封印：ループと大崩落（ゼロ・デイ）の秘密が記録されたメインサーバーがある。ここを制圧すると一周が完成し、12時の怠惰から爆心地への橋が繋がる。"] }
   ];
@@ -371,9 +406,14 @@ canvas#water { position: absolute; inset: 0; width: 100%; height: 100%; }
           inner = refl + `<img class="lt la" src="${A(lt + "_la.webp")}" alt="" draggable="false"><img class="lt lb" src="${A(lt + "_lb.webp")}" alt="" draggable="false">`;
         } else inner = genericIsland(c, p.i);
       }
-      else if (p.kind === "gz") { inner = gzIsland(cleared >= 7); state = cleared >= 7 ? "open" : "gz"; }
+      else if (p.kind === "gz") {
+        const open = cleared >= 7; state = open ? "open" : "gz sealed"; pic = true;
+        refl = `<img src="${A("img/city_gz.webp")}" alt="" draggable="false">`;
+        inner = refl + `<img class="lt la" src="${A("img/city_gz_la.webp")}" alt="" draggable="false"><img class="lt lb" src="${A("img/city_gz_lb.webp")}" alt="" draggable="false">` +
+          (open ? "" : `<svg class="seal" viewBox="0 0 200 120" aria-hidden="true"><ellipse cx="100" cy="58" rx="92" ry="52" fill="rgba(255,77,94,.06)" stroke="#ff4d5e" stroke-width="2" stroke-dasharray="10 6"/><ellipse cx="100" cy="58" rx="80" ry="44" fill="none" stroke="#ff4d5e" stroke-width="1" opacity=".5"/></svg>`);
+      }
       else inner = hideIsland();
-      d.classList.add(...[pic ? "pic" : "", state].filter(Boolean));
+      d.classList.add(...[pic ? "pic" : "", ...state.split(" ")].filter(Boolean));
       d.style.setProperty("--c", placeColor(p)); d.style.setProperty("--d", (-k * .8) + "s");
       d.setAttribute("aria-label", placeName(p));
       d.innerHTML = `<span class="float"><span class="glow"></span><span class="ripple"></span><span class="art">${inner}</span><span class="refl" aria-hidden="true">${refl || inner}</span></span><span class="tag">${p.kind === "city" ? CITIES[p.i].no + " " : ""}${esc(placeName(p))}</span>`;
@@ -416,7 +456,7 @@ canvas#water { position: absolute; inset: 0; width: 100%; height: 100%; }
       acts = `<button type="button" class="sec" data-a="detail">詳しく</button><button type="button" data-a="go" ${s === "locked" ? "disabled" : ""}>${s === "cleared" ? "もう一度探索する" : s === "locked" ? `${esc(CITIES[p.i - 1].name)}の攻略で解放` : "攻略に出発する"}</button>${s === "open" ? '<button type="button" class="sec" data-a="demo">制圧（デモ）</button>' : ""}`;
     } else if (p.kind === "gz") {
       const done = cleared >= 7;
-      eyebrow = "FINAL DESTINATION"; title = "GROUND ZERO"; sub = `爆心地 ・ 記憶のロック ${cleared}/7 解除`;
+      eyebrow = "FINAL DESTINATION"; title = "GROUND ZERO"; sub = `??? ・ 記憶のロック ${cleared}/7 解除`;
       chip = `<span class="chip ${done ? "open" : "locked"}">${done ? "侵入可能" : "バリアで封鎖中"}</span>`;
       acts = `<button type="button" class="sec" data-a="detail">詳しく</button><button type="button" data-a="gz" ${done ? "" : "disabled"}>${done ? "爆心地へ侵入する" : "7都市の攻略で解放"}</button>`;
     } else {
@@ -459,55 +499,38 @@ canvas#water { position: absolute; inset: 0; width: 100%; height: 100%; }
   let rt = 0; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { if (scene === "map") { fitFoot(); position(); } }, 120); });
   new ResizeObserver(() => { if (scene === "map") { fitFoot(); position(); } }).observe($("foot"));
 
-  /* background: night sky with stars and a moon, a far skyline on the horizon, and the sea.
-     The horizon glow takes the colour of the selected place and eases toward it. */
+  /* background: the stormy sea picture, slowly drifting, with a glow in the selected place's colour,
+     light streaks on the water and floating bokeh */
   const wv = $("water"), wg = wv.getContext("2d"); let ww = 0, wh = 0;
   function wsize() { const r = Math.min(devicePixelRatio || 1, 2); ww = innerWidth; wh = innerHeight; wv.width = ww * r; wv.height = wh * r; wg.setTransform(r, 0, 0, r, 0, 0); }
   wsize(); addEventListener("resize", wsize);
+  const seaImg = new Image(); seaImg.src = A("img/sea.webp");
   const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
   let tint = [155, 92, 255];
-  const stars = Array.from({ length: 160 }, () => ({ x: Math.random(), y: Math.random() * .42, r: Math.random() * 1.3 + .3, p: Math.random() * 6.28, s: .5 + Math.random() * 2 }));
-  const sky = Array.from({ length: 70 }, (_, i) => ({ x: i / 70 + Math.random() * .01, w: .008 + Math.random() * .02, h: .02 + Math.pow(Math.random(), 2) * .11, win: Array.from({ length: 4 }, () => ({ u: Math.random(), v: Math.random(), p: Math.random() * 6.28, sp: .3 + Math.random() * 1.5 })) }));
-  const streaks = Array.from({ length: 110 }, () => ({ x: Math.random(), y: Math.random(), l: 10 + Math.random() * 60, s: .05 + Math.random() * .2, a: .05 + Math.random() * .14, hue: Math.random() < .5 ? 0 : 1 }));
+  const streaks = Array.from({ length: 90 }, () => ({ x: Math.random(), y: Math.random(), l: 10 + Math.random() * 60, s: .05 + Math.random() * .2, a: .05 + Math.random() * .14, hue: Math.random() < .5 ? 0 : 1 }));
   const bokeh = Array.from({ length: 26 }, () => ({ x: Math.random(), y: Math.random(), r: 2 + Math.random() * 7, v: .00008 + Math.random() * .00025, p: Math.random() * 6.28 }));
   (function wave(t = 0) {
     if (scene === "map") {
       const target = hex(placeColor(PLACES[sel] || PLACES[1]));
       tint = tint.map((c, i) => c + (target[i] - c) * .03);
-      const [tr, tgc, tb] = tint.map(Math.round), T = `${tr},${tgc},${tb}`;
-      const hz = wh * .4; // horizon
-      // sky
-      const g1 = wg.createLinearGradient(0, 0, 0, hz);
-      g1.addColorStop(0, "#020109"); g1.addColorStop(.55, "#0d0828"); g1.addColorStop(.85, `rgba(${T},.35)`); g1.addColorStop(1, `rgba(${T},.6)`);
-      wg.fillStyle = "#020109"; wg.fillRect(0, 0, ww, wh); wg.fillStyle = g1; wg.fillRect(0, 0, ww, hz);
-      // stars
-      for (const s of stars) { const a = .35 + .65 * Math.abs(Math.sin(t / 1000 * s.s + s.p)); wg.fillStyle = `rgba(230,225,255,${a * (1 - s.y * 1.6)})`; wg.beginPath(); wg.arc(s.x * ww, s.y * wh, s.r, 0, 6.283); wg.fill(); }
-      // moon with halo
-      const mx = ww * .82, my = wh * .14, mr = Math.min(ww, wh) * .055;
-      const halo = wg.createRadialGradient(mx, my, mr * .8, mx, my, mr * 5); halo.addColorStop(0, "rgba(220,215,255,.35)"); halo.addColorStop(1, "rgba(220,215,255,0)");
-      wg.fillStyle = halo; wg.beginPath(); wg.arc(mx, my, mr * 5, 0, 6.283); wg.fill();
-      const mg = wg.createRadialGradient(mx - mr * .3, my - mr * .3, mr * .1, mx, my, mr); mg.addColorStop(0, "#fffaf0"); mg.addColorStop(1, "#c9c2e8");
-      wg.fillStyle = mg; wg.beginPath(); wg.arc(mx, my, mr, 0, 6.283); wg.fill();
-      // far skyline with blinking windows
-      wg.fillStyle = "#07041a";
-      for (const b of sky) { const bx = b.x * ww, bw = b.w * ww, bh = b.h * wh; wg.fillRect(bx, hz - bh, bw, bh + 1); for (const w of b.win) { const on = Math.sin(t / 1000 * w.sp + w.p) > .2; if (on) { wg.fillStyle = `rgba(${T},.9)`; wg.fillRect(bx + w.u * bw * .8, hz - bh + w.v * bh * .9, 1.6, 1.6); wg.fillStyle = "#07041a"; } } }
-      // horizon glow line
-      const hg = wg.createLinearGradient(0, hz - 30, 0, hz + 30); hg.addColorStop(0, `rgba(${T},0)`); hg.addColorStop(.5, `rgba(${T},.45)`); hg.addColorStop(1, `rgba(${T},0)`);
-      wg.fillStyle = hg; wg.fillRect(0, hz - 30, ww, 60);
-      // sea
-      const g2 = wg.createLinearGradient(0, hz, 0, wh); g2.addColorStop(0, `rgba(${T},.25)`); g2.addColorStop(.25, "#0a0820"); g2.addColorStop(1, "#04030c");
-      wg.fillStyle = g2; wg.fillRect(0, hz, ww, wh - hz);
-      // moon reflection on the sea
-      for (let y = hz + 2; y < wh; y += 3) { const k = (y - hz) / (wh - hz), wdt = mr * (.8 + k * 2.4) * (.5 + .5 * Math.abs(Math.sin(t / 800 + y * .09))); wg.fillStyle = `rgba(225,220,255,${.13 * (1 - k) * (.6 + .4 * Math.sin(t / 500 + y))})`; wg.fillRect(mx - wdt / 2 + Math.sin(t / 900 + y * .05) * 5, y, wdt, 2.4); }
-      // light streaks on the water
+      const T = tint.map(Math.round).join(",");
+      wg.fillStyle = "#05040b"; wg.fillRect(0, 0, ww, wh);
+      if (seaImg.complete && seaImg.naturalWidth) {
+        const r = seaImg.naturalWidth / seaImg.naturalHeight, z = 1.08 + .03 * Math.sin(t / 9000);
+        let w = ww * z, h = w / r; if (h < wh * z) { h = wh * z; w = h * r; }
+        wg.globalAlpha = .95; wg.drawImage(seaImg, (ww - w) / 2 + Math.sin(t / 7000) * 14, (wh - h) / 2 + Math.cos(t / 9000) * 8, w, h); wg.globalAlpha = 1;
+      }
+      // colour glow behind the front island
+      const gx = ww / 2, gy = wh * .42, gr = Math.max(ww, wh) * .55;
+      const g = wg.createRadialGradient(gx, gy, 0, gx, gy, gr); g.addColorStop(0, `rgba(${T},.32)`); g.addColorStop(.5, `rgba(${T},.1)`); g.addColorStop(1, `rgba(${T},0)`);
+      wg.fillStyle = g; wg.fillRect(0, 0, ww, wh);
       for (const s of streaks) {
-        const yy = hz + s.y * (wh - hz), persp = .3 + s.y;
+        const yy = s.y * wh, persp = .3 + s.y;
         s.x += s.s / ww * persp; if (s.x > 1.05) s.x = -.05;
         const wob = Math.sin(t / 900 + s.y * 40) * 2;
-        wg.strokeStyle = s.hue ? `rgba(${T},${s.a * persp * 1.4})` : `rgba(160,190,255,${s.a * persp})`; wg.lineWidth = 1 + persp;
+        wg.strokeStyle = s.hue ? `rgba(${T},${s.a * persp})` : `rgba(190,190,230,${s.a * persp * .7})`; wg.lineWidth = 1 + persp;
         wg.beginPath(); wg.moveTo(s.x * ww, yy + wob); wg.lineTo(s.x * ww + s.l * persp, yy + wob); wg.stroke();
       }
-      // drifting bokeh
       for (const b of bokeh) { b.y -= b.v * 16; if (b.y < -.05) { b.y = 1.05; b.x = Math.random(); } const a = .08 + .08 * Math.sin(t / 1300 + b.p); const bg = wg.createRadialGradient(b.x * ww, b.y * wh, 0, b.x * ww, b.y * wh, b.r * 2); bg.addColorStop(0, `rgba(${T},${a * 2})`); bg.addColorStop(1, `rgba(${T},0)`); wg.fillStyle = bg; wg.beginPath(); wg.arc(b.x * ww, b.y * wh, b.r * 2, 0, 6.283); wg.fill(); }
     }
     requestAnimationFrame(wave);
@@ -589,23 +612,75 @@ canvas#water { position: absolute; inset: 0; width: 100%; height: 100%; }
     return api;
   })();
   function syncMusic() {
-    const on = st.bgm && !document.hidden && scene === "map";
+    const on = st.bgm && !document.hidden && (scene === "map" || scene === "overview");
     if (on) { music.start(); ambience.start(); } else { music.stop(); ambience.stop(); }
     $("snd").setAttribute("aria-pressed", String(st.bgm));
   }
   document.addEventListener("visibilitychange", syncMusic);
   $("snd").addEventListener("click", () => { audio(); st.bgm = !st.bgm; syncMusic(); try { const all = JSON.parse(localStorage.getItem("selectear_settings2") || "{}"); all.bgm = st.bgm; localStorage.setItem("selectear_settings2", JSON.stringify(all)); } catch {} });
 
+  /* =========================================================
+     OVERVIEW: tap spots in % of the overview picture (1670 × 941)
+     ========================================================= */
+  const OV_RATIO = 1670 / 941;
+  const OV_SPOTS = [ // place index in PLACES, x, y, hit size (% of picture width)
+    [1, 26, 16, 22], [7, 75, 17, 22], [2, 14, 42, 22], [6, 85, 44, 22], [3, 19, 71, 23], [4, 50, 82, 26], [5, 82, 72, 23], [8, 50, 44, 26]
+  ];
+  $("coinVal2").textContent = $("coinVal").textContent;
+  function ovLayout() {
+    const wrap = $("ovWrap"), W = innerWidth, H = innerHeight, top = 58, bot = 70;
+    let w = W, h = W / OV_RATIO; const avail = H - top - bot;
+    if (h > avail) { h = avail; w = h * OV_RATIO; }
+    // phones held upright: let the picture run wider than the screen so the islands stay readable
+    if (W / H < .8) { w = Math.min(W * 1.9, avail * OV_RATIO); h = w / OV_RATIO; }
+    wrap.style.width = w + "px"; wrap.style.height = h + "px"; wrap.style.top = (top + avail / 2) + "px";
+    ovMax = Math.max(0, (w - W) / 2); ovX = Math.max(-ovMax, Math.min(ovMax, ovX)); wrap.style.left = `calc(50% + ${ovX}px)`;
+    $("overview").classList.toggle("pan", ovMax > 0);
+    wrap.style.setProperty("--fs", Math.max(10, Math.min(14, w * .011)) + "px");
+    wrap.querySelectorAll(".hs").forEach(b => { const sz = +b.dataset.s / 100 * w; b.style.width = sz + "px"; b.style.height = sz * .62 + "px"; });
+  }
+  function ovBuild() {
+    const wrap = $("ovWrap"); wrap.querySelectorAll(".hs").forEach(n => n.remove());
+    for (const [k, x, y, sz] of OV_SPOTS) {
+      const p = PLACES[k], b = document.createElement("button"); b.type = "button"; b.className = "hs"; b.dataset.s = sz;
+      const locked = p.kind === "city" ? stateOf(p.i) === "locked" : p.kind === "gz" ? cleared < 7 : false;
+      b.classList.toggle("locked", locked); b.style.left = x + "%"; b.style.top = y + "%"; b.style.setProperty("--c", placeColor(p));
+      const label = p.kind === "city" ? `<i>${CITIES[p.i].no}</i>${esc(CITIES[p.i].name)}` : "GROUND ZERO";
+      b.setAttribute("aria-label", (p.kind === "city" ? CITIES[p.i].no + " " + CITIES[p.i].name : "GROUND ZERO") + (locked ? "（未解放）" : ""));
+      b.innerHTML = `<span class="lbl">${label}</span>`;
+      b.addEventListener("click", () => { if (!ovMoved) flyTo(k, x, y); });
+      wrap.append(b);
+    }
+    ovLayout();
+  }
+  // zoom into the tapped island, then open the 3D view with that place in front
+  function flyTo(k, x, y) {
+    if (flying) return; flying = true; decide();
+    const wrap = $("ovWrap"); wrap.classList.add("fly");
+    const w = wrap.offsetWidth, h = wrap.offsetHeight;
+    wrap.style.transform = `translate(-50%, -50%) translate(${(50 - x) / 100 * w * 2.4}px, ${(50 - y) / 100 * h * 2.4}px) scale(2.4)`; wrap.style.opacity = ".2";
+    setTimeout(() => { sel = k; show("map"); flash(); wrap.classList.remove("fly"); wrap.style.transform = ""; wrap.style.opacity = ""; flying = false; }, reduce ? 0 : 650);
+  }
+  let flying = false, ovX = 0, ovMax = 0, ovDrag = null, ovMoved = false;
+  // phones held upright: drag the picture sideways to see the islands at the edges
+  $("overview").addEventListener("pointerdown", e => { if (!ovMax) return; ovDrag = { x: e.clientX, o: ovX }; ovMoved = false; });
+  addEventListener("pointermove", e => { if (!ovDrag) return; const dx = e.clientX - ovDrag.x; if (Math.abs(dx) > 8) ovMoved = true; if (ovMoved) { ovX = Math.max(-ovMax, Math.min(ovMax, ovDrag.o + dx)); $("ovWrap").style.left = `calc(50% + ${ovX}px)`; } });
+  addEventListener("pointerup", () => { ovDrag = null; setTimeout(() => { ovMoved = false; }, 0); });
+  $("ovBack").addEventListener("click", () => { back(); show("start"); });
+  $("ovHome").addEventListener("click", () => flyTo(0, 50, 100));
+  addEventListener("resize", () => { if (scene === "overview") ovLayout(); });
+
   /* scenes */
   function show(id) {
-    $("toast").hidden = true; for (const s of ["start", "map"]) $(s).classList.toggle("on", s === id); scene = id;
+    $("toast").hidden = true; for (const s of ["start", "overview", "map"]) $(s).classList.toggle("on", s === id); scene = id;
+    if (id === "overview") ovBuild();
     if (id === "map") { draw(); fitFoot(); position(); }
     syncMusic();
   }
-  $("startBtn").addEventListener("click", () => { audio(); if (st.bgm) { music.start(); ambience.start(); } gameStartSE(); buzz([30, 30, 60]); flash(); setTimeout(() => show("map"), reduce ? 0 : 250); });
-  $("toStart").addEventListener("click", () => { back(); closeSheet(); show("start"); });
+  $("startBtn").addEventListener("click", () => { audio(); if (st.bgm) { music.start(); ambience.start(); } gameStartSE(); buzz([30, 30, 60]); flash(); setTimeout(() => show("overview"), reduce ? 0 : 250); });
+  $("toStart").addEventListener("click", () => { back(); closeSheet(); show("overview"); });
   addEventListener("keydown", e => {
-    if (e.key === "Escape") { if ($("sheet").classList.contains("on")) closeSheet(); else if (scene === "map") show("start"); }
+    if (e.key === "Escape") { if ($("sheet").classList.contains("on")) closeSheet(); else if (scene === "map") show("overview"); else if (scene === "overview") show("start"); }
     if (scene === "start" && (e.key === "Enter" || e.key === " ") && document.activeElement !== $("startBtn")) { e.preventDefault(); $("startBtn").click(); }
   });
 })();
