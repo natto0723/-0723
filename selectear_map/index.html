@@ -412,7 +412,10 @@ canvas#water { position: absolute; inset: 0; width: 100%; height: 100%; }
         inner = refl + `<img class="lt la" src="${A("img/city_gz_la.webp")}" alt="" draggable="false"><img class="lt lb" src="${A("img/city_gz_lb.webp")}" alt="" draggable="false">` +
           (open ? "" : `<svg class="seal" viewBox="0 0 200 120" aria-hidden="true"><ellipse cx="100" cy="58" rx="92" ry="52" fill="rgba(255,77,94,.06)" stroke="#ff4d5e" stroke-width="2" stroke-dasharray="10 6"/><ellipse cx="100" cy="58" rx="80" ry="44" fill="none" stroke="#ff4d5e" stroke-width="1" opacity=".5"/></svg>`);
       }
-      else inner = hideIsland();
+      else {
+        pic = true; refl = `<img src="${A("img/city_hideout.webp")}" alt="" draggable="false">`;
+        inner = refl + `<img class="lt la" src="${A("img/city_hideout_la.webp")}" alt="" draggable="false"><img class="lt lb" src="${A("img/city_hideout_lb.webp")}" alt="" draggable="false">`;
+      }
       d.classList.add(...[pic ? "pic" : "", ...state.split(" ")].filter(Boolean));
       d.style.setProperty("--c", placeColor(p)); d.style.setProperty("--d", (-k * .8) + "s");
       d.setAttribute("aria-label", placeName(p));
@@ -444,7 +447,7 @@ canvas#water { position: absolute; inset: 0; width: 100%; height: 100%; }
   }
   function go(k) {
     const n = PLACES.length; k = (k + n) % n; if (k === sel) return;
-    sel = k; tone(880, .05, "triangle", .07); position(); paintFoot();
+    sel = k; se("switch"); position(); paintFoot();
   }
   function paintFoot() {
     const p = PLACES[sel], cc = placeColor(p), foot = $("foot"); foot.style.setProperty("--cc", cc);
@@ -481,7 +484,7 @@ canvas#water { position: absolute; inset: 0; width: 100%; height: 100%; }
     if (a === "go") { decide(); toast("バトルと探索は準備中です"); }
     if (a === "demo") clearCity(p.i);
     if (a === "gz") { decide(); toast("GROUND ZERO は準備中です"); }
-    if (a === "home") { gameStartSE(); window.open(HIDEOUT_URL, "_blank", "noopener"); }
+    if (a === "home") { decide(); window.open(HIDEOUT_URL, "_blank", "noopener"); }
   }
   function openDetail() { const p = PLACES[sel]; if (p.kind === "city") openCity(p.i); else if (p.kind === "gz") openGZ(); else openHideout(); }
   function draw() { build(); }
@@ -568,7 +571,7 @@ canvas#water { position: absolute; inset: 0; width: 100%; height: 100%; }
       <div class="sh-body"><p>プレイヤーの拠点である広い屋敷。外の世界への出発点で、電脳世界への入り口でもある。ホーム画面への帰還ポイント。</p>
       <div><h3>WHAT YOU CAN DO — アジトでできること</h3><ul><li>デッキ構築</li><li>記憶の解放（スキルツリー）</li><li>相棒との会話</li><li>電脳世界へ入る（インターネット対戦・CPU対戦など）</li></ul></div></div>
       <div class="sh-foot"><a class="act" href="${HIDEOUT_URL}" target="_blank" rel="noopener" id="goHide">アジトに入る</a></div>`);
-    $("goHide").addEventListener("click", () => gameStartSE());
+    $("goHide").addEventListener("click", () => decide());
   }
   function clearCity(i) {
     if (i !== cleared) return;
@@ -585,8 +588,12 @@ canvas#water { position: absolute; inset: 0; width: 100%; height: 100%; }
   let ac = null, master = null;
   function audio() { try { if (!ac) { ac = new (window.AudioContext || window.webkitAudioContext)(); master = ac.createGain(); master.connect(ac.destination); } master.gain.value = st.vol / 100; if (ac.state === "suspended") ac.resume(); return ac; } catch { return null; } }
   function tone(f, d, type = "square", v = .1, delay = 0) { if (!st.sound || !audio()) return; try { const t = ac.currentTime + delay, o = ac.createOscillator(), g = ac.createGain(); o.type = type; o.frequency.setValueAtTime(f, t); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g).connect(master); o.start(t); o.stop(t + d + .02); } catch {} }
-  const decide = () => { tone(1046, .06, "square", .07); tone(1568, .1, "square", .06, .05); };
-  const back = () => { tone(784, .08, "triangle", .08); tone(523, .12, "triangle", .06, .06); };
+  // uploaded effects: fly = tapping an island on the overview, decide = main buttons,
+  // switch = moving the 3D view to another place, tap = small buttons and going back
+  const SE = {}; for (const k of ["fly", "decide", "switch", "tap"]) { SE[k] = new Audio(A(`se_${k}.mp3`)); SE[k].preload = "auto"; }
+  function se(k) { if (!st.sound) return; try { const a = SE[k].cloneNode(); a.volume = Math.min(1, st.vol / 100); const p = a.play(); if (p && p.catch) p.catch(() => {}); } catch {} }
+  const decide = () => se("decide");
+  const back = () => se("tap");
   const seEl = new Audio(A("se_gamestart.mp3")); seEl.preload = "auto";
   function gameStartSE() { if (!st.sound) return; try { const a = seEl.cloneNode(); a.volume = Math.min(1, st.vol / 100); const p = a.play(); if (p && p.catch) p.catch(() => {}); } catch {} }
   const buzz = ms => { if (st.vib) try { navigator.vibrate && navigator.vibrate(ms); } catch {} };
@@ -655,7 +662,7 @@ canvas#water { position: absolute; inset: 0; width: 100%; height: 100%; }
   }
   // zoom into the tapped island, then open the 3D view with that place in front
   function flyTo(k, x, y) {
-    if (flying) return; flying = true; decide();
+    if (flying) return; flying = true; se("fly");
     const wrap = $("ovWrap"); wrap.classList.add("fly");
     const w = wrap.offsetWidth, h = wrap.offsetHeight;
     wrap.style.transform = `translate(-50%, -50%) translate(${(50 - x) / 100 * w * 2.4}px, ${(50 - y) / 100 * h * 2.4}px) scale(2.4)`; wrap.style.opacity = ".2";
