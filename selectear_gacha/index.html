@@ -1,0 +1,475 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SELECTEAR Gacha</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Cormorant+Garamond:wght@600;700&family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Chakra+Petch:wght@600;700&family=DotGothic16&display=swap">
+<style>
+/* Gacha: pick a mode (normal / balance / oshi), draw 3, watch them arrive in one of two styles
+   (intercom gag or SELECTEAR card summon), then see the team of three. Single dark neon look. */
+:root {
+  --bg: #07050c;
+  --panel: rgba(13, 10, 26, .95);
+  --ink: #f1efff;
+  --dim: #a7a2c6;
+  --violet: #9b5cff;
+  --ice: #d9e6ff;
+  --gold: #f2c14e;
+  --line: rgba(150, 120, 255, .45);
+  --atk: #ff4d5e; --def: #4f8cff; --sup: #f2c14e; --heal: #ff6ec8; --spd: #3ddc84;
+  --font-latin: "Cinzel", "Times New Roman", serif;
+  --font-menu: "Cormorant Garamond", "Times New Roman", serif;
+  --font-body: "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+  --font-num: "Chakra Petch", "Zen Kaku Gothic New", system-ui, sans-serif;
+  --font-dot: "DotGothic16", "Zen Kaku Gothic New", monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; margin: 0; overflow: hidden; overscroll-behavior: none; }
+body { position: fixed; inset: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); user-select: none; -webkit-user-select: none; -webkit-text-size-adjust: 100%; -webkit-touch-callout: none; }
+button { font: inherit; color: inherit; touch-action: manipulation; }
+button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.scene { position: fixed; inset: 0; display: none; overflow: hidden; }
+.scene.on { display: block; animation: sceneIn .45s ease-out; }
+@keyframes sceneIn { from { opacity: 0; } }
+@keyframes blink { 50% { opacity: .3; } }
+.flash { position: fixed; inset: 0; z-index: 90; background: #fff; opacity: 0; pointer-events: none; }
+.flash.go { animation: flash .7s ease-out; }
+@keyframes flash { 0% { opacity: .95; } 100% { opacity: 0; } }
+.toast { position: fixed; left: 50%; top: calc(70px + env(safe-area-inset-top, 0px)); transform: translateX(-50%); z-index: 95; padding: 10px 16px; border-radius: 12px; background: rgba(10, 8, 16, .95); border: 1px solid var(--violet); font-size: 13px; max-width: calc(100% - 32px); text-align: center; }
+
+/* ---------- top bar ---------- */
+.topbar { position: absolute; z-index: 20; left: 0; right: 0; top: 0; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: calc(10px + env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) 10px max(12px, env(safe-area-inset-left, 0px)); background: linear-gradient(180deg, rgba(5, 3, 12, .9), transparent); }
+.btn-s { display: flex; align-items: center; gap: 6px; height: 40px; padding: 0 12px; border-radius: 12px; border: 1px solid rgba(201, 198, 214, .45); background: rgba(8, 5, 18, .8); font: 700 13px var(--font-body); cursor: pointer; }
+.btn-s svg { width: 18px; height: 18px; stroke: #fff; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.btn-s:hover { border-color: #fff; }
+.place { text-align: center; }
+.place b { display: block; font: 800 clamp(14px, 3.6vw, 18px)/1.1 var(--font-latin); letter-spacing: .25em; color: var(--ice); text-shadow: 0 0 10px rgba(155, 92, 255, .8); }
+.place small { display: block; margin-top: 3px; font: 700 11px var(--font-body); color: var(--dim); letter-spacing: .15em; }
+
+/* ---------- MENU ---------- */
+#menu { background: radial-gradient(ellipse at 50% 30%, #1d1040 0%, #07050c 70%); }
+#menu .bgimg { position: absolute; inset: -30px; background: url(img/bg_charge.webp) center / cover; filter: blur(16px) brightness(.35) saturate(1.3); }
+.wrap { position: absolute; inset: 0; overflow-y: auto; padding: calc(70px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(110px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.seg { display: inline-flex; padding: 4px; border-radius: 999px; background: rgba(8, 5, 18, .8); border: 1px solid var(--line); }
+.seg button { border: 0; background: transparent; padding: 9px 16px; border-radius: 999px; font: 700 13px var(--font-body); color: var(--dim); cursor: pointer; display: flex; gap: 6px; align-items: center; }
+.seg button[aria-pressed="true"] { background: linear-gradient(90deg, rgba(155, 92, 255, .8), rgba(79, 140, 255, .6)); color: #fff; box-shadow: 0 0 14px rgba(155, 92, 255, .6); }
+.hint { margin: -6px 0 0; font-size: 12px; color: var(--dim); text-align: center; }
+.modes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; width: min(960px, 100%); }
+.mode { position: relative; text-align: left; padding: 16px 16px 14px; border-radius: 16px; border: 1px solid rgba(201, 198, 214, .3); background: rgba(12, 8, 26, .82); cursor: pointer; display: grid; gap: 6px; transition: transform .15s, border-color .2s, box-shadow .2s; }
+.mode:hover { transform: translateY(-2px); }
+.mode[aria-pressed="true"] { border-color: var(--mc); box-shadow: 0 0 0 1px var(--mc), 0 0 24px color-mix(in srgb, var(--mc) 45%, transparent); background: linear-gradient(160deg, color-mix(in srgb, var(--mc) 22%, #0c081a), #0c081a 70%); }
+.mode .no { font: 700 11px var(--font-num); letter-spacing: .2em; color: var(--mc); }
+.mode h3 { margin: 0; font: 900 19px/1.2 var(--font-body); }
+.mode p { margin: 0; font-size: 12.5px; line-height: 1.65; color: var(--dim); }
+.mode .rule { font: 700 11px var(--font-body); color: var(--ink); }
+.mode .rule.warn { color: #ffb1c8; }
+.opt { width: min(960px, 100%); border-radius: 16px; border: 1px solid var(--line); background: rgba(12, 8, 26, .82); padding: 14px; display: none; gap: 12px; }
+.opt.on { display: grid; }
+.opt h4 { margin: 0; font: 700 13px var(--font-body); color: var(--ice); }
+.slots { display: flex; gap: 8px; flex-wrap: wrap; }
+.slot { width: 92px; height: 44px; border-radius: 10px; border: 1.5px dashed rgba(201, 198, 214, .4); display: grid; place-items: center; font: 800 13px var(--font-body); background: rgba(255, 255, 255, .03); cursor: pointer; }
+.slot.f { border-style: solid; border-color: var(--tc); background: color-mix(in srgb, var(--tc) 25%, #0c081a); color: #fff; }
+.types { display: flex; gap: 8px; flex-wrap: wrap; }
+.type { display: flex; align-items: center; gap: 6px; height: 40px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--tc); background: color-mix(in srgb, var(--tc) 14%, transparent); font: 700 13px var(--font-body); cursor: pointer; }
+.type i { width: 10px; height: 10px; border-radius: 50%; background: var(--tc); box-shadow: 0 0 8px var(--tc); }
+.type:hover { background: color-mix(in srgb, var(--tc) 30%, transparent); }
+.roster { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+.pick { padding: 6px; border-radius: 12px; border: 1px solid rgba(201, 198, 214, .25); background: rgba(255, 255, 255, .03); cursor: pointer; display: grid; gap: 4px; justify-items: center; }
+.pick .face { width: 64px; height: 64px; border-radius: 50%; }
+.pick b { font: 700 12px var(--font-body); }
+.pick small { font: 700 10px var(--font-body); color: var(--tc); }
+.pick[aria-pressed="true"] { border-color: #fff; box-shadow: 0 0 0 1px #fff, 0 0 18px rgba(255, 255, 255, .5); background: rgba(155, 92, 255, .25); }
+.drawbar { position: absolute; z-index: 20; left: 0; right: 0; bottom: 0; padding: 14px max(16px, env(safe-area-inset-right, 0px)) calc(14px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); display: grid; justify-items: center; gap: 6px; background: linear-gradient(0deg, rgba(5, 3, 12, .95) 55%, transparent); }
+.draw { --k: 165, 110, 255; position: relative; height: 60px; width: min(360px, 86vw); border: 0; background: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; color: #fff; }
+.draw::before { content: ""; position: absolute; inset: 0; transform: skewX(-18deg); border: 1.5px solid #fff; border-radius: 4px; background: linear-gradient(90deg, rgba(var(--k), .7), rgba(var(--k), .3) 60%, rgba(20, 8, 36, .85)); box-shadow: 0 0 24px rgba(var(--k), .9), inset 0 0 18px rgba(255, 255, 255, .2); animation: pulse 2s ease-in-out infinite; }
+@keyframes pulse { 50% { box-shadow: 0 0 38px rgba(var(--k), 1), inset 0 0 24px rgba(255, 255, 255, .3); } }
+.draw > * { position: relative; }
+.draw .en { font: 700 26px/1 var(--font-menu); letter-spacing: .08em; }
+.draw .jp { font: 700 12px/1 var(--font-body); color: rgba(255, 255, 255, .8); }
+.draw:disabled { opacity: .45; cursor: default; }
+.draw:disabled::before { animation: none; }
+.drawbar .note { font-size: 12px; color: var(--dim); min-height: 1.2em; }
+
+/* faces: a portrait when we have one, else a silhouette in the type colour */
+.face { position: relative; overflow: hidden; background: radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--tc) 55%, #fff 0%), #120c24 75%); }
+.face img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 25%; }
+.face svg { position: absolute; left: 10%; bottom: 0; width: 80%; height: 88%; fill: rgba(10, 6, 20, .85); }
+
+/* ---------- INTERCOM (pattern 1) ---------- */
+#door { background: #000; }
+#door video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+#door video.hide { display: none; }
+.skip { position: absolute; z-index: 25; right: max(12px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
+.cue { position: absolute; z-index: 24; left: 50%; bottom: calc(22px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); padding: 8px 16px; border-radius: 999px; background: rgba(0, 0, 0, .65); font: 700 13px var(--font-body); white-space: nowrap; animation: blink 1.8s ease-in-out infinite; }
+/* the monitor screen, drawn big after the video */
+.monitor { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; flex-direction: column; gap: 14px; padding: calc(64px + env(safe-area-inset-top, 0px)) 16px calc(16px + env(safe-area-inset-bottom, 0px)); background: radial-gradient(ellipse at 50% 40%, #2a2620, #0b0a08 80%); }
+.monitor.on { display: flex; }
+.device { position: relative; width: min(560px, 92vw); padding: 22px 22px 18px; border-radius: 22px; background: linear-gradient(180deg, #f2eee4, #d9d3c6); box-shadow: 0 30px 60px rgba(0, 0, 0, .6), inset 0 2px 0 #fff; display: grid; grid-template-columns: 1fr 64px; gap: 16px; color: #3a352c; }
+.device .scr { position: relative; aspect-ratio: 4 / 3; border-radius: 6px; border: 10px solid #8f8a80; background: #050a1a; overflow: hidden; }
+.scr .vis { position: absolute; inset: 0; display: grid; place-items: end center; }
+.scr .vis .face { width: 78%; height: 92%; border-radius: 40% 40% 0 0; background: radial-gradient(circle at 50% 35%, #4a6aa8, #0b1530 75%); }
+.scr .vis .face img { filter: grayscale(.4) sepia(.2) hue-rotate(180deg) saturate(1.6) brightness(.9) contrast(1.1); }
+.scr .vis .face svg { fill: rgba(3, 8, 22, .9); }
+.scr::before { content: ""; position: absolute; inset: 0; z-index: 2; background: repeating-linear-gradient(0deg, rgba(160, 200, 255, .08) 0 2px, transparent 2px 4px), radial-gradient(ellipse at 50% 30%, rgba(160, 200, 255, .25), transparent 70%); pointer-events: none; }
+.scr::after { content: ""; position: absolute; inset: 0; z-index: 3; background: radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(0, 0, 0, .7)); pointer-events: none; }
+.scr .osd { position: absolute; z-index: 4; left: 8px; top: 6px; right: 8px; display: flex; justify-content: space-between; font: 12px var(--font-dot); color: #cfe3ff; text-shadow: 0 0 4px #4f8cff; }
+.scr .osd .rec::before { content: "● "; color: #ff4d5e; animation: blink 1s steps(1) infinite; }
+.scr .noise { position: absolute; inset: 0; z-index: 5; opacity: 0; background: repeating-linear-gradient(0deg, #fff 0 1px, #000 1px 2px, #888 2px 3px); mix-blend-mode: screen; pointer-events: none; }
+.scr .noise.go { animation: noise .5s steps(6) 1; }
+@keyframes noise { 0%, 100% { opacity: 0; } 10% { opacity: .9; transform: translateY(0); } 50% { opacity: .7; transform: translateY(-6px); } 90% { opacity: .5; transform: translateY(4px); } }
+.scr .tagc { position: absolute; z-index: 4; left: 0; right: 0; bottom: 0; padding: 6px 8px; font: 13px var(--font-dot); color: #fff; background: linear-gradient(0deg, rgba(0, 10, 40, .85), transparent); text-align: center; }
+.device .side { display: grid; align-content: start; gap: 14px; justify-items: center; font: 700 9px var(--font-body); }
+.device .side i { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(180deg, #fff, #ddd6c8); box-shadow: inset 0 -2px 3px rgba(0, 0, 0, .15), 0 1px 2px rgba(0, 0, 0, .3); }
+.device .brand { grid-column: 1 / -1; text-align: center; font: 800 13px var(--font-body); letter-spacing: .1em; color: #2f2b25; margin-top: -4px; }
+.device .talk { grid-column: 1 / -1; height: 52px; border-radius: 10px; border: 1px solid #b9b2a3; background: linear-gradient(180deg, #faf7f0, #e6e0d3); font: 800 17px var(--font-body); color: #3a352c; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.device .talk::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #3b82f6; box-shadow: 0 0 10px #3b82f6; animation: blink 1.2s ease-in-out infinite; }
+.speech { width: min(560px, 92vw); padding: 12px 16px; border-radius: 14px; background: rgba(10, 8, 16, .92); border: 1px solid rgba(255, 255, 255, .25); font: 700 15px/1.6 var(--font-body); min-height: 3.4em; }
+.speech b { color: var(--tc); }
+.count { font: 700 12px var(--font-num); letter-spacing: .2em; color: #d9d3c6; }
+
+/* ---------- SELECTEAR summon (pattern 2) ---------- */
+#summon { background: #05040b; }
+#summon .bg { position: absolute; inset: 0; background: center / cover no-repeat; transition: opacity .5s; }
+#summon .bg.charge { animation: charge 1.6s ease-in-out infinite alternate; }
+@keyframes charge { to { filter: brightness(1.25) saturate(1.2); transform: scale(1.02); } }
+.card3d { position: absolute; z-index: 5; left: 50%; top: 47%; width: min(36vh, 64vw); aspect-ratio: 5 / 7; transform: translate(-50%, -50%); perspective: 1200px; cursor: pointer; }
+.card3d .in { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform .9s cubic-bezier(.3, 1.3, .5, 1); }
+.card3d.open .in { transform: rotateY(180deg); }
+.card3d .back, .card3d .front { position: absolute; inset: 0; border-radius: 14px; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.card3d .back { background: transparent; }
+.card3d .front { transform: rotateY(180deg); border: 2px solid #fff; background: linear-gradient(160deg, color-mix(in srgb, var(--tc) 45%, #0b0716), #0b0716 70%); box-shadow: 0 0 30px var(--tc), 0 0 80px color-mix(in srgb, var(--tc) 60%, transparent); overflow: hidden; display: flex; flex-direction: column; }
+.card3d.oshi .front { border-image: linear-gradient(135deg, #ff4d5e, #f2c14e, #3ddc84, #4f8cff, #c25cff) 1; }
+.card3d .front .face { flex: 1; }
+.card3d .front .meta { padding: 10px 12px 12px; background: rgba(6, 4, 14, .85); display: grid; gap: 4px; text-align: center; }
+.card3d .front .meta b { font: 900 clamp(18px, 3.6vh, 26px)/1.1 var(--font-body); }
+.card3d .front .meta small { font: 700 12px var(--font-body); color: var(--tc); letter-spacing: .1em; }
+.card3d .badge { position: absolute; z-index: 2; left: 10px; top: 10px; padding: 3px 10px; border-radius: 999px; font: 700 11px var(--font-num); letter-spacing: .15em; background: var(--tc); color: #0b0716; }
+.card3d .dup { position: absolute; z-index: 2; right: 10px; top: 10px; padding: 3px 8px; border-radius: 999px; font: 700 10px var(--font-body); background: rgba(0, 0, 0, .6); border: 1px solid #fff; }
+.sumtxt { position: absolute; z-index: 6; left: 0; right: 0; bottom: 0; padding: 40px 16px calc(22px + env(safe-area-inset-bottom, 0px)); text-align: center; display: grid; gap: 4px; background: linear-gradient(0deg, rgba(3, 2, 10, .85) 40%, transparent); }
+.sumtxt b { font: 800 clamp(16px, 4vw, 22px) var(--font-latin); letter-spacing: .25em; text-shadow: 0 0 14px var(--tc, #9b5cff), 0 0 2px #000; }
+.sumtxt span { font: 700 13px var(--font-body); animation: blink 1.8s ease-in-out infinite; }
+.pips { position: absolute; z-index: 6; left: 50%; top: calc(64px + env(safe-area-inset-top, 0px)); transform: translateX(-50%); display: flex; gap: 8px; }
+.pips i { width: 12px; height: 12px; transform: rotate(45deg); border: 1.5px solid #fff; }
+.pips i.on { background: #fff; box-shadow: 0 0 10px #fff; }
+
+/* ---------- RESULT ---------- */
+#result { background: radial-gradient(ellipse at 50% 30%, #1d1040 0%, #07050c 70%); }
+#result .bgimg { position: absolute; inset: -30px; background: url(img/bg_charge.webp) center / cover; filter: blur(14px) brightness(.3) saturate(1.3); }
+.team { display: grid; grid-template-columns: repeat(3, minmax(0, 220px)); gap: 14px; justify-content: center; width: 100%; }
+.tc { position: relative; aspect-ratio: 5 / 7; border-radius: 14px; border: 1.5px solid var(--tc); background: #0b0716; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 22px color-mix(in srgb, var(--tc) 50%, transparent); animation: rise .6s cubic-bezier(.2, .9, .3, 1.2) both; }
+.tc:nth-child(2) { animation-delay: .12s; } .tc:nth-child(3) { animation-delay: .24s; }
+@keyframes rise { from { opacity: 0; transform: translateY(30px) scale(.9); } }
+.tc .face { flex: 1; }
+.tc .meta { padding: 8px; background: rgba(6, 4, 14, .9); text-align: center; display: grid; gap: 2px; }
+.tc .meta b { font: 900 clamp(13px, 3.4vw, 18px)/1.2 var(--font-body); }
+.tc .meta small { font: 700 11px var(--font-body); color: var(--tc); }
+.tc .badge { position: absolute; left: 8px; top: 8px; padding: 2px 8px; border-radius: 999px; font: 700 10px var(--font-num); letter-spacing: .12em; background: var(--tc); color: #0b0716; }
+.tc .oshi { position: absolute; right: 8px; top: 8px; padding: 2px 8px; border-radius: 999px; font: 700 10px var(--font-body); background: linear-gradient(90deg, #ff4d5e, #f2c14e, #3ddc84, #4f8cff, #c25cff); color: #0b0716; }
+.res-h { text-align: center; display: grid; gap: 4px; }
+.res-h b { font: 800 clamp(20px, 5vw, 30px) var(--font-latin); letter-spacing: .2em; text-shadow: 0 0 16px rgba(155, 92, 255, .9); }
+.res-h span { font-size: 13px; color: var(--dim); }
+.mix { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+.mix span { padding: 3px 10px; border-radius: 999px; font: 700 11px var(--font-body); border: 1px solid var(--tc); color: var(--tc); }
+.acts { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; width: min(620px, 100%); }
+.acts button { flex: 1 1 160px; height: 48px; border-radius: 12px; font: 800 14px var(--font-body); cursor: pointer; border: 1px solid rgba(201, 198, 214, .45); background: rgba(8, 5, 18, .85); }
+.acts button.pri { border-color: #fff; background: linear-gradient(90deg, rgba(155, 92, 255, .8), rgba(79, 140, 255, .6)); box-shadow: 0 0 16px rgba(155, 92, 255, .6); }
+.acts button:disabled { opacity: .4; cursor: default; }
+.lockmsg { font: 700 12px var(--font-body); color: #ffb1c8; text-align: center; }
+
+@media (max-width: 720px) {
+  .modes { grid-template-columns: 1fr; }
+  .mode { padding: 12px 14px; }
+  .team { gap: 8px; }
+  .device { grid-template-columns: 1fr 46px; padding: 14px 14px 12px; gap: 10px; }
+  .device .side i { width: 26px; height: 26px; }
+}
+@media (max-height: 520px) { .card3d { width: min(52vh, 40vw); } .team { grid-template-columns: repeat(3, minmax(0, 150px)); } .device { width: min(420px, 60vw); } }
+@media (prefers-reduced-motion: reduce) { .draw::before, #summon .bg.charge, .cue, .sumtxt span { animation: none !important; } }
+</style>
+
+<!-- MENU -->
+<section class="scene on" id="menu" aria-label="ガチャを選ぶ">
+  <div class="bgimg"></div>
+  <div class="topbar">
+    <button class="btn-s" type="button" id="toHome"><svg viewBox="0 0 24 24"><path d="M4 21V9l8-6 8 6v12h-6v-7h-4v7z"/></svg>ホーム</button>
+    <div class="place"><b>GACHA</b><small>3人を引いて、そのままバトルへ</small></div>
+    <span style="width:74px"></span>
+  </div>
+  <div class="wrap">
+    <div class="seg" role="group" aria-label="演出">
+      <button type="button" data-style="door" aria-pressed="false">🔔 インターホン</button>
+      <button type="button" data-style="summon" aria-pressed="true">✦ SELECTEAR</button>
+    </div>
+    <p class="hint" id="styleHint"></p>
+    <div class="modes">
+      <button class="mode" type="button" data-mode="normal" aria-pressed="true" style="--mc:#c9b8ff"><span class="no">01 NORMAL</span><h3>ノーマルガチャ</h3><p>全員の排出率は同じ。誰が出るかはお楽しみ。</p><span class="rule">引き直し：できる</span></button>
+      <button class="mode" type="button" data-mode="balance" aria-pressed="false" style="--mc:#3ddc84"><span class="no">02 BALANCE</span><h3>バランスガチャ</h3><p>5つのタイプから3つを選ぶと、そのタイプのキャラが1人ずつ出る。</p><span class="rule">引き直し：できる</span></button>
+      <button class="mode" type="button" data-mode="oshi" aria-pressed="false" style="--mc:#ff6ec8"><span class="no">03 OSHI</span><h3>推しガチャ</h3><p>好きな1人を確定で選べる。残り2人は誰が出るか分からない！</p><span class="rule warn">引き直し：できない！！</span></button>
+    </div>
+    <div class="opt" id="optBalance">
+      <h4>出したいタイプを3つ選ぶ（同じタイプを重ねてもOK）</h4>
+      <div class="slots" id="slots"></div>
+      <div class="types" id="types"></div>
+    </div>
+    <div class="opt" id="optOshi">
+      <h4>推しを1人選ぶ</h4>
+      <div class="roster" id="roster"></div>
+    </div>
+  </div>
+  <div class="drawbar">
+    <button class="draw" type="button" id="drawBtn"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M7 4.5v15l12-7.5z"/></svg><span><span class="en">Draw ×3</span><br><span class="jp">3人を引く</span></span></button>
+    <span class="note" id="drawNote"></span>
+  </div>
+</section>
+
+<!-- PATTERN 1: INTERCOM -->
+<section class="scene" id="door" aria-label="インターホン">
+  <video id="vDoor" playsinline preload="auto" src="vid/door.mp4"></video>
+  <video id="vMon" class="hide" playsinline preload="auto" src="vid/monitor.mp4"></video>
+  <div class="cue" id="doorCue">ピンポーン…</div>
+  <div class="monitor" id="monitor">
+    <div class="count" id="monCount">VISITOR 1 / 3</div>
+    <div class="device">
+      <div class="scr"><div class="vis" id="vis"></div><div class="osd"><span class="rec">REC</span><span id="clock">--:--</span></div><div class="tagc" id="visTag">玄関カメラ</div><div class="noise" id="noise"></div></div>
+      <div class="side"><i></i>明るさ<i></i>モニター</div>
+      <div class="brand">SELECTEAR INTERCOM</div>
+      <button class="talk" type="button" id="talkBtn">通話 ／ 次へ</button>
+    </div>
+    <div class="speech" id="speech" aria-live="polite"></div>
+  </div>
+  <button class="btn-s skip" type="button" id="skipDoor">スキップ ▶▶</button>
+</section>
+
+<!-- PATTERN 2: SELECTEAR SUMMON -->
+<section class="scene" id="summon" aria-label="召喚">
+  <div class="bg" id="sumBg"></div>
+  <div class="pips" id="pips"></div>
+  <div class="card3d" id="card3d"><div class="in"><div class="back"></div><div class="front" id="cardFront"></div></div></div>
+  <div class="sumtxt"><b id="sumTitle">SUMMON</b><span id="sumCue">タップして召喚</span></div>
+  <button class="btn-s skip" type="button" id="skipSum">スキップ ▶▶</button>
+</section>
+
+<!-- RESULT -->
+<section class="scene" id="result" aria-label="結果">
+  <div class="bgimg"></div>
+  <div class="wrap" style="justify-content:center;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))">
+    <div class="res-h"><b>YOUR TEAM</b><span id="resMode"></span></div>
+    <div class="team" id="team"></div>
+    <div class="mix" id="mix"></div>
+    <div class="acts">
+      <button type="button" class="pri" id="toBattle">このチームでバトル</button>
+      <button type="button" id="redraw">引き直す</button>
+      <button type="button" id="toMenu">ガチャ選択へ</button>
+    </div>
+    <p class="lockmsg" id="lockMsg" hidden>推しガチャは引き直しできません！ このチームで戦おう。</p>
+  </div>
+</section>
+
+<div class="flash" id="flash"></div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(() => {
+  "use strict";
+  const ASSETS = window.__ASSETS || null;
+  const A = p => (ASSETS && ASSETS[p]) || p;
+  if (ASSETS) {
+    for (const el of document.querySelectorAll("[src]")) el.setAttribute("src", A(el.getAttribute("src")));
+    for (const s of document.querySelectorAll("style")) s.textContent = s.textContent.replace(/url\((img\/[^)]+)\)/g, (m, q) => `url(${A(q)})`);
+  }
+  const $ = id => document.getElementById(id);
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const pick = a => a[Math.floor(Math.random() * a.length)];
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const store = { get(k, d) { try { const v = JSON.parse(localStorage.getItem(k) || "null"); return v ?? d; } catch { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
+  const st = Object.assign({ sound: true, vol: 70, vib: true }, store.get("selectear_settings2", {}));
+
+  /* =========================================================
+     DATA (provisional — names from the talk spec; types are a first guess)
+     ========================================================= */
+  const TYPES = {
+    atk: { en: "ATTACK", jp: "アタック", c: "#ff4d5e", bg: "img/bg_attack.webp" },
+    def: { en: "DEFENSE", jp: "ディフェンス", c: "#4f8cff", bg: "img/bg_defense.webp" },
+    sup: { en: "SUPPORT", jp: "サポート", c: "#f2c14e", bg: "img/bg_support.webp" },
+    heal: { en: "HEAL", jp: "ヒール", c: "#ff6ec8", bg: "img/bg_heal.webp" },
+    spd: { en: "SPEED", jp: "スピード", c: "#3ddc84", bg: "img/bg_speed.webp" }
+  };
+  // [id, name, type, portrait, intercom line]
+  const ROSTER = [
+    ["kazano", "風野 桐嗚", "sup", "img/p_kazano.webp", "どうもー！ 製作者兼、案内役でーす！ 開けて開けて！"],
+    ["miyu", "実優", "heal", "img/p_miyu.webp", "やっほー！ うちだよ、うち！ 写真撮りに来ちゃった♪"],
+    ["fujikura", "藤倉", "def", "", "……開けろ。我慢の限界だ。"],
+    ["nishida", "西田", "spd", "", "次は7が来る！ 絶対来る！ だから開けてくれ！"],
+    ["utsugi", "卯都木", "sup", "", "4杯目、付き合ってくれる？ ……冗談だよ。"],
+    ["kashima", "鹿島", "atk", "", "ツッコミの配達でーす。痛いけどサインお願いします。"],
+    ["morooka", "諸岡", "def", "", "HP1京の男、ただいま参上。……嘘じゃないぞ。"],
+    ["yamanaka", "山中", "def", "", "柳井と一緒じゃないとダメ？ ……今日は1人で来た。"],
+    ["yanai", "柳井", "sup", "", "山中知らない？ 先に着いてるはずなんだけど。"],
+    ["ohashi", "大橋", "spd", "", "お姉さんいます？ ……あ、いない？ じゃあ君でいいや。"],
+    ["yan", "ヤン", "atk", "", "……ボスが来たと伝えろ。"],
+    ["kobukuda", "小福田", "spd", "", "怪しい者じゃないです。……たぶん裏切りません。"],
+    ["hirabayashi", "平林", "atk", "", "2回押したら、倍返しでピンポンします。"],
+    ["ogawa", "小川", "heal", "", "推しの話、3時間だけ聞いてくれる？ 回復するから！"]
+  ].map(([id, name, type, img, line]) => ({ id, name, type, img, line }));
+  const byType = t => ROSTER.filter(r => r.type === t);
+  const SIL = '<svg viewBox="0 0 100 110" aria-hidden="true"><circle cx="50" cy="34" r="22"/><path d="M8 110c2-30 20-46 42-46s40 16 42 46z"/></svg>';
+  const faceHTML = r => `<div class="face" style="--tc:${TYPES[r.type].c}">${r.img ? `<img src="${A(r.img)}" alt="">` : SIL}</div>`;
+
+  /* =========================================================
+     SOUND
+     ========================================================= */
+  const SE = {}; for (const k of ["fly", "decide", "switch", "tap", "gamestart"]) { SE[k] = new Audio(A(`se_${k}.mp3`)); SE[k].preload = "auto"; }
+  function se(k) { if (!st.sound) return; try { const a = SE[k].cloneNode(); a.volume = Math.min(1, st.vol / 100); const p = a.play(); if (p && p.catch) p.catch(() => {}); } catch {} }
+  const buzz = ms => { if (st.vib) try { navigator.vibrate && navigator.vibrate(ms); } catch {} };
+  function toast(t) { const e = $("toast"); e.textContent = t; e.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => e.hidden = true, 2200); }
+  function flash() { const f = $("flash"); f.classList.remove("go"); void f.offsetWidth; f.classList.add("go"); }
+  function show(id) { for (const s of ["menu", "door", "summon", "result"]) $(s).classList.toggle("on", s === id); }
+
+  /* =========================================================
+     MENU
+     ========================================================= */
+  let style = store.get("selectear_gacha_style", "summon") === "door" ? "door" : "summon";
+  let mode = "normal", slots = [], oshi = null;
+  const HINT = { door: "ネタ枠：インターホンを押して、モニター越しに誰が来たか確認！", summon: "SELECTEAR専用：カードがタイプの色に光って召喚される！" };
+  function paintStyle() { for (const b of document.querySelectorAll("[data-style]")) b.setAttribute("aria-pressed", String(b.dataset.style === style)); $("styleHint").textContent = HINT[style]; }
+  for (const b of document.querySelectorAll("[data-style]")) b.addEventListener("click", () => { style = b.dataset.style; store.set("selectear_gacha_style", style); se("switch"); paintStyle(); });
+  for (const b of document.querySelectorAll("[data-mode]")) b.addEventListener("click", () => { mode = b.dataset.mode; se("switch"); paintMode(); });
+  function paintMode() {
+    for (const b of document.querySelectorAll("[data-mode]")) b.setAttribute("aria-pressed", String(b.dataset.mode === mode));
+    $("optBalance").classList.toggle("on", mode === "balance"); $("optOshi").classList.toggle("on", mode === "oshi");
+    paintSlots(); paintRoster(); paintDraw();
+  }
+  $("types").innerHTML = Object.entries(TYPES).map(([k, t]) => `<button class="type" type="button" data-t="${k}" style="--tc:${t.c}"><i></i>${t.jp}</button>`).join("");
+  for (const b of document.querySelectorAll("[data-t]")) b.addEventListener("click", () => { if (slots.length >= 3) { toast("もう3つ選んでいます。枠をタップで外せます"); return; } slots.push(b.dataset.t); se("tap"); paintSlots(); paintDraw(); });
+  function paintSlots() {
+    $("slots").innerHTML = [0, 1, 2].map(i => { const t = slots[i]; return t ? `<button class="slot f" type="button" data-s="${i}" style="--tc:${TYPES[t].c}">${TYPES[t].jp} ✕</button>` : `<span class="slot">${i + 1}</span>`; }).join("");
+    for (const b of document.querySelectorAll("[data-s]")) b.addEventListener("click", () => { slots.splice(+b.dataset.s, 1); se("tap"); paintSlots(); paintDraw(); });
+  }
+  function paintRoster() {
+    $("roster").innerHTML = ROSTER.map(r => `<button class="pick" type="button" data-r="${r.id}" aria-pressed="${oshi === r.id}" style="--tc:${TYPES[r.type].c}">${faceHTML(r)}<b>${esc(r.name)}</b><small>${TYPES[r.type].jp}</small></button>`).join("");
+    for (const b of document.querySelectorAll("[data-r]")) b.addEventListener("click", () => { oshi = b.dataset.r; se("tap"); paintRoster(); paintDraw(); });
+  }
+  function paintDraw() {
+    let ok = true, note = "";
+    if (mode === "balance" && slots.length < 3) { ok = false; note = `タイプをあと${3 - slots.length}つ選んでね`; }
+    if (mode === "oshi" && !oshi) { ok = false; note = "推しを1人選んでね"; }
+    if (mode === "oshi" && oshi) note = `${ROSTER.find(r => r.id === oshi).name} 確定！ ※引き直しはできません`;
+    if (mode === "normal") note = `全${ROSTER.length}人から3人。ダブりあり`;
+    $("drawBtn").disabled = !ok; $("drawNote").textContent = note;
+  }
+  paintStyle(); paintMode();
+
+  /* =========================================================
+     DRAW (duplicates allowed)
+     ========================================================= */
+  let team = [], lastMode = "normal";
+  function roll() {
+    if (mode === "normal") return [0, 1, 2].map(() => ({ ...pick(ROSTER) }));
+    if (mode === "balance") return slots.map(t => ({ ...pick(byType(t)) }));
+    const o = ROSTER.find(r => r.id === oshi);
+    const t = [{ ...o, oshi: true }, { ...pick(ROSTER) }, { ...pick(ROSTER) }];
+    return t;
+  }
+  $("drawBtn").addEventListener("click", () => {
+    if ($("drawBtn").disabled) return;
+    team = roll(); lastMode = mode;
+    // mark duplicates
+    const seen = {}; for (const m of team) { m.dup = !!seen[m.id]; seen[m.id] = true; }
+    se("gamestart"); buzz([30, 30, 60]); flash();
+    store.set("selectear_last_team", { mode: lastMode, team: team.map(m => m.id) });
+    if (style === "door") startDoor(); else startSummon();
+  });
+
+  /* =========================================================
+     PATTERN 1: intercom — press the bell (video), monitor turns on (video), visitors one by one
+     ========================================================= */
+  const vDoor = $("vDoor"), vMon = $("vMon");
+  let vi = 0, doorStage = 0;
+  function startDoor() {
+    show("door"); vi = 0; doorStage = 1; $("monitor").classList.remove("on");
+    vMon.classList.add("hide"); vDoor.classList.remove("hide"); $("doorCue").hidden = false; $("doorCue").textContent = "ピンポーン…";
+    vDoor.currentTime = 0; vDoor.volume = Math.min(1, st.vol / 100); vDoor.muted = !st.sound;
+    const p = vDoor.play(); if (p && p.catch) p.catch(() => onDoorEnd());
+    // warm up the second video while the first plays
+    vMon.load();
+  }
+  function onDoorEnd() {
+    if (doorStage !== 1) return; doorStage = 2;
+    vDoor.classList.add("hide"); vMon.classList.remove("hide"); $("doorCue").textContent = "モニターを確認中…";
+    vMon.currentTime = 0; vMon.volume = Math.min(1, st.vol / 100); vMon.muted = !st.sound;
+    const p = vMon.play(); if (p && p.catch) p.catch(() => onMonEnd());
+  }
+  function onMonEnd() {
+    if (doorStage !== 2) return; doorStage = 3;
+    vMon.pause(); $("doorCue").hidden = true; $("monitor").classList.add("on"); showVisitor(0);
+  }
+  vDoor.addEventListener("ended", onDoorEnd); vMon.addEventListener("ended", onMonEnd);
+  $("skipDoor").addEventListener("click", () => { se("tap"); vDoor.pause(); vMon.pause(); if (doorStage === 3) { toResult(); return; } doorStage = 2; onMonEnd(); });
+  function showVisitor(i) {
+    vi = i; const m = team[i], t = TYPES[m.type];
+    const now = new Date(); $("clock").textContent = String(now.getHours()).padStart(2, "0") + ":" + String(now.getMinutes()).padStart(2, "0");
+    $("monCount").textContent = `VISITOR ${i + 1} / 3`;
+    const n = $("noise"); n.classList.remove("go"); void n.offsetWidth; n.classList.add("go");
+    $("vis").innerHTML = faceHTML(m);
+    $("visTag").textContent = "玄関カメラ ・ " + t.en;
+    $("speech").style.setProperty("--tc", t.c);
+    $("speech").innerHTML = `<b>${esc(m.name)}</b>${m.oshi ? "（推し確定！）" : ""}${m.dup ? "（ダブり）" : ""}：「${esc(m.line)}」`;
+    $("talkBtn").textContent = i < 2 ? "通話 ／ 次の人へ" : "通話 ／ チーム確認";
+    se(i === 0 ? "fly" : "switch"); buzz(25);
+  }
+  $("talkBtn").addEventListener("click", () => { se("decide"); if (vi < 2) showVisitor(vi + 1); else toResult(); });
+
+  /* =========================================================
+     PATTERN 2: SELECTEAR summon — purple charge, then a card in the type colour (rainbow for the oshi)
+     ========================================================= */
+  let si = 0, sumStage = "charge";
+  function startSummon() { show("summon"); si = 0; chargeFor(0); }
+  function chargeFor(i) {
+    si = i; sumStage = "charge"; const bg = $("sumBg");
+    bg.style.backgroundImage = `url(${A("img/bg_charge.webp")})`; bg.classList.add("charge");
+    $("card3d").classList.remove("open", "oshi"); $("card3d").style.visibility = "hidden";
+    $("sumTitle").textContent = `SUMMON ${i + 1} / 3`; $("sumCue").textContent = "タップして召喚";
+    $("pips").innerHTML = [0, 1, 2].map(k => `<i class="${k < i ? "on" : ""}"></i>`).join("");
+  }
+  function reveal() {
+    const m = team[si], t = TYPES[m.type]; sumStage = "open";
+    flash(); se("fly"); buzz([40, 20, 40]);
+    const bg = $("sumBg"); bg.classList.remove("charge"); bg.style.backgroundImage = `url(${A(m.oshi ? "img/bg_oshi.webp" : t.bg)})`;
+    $("summon").style.setProperty("--tc", m.oshi ? "#c25cff" : t.c);
+    const c = $("card3d"); c.style.visibility = "visible"; c.style.setProperty("--tc", t.c); c.classList.toggle("oshi", !!m.oshi);
+    $("cardFront").innerHTML = `${faceHTML(m)}<span class="badge">${t.en}</span>${m.oshi ? '<span class="dup">推し確定</span>' : m.dup ? '<span class="dup">ダブり</span>' : ""}<div class="meta"><b>${esc(m.name)}</b><small>${t.jp}</small></div>`;
+    setTimeout(() => c.classList.add("open"), reduce ? 0 : 250);
+    $("sumTitle").textContent = m.oshi ? "OSHI ✦ GET" : t.en; $("sumCue").textContent = si < 2 ? "タップで次へ" : "タップでチーム確認";
+    $("pips").innerHTML = [0, 1, 2].map(k => `<i class="${k <= si ? "on" : ""}"></i>`).join("");
+  }
+  $("summon").addEventListener("click", e => {
+    if (e.target.closest("#skipSum")) return;
+    if (sumStage === "charge") reveal();
+    else { se("switch"); if (si < 2) chargeFor(si + 1); else toResult(); }
+  });
+  $("skipSum").addEventListener("click", () => { se("tap"); toResult(); });
+
+  /* =========================================================
+     RESULT
+     ========================================================= */
+  const MODE_JP = { normal: "ノーマルガチャ", balance: "バランスガチャ", oshi: "推しガチャ" };
+  function toResult() {
+    vDoor.pause(); vMon.pause(); doorStage = 0;
+    show("result"); se("decide");
+    $("resMode").textContent = MODE_JP[lastMode] + " の結果";
+    $("team").innerHTML = team.map(m => { const t = TYPES[m.type]; return `<div class="tc" style="--tc:${t.c}">${faceHTML(m)}<span class="badge">${t.en}</span>${m.oshi ? '<span class="oshi">推し</span>' : ""}<div class="meta"><b>${esc(m.name)}${m.dup ? " ×2" : ""}</b><small>${t.jp}</small></div></div>`; }).join("");
+    const counts = {}; for (const m of team) counts[m.type] = (counts[m.type] || 0) + 1;
+    $("mix").innerHTML = Object.entries(counts).map(([k, n]) => `<span style="--tc:${TYPES[k].c}">${TYPES[k].jp} ×${n}</span>`).join("");
+    const locked = lastMode === "oshi";
+    $("redraw").disabled = locked; $("lockMsg").hidden = !locked;
+  }
+  $("toBattle").addEventListener("click", () => { se("decide"); toast("バトルは準備中です。このチームは保存しました"); });
+  $("redraw").addEventListener("click", () => { if ($("redraw").disabled) return; mode = lastMode; paintMode(); $("drawBtn").click(); });
+  $("toMenu").addEventListener("click", () => { se("tap"); show("menu"); });
+
+  /* back to home (works when this page is inside the combined game) */
+  $("toHome").addEventListener("click", () => { se("tap"); try { if (parent !== window) { parent.postMessage({ selectear: "home" }, "*"); return; } } catch {} toast("ホームと合わせると戻れるようになります"); });
+  addEventListener("keydown", e => { if (e.key === "Escape" && !$("menu").classList.contains("on")) toResult(); });
+})();
+</script>
