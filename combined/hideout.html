@@ -1,0 +1,369 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SELECTEAR Hideout</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Cormorant+Garamond:wght@600;700&family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Chakra+Petch:wght@600;700&display=swap">
+<style>
+/* アジト (hideout): rainy window, neon sign, 3 empty gacha machines. A tap-to-enter gate starts the sound.
+   Same tokens and buttons as the home and map pages so they join up. Single dark neon look. */
+:root {
+  --bg: #07050c;
+  --panel: rgba(13, 10, 26, .95);
+  --ink: #f1efff;
+  --dim: #a7a2c6;
+  --violet: #9b5cff;
+  --blue: #4f8cff;
+  --ice: #d9e6ff;
+  --pink: #ff6ec8;
+  --gold: #f2c14e;
+  --cyan: #48e1ff;
+  --line: rgba(150, 120, 255, .45);
+  --font-latin: "Cinzel", "Times New Roman", serif;
+  --font-menu: "Cormorant Garamond", "Times New Roman", serif;
+  --font-body: "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+  --font-num: "Chakra Petch", "Zen Kaku Gothic New", system-ui, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; margin: 0; overflow: hidden; overscroll-behavior: none; }
+body { position: fixed; inset: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); user-select: none; -webkit-user-select: none; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; -webkit-touch-callout: none; }
+button { font: inherit; color: inherit; touch-action: manipulation; }
+button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.scene { position: fixed; inset: 0; display: none; overflow: hidden; }
+.scene.on { display: block; animation: sceneIn .5s cubic-bezier(.2, .8, .2, 1); }
+@keyframes sceneIn { from { opacity: 0; } }
+@keyframes blink { 50% { opacity: .3; } }
+canvas.fx { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.flash { position: fixed; inset: 0; z-index: 90; background: #fff; opacity: 0; pointer-events: none; }
+.flash.go { animation: flash .8s ease-out; }
+@keyframes flash { 0% { opacity: .9; } 100% { opacity: 0; } }
+.toast { position: fixed; left: 50%; top: calc(66px + env(safe-area-inset-top, 0px)); transform: translateX(-50%); z-index: 95; padding: 10px 16px; border-radius: 12px; background: rgba(10, 8, 16, .95); border: 1px solid var(--violet); font-size: 13px; max-width: calc(100% - 32px); text-align: center; }
+
+/* shared top bar */
+.topbar { position: absolute; z-index: 10; left: 0; right: 0; top: 0; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: calc(10px + env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) 10px max(12px, env(safe-area-inset-left, 0px)); background: linear-gradient(180deg, rgba(5, 3, 12, .85), transparent); pointer-events: none; }
+.topbar > * { pointer-events: auto; }
+.back { color: inherit; text-decoration: none; display: flex; align-items: center; gap: 8px; height: 42px; padding: 0 14px 0 10px; border-radius: 12px; border: 1px solid rgba(201, 198, 214, .45); background: rgba(8, 5, 18, .78); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); font: 700 13px var(--font-body); cursor: pointer; }
+.back svg { width: 18px; height: 18px; stroke: #fff; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.back:hover { border-color: #fff; }
+.place { text-align: center; min-width: 0; }
+.place b { display: block; font: 800 clamp(13px, 3.4vw, 17px)/1.1 var(--font-latin); letter-spacing: .22em; color: var(--ice); text-shadow: 0 0 10px rgba(155, 92, 255, .8); white-space: nowrap; }
+.place small { display: block; margin-top: 3px; font: 700 11px var(--font-body); color: var(--dim); letter-spacing: .15em; }
+.coins { display: flex; align-items: center; gap: 8px; height: 42px; padding: 0 12px 0 10px; border-radius: 999px; background: rgba(8, 5, 18, .78); border: 1px solid rgba(242, 193, 78, .55); box-shadow: 0 0 12px rgba(242, 193, 78, .25); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.coin-ic { width: 20px; height: 20px; flex: none; background: linear-gradient(135deg, #fff6d0, var(--gold) 45%, #b9801a); clip-path: polygon(50% 0, 100% 38%, 82% 100%, 18% 100%, 0 38%); filter: drop-shadow(0 0 4px var(--gold)); }
+.coins .lb { font: 700 10px/1.1 var(--font-body); color: var(--dim); }
+.coins .val { font: 700 17px/1 var(--font-num); color: #fff; min-width: 2ch; text-align: right; font-variant-numeric: tabular-nums; }
+.right { display: flex; align-items: center; gap: 8px; }
+.snd { width: 42px; height: 42px; border-radius: 12px; border: 1px solid rgba(201, 198, 214, .45); background: rgba(8, 5, 18, .78); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); cursor: pointer; display: grid; place-items: center; padding: 0; }
+.snd svg { width: 22px; height: 22px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.snd .off { display: none; }
+.snd[aria-pressed="false"] .on { display: none; }
+.snd[aria-pressed="false"] .off { display: inline; }
+.snd[aria-pressed="false"] { opacity: .7; }
+@media (max-width: 420px) { .coins .lb, .back span { display: none; } .back { padding: 0 10px; } .place small { display: none; } }
+
+/* ---------- START ---------- */
+#gate { background: radial-gradient(ellipse at 50% 60%, #1a0d33 0%, #07050c 70%); }
+#gate .bg { position: absolute; inset: -30px; background: url(img/hideout_bg.webp) center / cover; filter: blur(14px) brightness(.35) saturate(1.3); }
+#gate .col { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding: 24px max(16px, env(safe-area-inset-right, 0px)) 24px max(16px, env(safe-area-inset-left, 0px)); text-align: center; }
+.logo { width: min(480px, 84vw); -webkit-mask-image: radial-gradient(ellipse 52% 60% at 50% 50%, #000 78%, transparent 100%); mask-image: radial-gradient(ellipse 52% 60% at 50% 50%, #000 78%, transparent 100%); filter: drop-shadow(0 0 18px rgba(155, 92, 255, .55)); }
+.eyebrow { margin: 0; font: 600 12px var(--font-latin); letter-spacing: .45em; padding-left: .45em; color: var(--dim); }
+.note { margin: 0; font-size: 12px; color: var(--dim); }
+
+/* slanted buttons (same as the home menu) */
+.mb { --k: 165, 110, 255; --bh: 64px; position: relative; height: var(--bh); width: min(320px, 80vw); border: 0; padding: 0 14% 0 16%; background: none; cursor: pointer; display: flex; align-items: center; gap: 12px; text-align: left; color: #f6ecff; }
+.mb::before { content: ""; position: absolute; inset: 0; transform: skewX(-18deg); border: 1.5px solid #fff; border-radius: 4px; background: linear-gradient(90deg, rgba(var(--k), .6), rgba(var(--k), .25) 60%, rgba(20, 8, 36, .8)); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); box-shadow: 0 0 22px rgba(var(--k), .85), inset 0 0 18px rgba(255, 255, 255, .2); transition: box-shadow .2s; }
+.mb > * { position: relative; }
+.mb svg { width: 26px; height: 26px; flex: none; stroke: #fff; fill: none; stroke-width: 1.8; stroke-linejoin: round; filter: drop-shadow(0 0 4px rgba(var(--k), .9)); }
+.mb .en { display: block; font: 700 26px/1 var(--font-menu); letter-spacing: .08em; text-shadow: 0 0 8px rgba(var(--k), .8); }
+.mb .jp { display: block; margin-top: 3px; font: 700 12px/1 var(--font-body); color: rgba(255, 255, 255, .75); letter-spacing: .12em; }
+.mb:hover::before { box-shadow: 0 0 30px rgba(var(--k), 1), inset 0 0 18px rgba(255, 255, 255, .3); }
+.mb:active { transform: translateX(3px); }
+.mb.pulse::before { animation: pulse 2s ease-in-out infinite; }
+@keyframes pulse { 50% { box-shadow: 0 0 36px rgba(var(--k), 1), inset 0 0 22px rgba(255, 255, 255, .3); } }
+
+/* ---------- HIDEOUT ---------- */
+#hideout { background: #06040d; }
+#hideout .window { position: absolute; inset: 0; background: url(img/hideout_bg.webp) center 30% / cover; filter: brightness(.55) saturate(1.25) blur(1.5px); transform: scale(1.04); }
+#hideout .room { position: absolute; inset: 0; background:
+  linear-gradient(180deg, rgba(6, 4, 13, .55) 0%, transparent 22%, transparent 48%, rgba(6, 4, 13, .7) 64%, #06040d 100%),
+  linear-gradient(90deg, rgba(6, 4, 13, .85) 0%, transparent 18%, transparent 82%, rgba(6, 4, 13, .85) 100%); }
+/* window frame bars, like the home picture */
+#hideout .frame { position: absolute; inset: 0 0 34% 0; pointer-events: none; background:
+  linear-gradient(90deg, transparent calc(33% - 3px), rgba(10, 8, 20, .9) calc(33% - 3px), rgba(10, 8, 20, .9) calc(33% + 3px), transparent calc(33% + 3px), transparent calc(67% - 3px), rgba(10, 8, 20, .9) calc(67% - 3px), rgba(10, 8, 20, .9) calc(67% + 3px), transparent calc(67% + 3px)),
+  linear-gradient(180deg, transparent 54%, rgba(10, 8, 20, .9) 54%, rgba(10, 8, 20, .9) calc(54% + 5px), transparent calc(54% + 5px)); }
+/* glossy floor with neon reflections */
+#hideout .floor { position: absolute; left: -10%; right: -10%; bottom: 0; height: 40%; transform: perspective(500px) rotateX(58deg); transform-origin: 50% 100%; background:
+  repeating-linear-gradient(90deg, rgba(155, 92, 255, .22) 0 1px, transparent 1px 70px),
+  repeating-linear-gradient(0deg, rgba(72, 225, 255, .16) 0 1px, transparent 1px 70px),
+  radial-gradient(ellipse at 50% 0%, rgba(155, 92, 255, .35), transparent 70%); opacity: .8; }
+.sign { position: absolute; z-index: 2; left: 50%; top: calc(64px + env(safe-area-inset-top, 0px)); transform: translateX(-50%); text-align: center; pointer-events: none; }
+.sign b { display: block; font: 800 clamp(22px, 6vw, 40px)/1 var(--font-latin); letter-spacing: .3em; padding-left: .3em; color: #fff; text-shadow: 0 0 6px var(--violet), 0 0 18px var(--violet), 0 0 40px var(--pink); animation: flicker 6s infinite; }
+.sign small { display: block; margin-top: 6px; font: 700 12px var(--font-body); letter-spacing: .4em; padding-left: .4em; color: var(--ice); text-shadow: 0 0 8px var(--blue); }
+@keyframes flicker { 0%, 18%, 22%, 62%, 64%, 100% { opacity: 1; } 20%, 63% { opacity: .35; } }
+
+.machines { position: absolute; z-index: 3; left: 0; right: 0; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); display: flex; gap: clamp(14px, 3vw, 40px); justify-content: center; align-items: flex-end; padding: 0 max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px)); overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch; touch-action: pan-x; }
+.machines::-webkit-scrollbar { display: none; }
+.gm { --c: 155, 92, 255; flex: none; width: min(clamp(200px, 24vw, 340px), calc((100vh - 320px) / 1.1)); scroll-snap-align: center; display: flex; flex-direction: column; align-items: center; }
+.gm.pink { --c: 255, 110, 200; }
+.gm.gold { --c: 242, 193, 78; }
+.gm .banner { width: 100%; padding: 8px 10px; margin-bottom: 10px; text-align: center; border-radius: 10px; background: rgba(8, 5, 18, .85); border: 1px solid rgba(var(--c), .8); box-shadow: 0 0 16px rgba(var(--c), .45); }
+.gm .banner b { display: block; font: 700 clamp(17px, 2vw, 21px)/1.1 var(--font-menu); letter-spacing: .08em; color: #fff; text-shadow: 0 0 8px rgba(var(--c), .9); }
+.gm .banner small { display: block; margin-top: 3px; font: 700 11px var(--font-body); color: rgba(255, 255, 255, .75); letter-spacing: .1em; }
+/* the machine: glass dome + body + handle + outlet */
+.machine { position: relative; width: 78%; aspect-ratio: 3 / 4.2; cursor: pointer; border: 0; padding: 0; background: none; }
+.dome { position: absolute; left: 6%; right: 6%; top: 0; aspect-ratio: 1; border-radius: 50%; overflow: hidden; background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, .5), rgba(255, 255, 255, .06) 30%, rgba(var(--c), .12) 60%, rgba(10, 6, 24, .55)); border: 2px solid rgba(var(--c), .9); box-shadow: 0 0 22px rgba(var(--c), .55), inset 0 0 26px rgba(var(--c), .35); }
+.dome i { position: absolute; width: 24%; aspect-ratio: 1; border-radius: 50%; background: linear-gradient(180deg, var(--a) 0 50%, #f4f1ff 50% 100%); border: 1.5px solid rgba(255, 255, 255, .6); box-shadow: inset -3px -3px 6px rgba(0, 0, 0, .35); animation: bob 3s ease-in-out infinite; }
+.dome i:nth-child(2n) { animation-delay: -1s; }
+.dome i:nth-child(3n) { animation-delay: -2s; }
+@keyframes bob { 50% { translate: 0 -4px; } }
+.machine.spin .dome i { animation: shake .12s linear 6; }
+@keyframes shake { 25% { translate: -3px 2px; } 75% { translate: 3px -2px; } }
+.dome::after { content: ""; position: absolute; left: 14%; top: 10%; width: 30%; height: 14%; border-radius: 50%; background: rgba(255, 255, 255, .35); transform: rotate(-30deg); }
+.body { position: absolute; left: 0; right: 0; bottom: 0; height: 46%; border-radius: 14px 14px 10px 10px; background: linear-gradient(180deg, #2a1550, #120a26 70%); border: 2px solid rgba(var(--c), .85); box-shadow: 0 0 22px rgba(var(--c), .45), inset 0 2px 0 rgba(255, 255, 255, .15); }
+.body .plate { position: absolute; left: 10%; right: 10%; top: 9%; padding: 5px 0; border-radius: 6px; text-align: center; background: rgba(var(--c), .2); border: 1px solid rgba(var(--c), .6); font: 700 10px var(--font-num); letter-spacing: .2em; color: #fff; }
+.handle { position: absolute; left: 50%; top: 40%; width: 34%; aspect-ratio: 1; margin-left: -17%; border-radius: 50%; background: radial-gradient(circle, #3a2464 0 40%, #1b1034 41%); border: 2px solid rgba(var(--c), .9); box-shadow: 0 0 12px rgba(var(--c), .6); transition: transform .9s cubic-bezier(.3, 1.6, .5, 1); }
+.handle::before { content: ""; position: absolute; left: 44%; top: 6%; width: 12%; height: 88%; border-radius: 4px; background: rgba(255, 255, 255, .85); }
+.machine.spin .handle { transform: rotate(360deg); }
+.outlet { position: absolute; left: 30%; right: 30%; bottom: 7%; height: 15%; border-radius: 6px 6px 3px 3px; background: #05030b; border: 1.5px solid rgba(var(--c), .7); overflow: hidden; }
+.cap { position: absolute; left: 50%; top: -120%; width: 34%; aspect-ratio: 1; margin-left: -17%; border-radius: 50%; background: linear-gradient(180deg, rgb(var(--c)) 0 50%, #fff 50%); opacity: 0; }
+.machine.spin .cap { animation: drop .8s .7s ease-in forwards; }
+@keyframes drop { 0% { opacity: 1; top: -120%; } 70% { top: 25%; } 85% { top: 15%; } 100% { opacity: 1; top: 25%; } }
+.machine:hover .dome, .machine:focus-visible .dome { box-shadow: 0 0 34px rgba(var(--c), .9), inset 0 0 26px rgba(var(--c), .45); }
+.machine:focus-visible { outline: none; }
+.pulls { display: flex; gap: 8px; margin-top: 12px; width: 100%; }
+.pulls button { flex: 1; height: 44px; border-radius: 10px; border: 1px solid rgba(var(--c), .8); background: rgba(8, 5, 18, .85); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+.pulls button b { font: 700 14px/1 var(--font-body); }
+.pulls button small { font: 700 10px/1 var(--font-num); color: var(--gold); }
+.pulls button.ten { background: linear-gradient(90deg, rgba(var(--c), .55), rgba(var(--c), .2)); border-color: #fff; }
+.pulls button:hover { box-shadow: 0 0 14px rgba(var(--c), .7); }
+.dots { display: none; position: absolute; z-index: 3; left: 50%; bottom: calc(6px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); gap: 6px; }
+.dots i { width: 6px; height: 6px; border-radius: 50%; background: rgba(255, 255, 255, .35); }
+.dots i.on { background: #fff; }
+
+/* coming-soon panel */
+.panel { position: fixed; inset: 0; z-index: 60; display: none; align-items: center; justify-content: center; padding: 20px; background: rgba(3, 2, 10, .8); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.panel.on { display: flex; animation: sceneIn .3s; }
+.card-box { width: min(440px, 100%); background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 22px 20px; box-shadow: 0 0 60px rgba(155, 92, 255, .35); text-align: center; }
+.card-box h3 { font: 800 15px var(--font-latin); letter-spacing: .25em; margin: 0 0 10px; color: var(--ice); }
+.soon { font: 800 clamp(26px, 7vw, 38px)/1.1 var(--font-latin); letter-spacing: .12em; margin: 4px 0 10px; background: linear-gradient(180deg, #fff, var(--ice) 40%, var(--violet)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.small { font-size: 13px; color: var(--dim); margin: 0; line-height: 1.7; }
+.xbtn { display: block; margin: 18px auto 0; font: 800 12px var(--font-latin); letter-spacing: .25em; color: var(--ice); background: transparent; border: 1px solid var(--line); border-radius: 999px; padding: 10px 26px; cursor: pointer; }
+
+/* phones held upright: one machine per screen, swipe between them */
+@media (max-width: 700px) and (orientation: portrait) {
+  .machines { --gw: min(78vw, 300px, calc((100vh - 330px) / 1.1)); justify-content: flex-start; bottom: calc(30px + env(safe-area-inset-bottom, 0px)); padding: 0 calc((100% - var(--gw)) / 2); }
+  .gm { width: var(--gw); }
+  .dots { display: flex; }
+}
+@media (orientation: landscape) and (max-height: 540px) {
+  .sign { top: calc(52px + env(safe-area-inset-top, 0px)); }
+  .sign b { font-size: 18px; }
+  .sign small { display: none; }
+  .gm { width: min(200px, calc((100vh - 200px) / .78)); }
+  .gm .banner { padding: 4px 8px; margin-bottom: 6px; }
+  .gm .banner small { display: none; }
+  .machine { width: 56%; }
+  .pulls { margin-top: 6px; }
+  .pulls button { height: 36px; }
+}
+@media (prefers-reduced-motion: reduce) { .mb.pulse::before, .pin.home::after, .maphint, .sign b, .dome i { animation: none !important; } }
+</style>
+
+<!-- HIDEOUT -->
+<section class="scene on" id="gate" aria-label="アジトに入る">
+  <div class="bg"></div>
+  <div class="col">
+    <p class="eyebrow">HIDEOUT</p>
+    <img class="logo" src="img/logo_purple.webp" alt="selectear セレクティア">
+    <button class="mb pulse" type="button" id="enterBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V9l8-6 8 6v12h-6v-7h-4v7z"/></svg><span><span class="en">Enter</span><span class="jp">アジトに入る</span></span></button>
+    <p class="note">♪ 音が出ます</p>
+  </div>
+</section>
+
+<section class="scene" id="hideout" aria-label="アジト">
+  <div class="window"></div>
+  <canvas class="fx" id="rain" aria-hidden="true"></canvas>
+  <div class="frame"></div>
+  <div class="room"></div>
+  <div class="floor"></div>
+  <div class="topbar">
+    <div class="right" style="justify-content:flex-start"><a class="back" id="toMap" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg><span>マップ</span></a><a class="back" id="toHome" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M4 21V9l8-6 8 6v12h-6v-7h-4v7z"/></svg><span>ホーム</span></a></div>
+    <div class="place"><b>HIDEOUT</b><small>アジト</small></div>
+    <div class="right"><button class="snd" type="button" data-snd aria-pressed="true" aria-label="BGMと環境音"><svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4z"/><path class="on" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/><path class="off" d="M16 9l6 6M22 9l-6 6"/></svg></button><div class="coins" aria-label="有料コイン"><span class="coin-ic" aria-hidden="true"></span><span class="lb">有料<br>コイン</span><span class="val" data-coins>0</span></div></div>
+  </div>
+  <div class="sign"><b>SELECTEAR</b><small>ようこそ、アジトへ</small></div>
+  <div class="machines" id="machines"></div>
+  <div class="dots" id="dots"></div>
+</section>
+
+<div class="panel" id="p-soon" role="dialog" aria-labelledby="soonTitle">
+  <div class="card-box">
+    <h3 id="soonTitle">GACHA</h3>
+    <p class="soon">COMING SOON</p>
+    <p class="small" id="soonText">このガチャにはまだ中身が入っていません。</p>
+    <button class="xbtn" type="button" id="soonClose">CLOSE</button>
+  </div>
+</div>
+<div class="flash" id="flash"></div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(() => {
+  "use strict";
+  /* standalone build: assets embedded once in window.__ASSETS; the published version loads files */
+  const ASSETS = window.__ASSETS || null;
+  const A = p => (ASSETS && ASSETS[p]) || p;
+  if (ASSETS) {
+    for (const el of document.querySelectorAll("[src]")) el.setAttribute("src", A(el.getAttribute("src")));
+    const css = [...document.querySelectorAll("style")]; for (const s of css) s.textContent = s.textContent.replace(/url\((img\/[^)]+)\)/g, (m, q) => `url(${A(q)})`);
+  }
+  const $ = id => document.getElementById(id);
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const store = { get(k, d) { try { const v = JSON.parse(localStorage.getItem(k) || "null"); return v ?? d; } catch { return d; } } };
+  // same settings and coins as the home page (shared once both pages are combined)
+  const st = Object.assign({ bgm: true, sound: true, vol: 70, vib: true }, store.get("selectear_settings2", {}));
+  const coins = Number(store.get("selectear_coins", 0)) || 0;
+  for (const el of document.querySelectorAll("[data-coins]")) el.textContent = coins.toLocaleString("ja-JP");
+
+  /* sound */
+  let ac = null, master = null;
+  function audio() {
+    try {
+      if (!ac) { ac = new (window.AudioContext || window.webkitAudioContext)(); master = ac.createGain(); master.connect(ac.destination); }
+      master.gain.value = st.vol / 100; if (ac.state === "suspended") ac.resume(); return ac;
+    } catch { return null; }
+  }
+  function tone(f, d, type = "square", v = .1, delay = 0) {
+    if (!st.sound || !audio()) return;
+    try { const t = ac.currentTime + delay, o = ac.createOscillator(), g = ac.createGain(); o.type = type; o.frequency.setValueAtTime(f, t); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g).connect(master); o.start(t); o.stop(t + d + .02); } catch {}
+  }
+  const fadeGain = (g, v, sec) => { const now = ac.currentTime; g.cancelScheduledValues(now); g.setValueAtTime(Math.max(g.value, .0001), now); g.exponentialRampToValueAtTime(Math.max(v, .0001), now + sec); };
+  // map → hideout music (コンクリートタイル): an <audio> routed through Web Audio so volume also works on iPhone
+  const music = (() => {
+    const el = new Audio(A("map_bgm.mp3")); el.loop = true; el.preload = "auto"; el.setAttribute("playsinline", "");
+    let gain = null, on = false, t = 0;
+    function route() { if (gain || !audio()) return; try { const s = ac.createMediaElementSource(el); gain = ac.createGain(); gain.gain.value = .0001; s.connect(gain).connect(master); } catch { gain = null; } }
+    return {
+      start() { if (on) return; on = true; clearTimeout(t); route(); const p = el.play(); if (p && p.catch) p.catch(() => { on = false; }); if (gain) fadeGain(gain.gain, .75, 1.5); else el.volume = .75; },
+      stop() { if (!on) return; on = false; if (gain) fadeGain(gain.gain, 0, .8); t = setTimeout(() => { if (!on) el.pause(); }, 900); }
+    };
+  })();
+  // city ambience (大都会): a short clip looped seamlessly; muffled through a filter while inside the hideout
+  const ambience = (() => {
+    let buf = null, loading = false, src = null, gain = null, filt = null, want = false;
+    function load() {
+      if (buf || loading || !audio()) return; loading = true;
+      fetch(A("city_ambience.mp3")).then(r => r.arrayBuffer()).then(b => new Promise((ok, ng) => ac.decodeAudioData(b, ok, ng))).then(b => { buf = b; if (want) { want = false; api.start(); } }).catch(() => { loading = false; });
+    }
+    const api = {
+      start() {
+        if (!audio()) return; if (!buf) { want = true; load(); return; } if (src) return;
+        filt = filt || ac.createBiquadFilter(); filt.type = "lowpass";
+        gain = gain || (() => { const g = ac.createGain(); g.gain.value = .0001; filt.connect(g).connect(master); return g; })();
+        src = ac.createBufferSource(); src.buffer = buf; src.loop = true; src.connect(filt); src.start();
+        api.room(scene === "hideout"); fadeGain(gain.gain, .4, 1.5);
+      },
+      stop() { want = false; if (!src) return; const s = src; src = null; fadeGain(gain.gain, 0, .8); setTimeout(() => { try { s.stop(); } catch {} }, 900); },
+      // outside: open city noise; inside the hideout: quieter and muffled, as if through the window
+      room(inside) { if (!filt) return; const now = ac.currentTime; filt.frequency.cancelScheduledValues(now); filt.frequency.setTargetAtTime(inside ? 900 : 18000, now, .4); if (gain && src) fadeGain(gain.gain, inside ? .28 : .4, .8); }
+    };
+    return api;
+  })();
+  function syncMusic() {
+    const on = st.bgm && !document.hidden && !away && scene === "hideout";
+    if (on) { music.start(); ambience.start(); ambience.room(scene === "hideout"); } else { music.stop(); ambience.stop(); }
+    for (const b of document.querySelectorAll("[data-snd]")) b.setAttribute("aria-pressed", String(st.bgm));
+  }
+  document.addEventListener("visibilitychange", syncMusic);
+  for (const b of document.querySelectorAll("[data-snd]")) b.addEventListener("click", () => {
+    audio(); st.bgm = !st.bgm; syncMusic();
+    try { const all = JSON.parse(localStorage.getItem("selectear_settings2") || "{}"); all.bgm = st.bgm; localStorage.setItem("selectear_settings2", JSON.stringify(all)); } catch {}
+  });
+  const decide = () => { tone(1046, .06, "square", .07); tone(1568, .1, "square", .06, .05); };
+  const back = () => { tone(784, .08, "triangle", .08); tone(523, .12, "triangle", .06, .06); };
+  const seEl = new Audio(A("se_gamestart.mp3")); seEl.preload = "auto";
+  function gameStartSE() { if (!st.sound) return; try { const a = seEl.cloneNode(); a.volume = Math.min(1, st.vol / 100); const p = a.play(); if (p && p.catch) p.catch(() => {}); } catch {} }
+  function gachaSE() { [0, 3, 7, 12].forEach((s, i) => tone(523 * Math.pow(2, s / 12), .09, "square", .06, i * .07)); tone(180, .5, "sine", .2, .7); }
+  const buzz = ms => { if (st.vib) try { navigator.vibrate && navigator.vibrate(ms); } catch {} };
+  function toast(t) { const e = $("toast"); e.textContent = t; e.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => e.hidden = true, 2200); }
+  function flash() { const f = $("flash"); f.classList.remove("go"); void f.offsetWidth; f.classList.add("go"); }
+
+  /* scenes */
+  let scene = "gate";
+  function show(id) { $("toast").hidden = true; for (const s of ["gate", "hideout"]) $(s).classList.toggle("on", s === id); scene = id; if (id === "hideout") rainSize(); syncMusic(); }
+  // the map page (separate artifact); the map's own link back is set there
+  // links between the three pages; the standalone build links to the neighbouring .html files instead
+  // inside the combined game the map and hideout are layers of the home page: talk to it instead of opening tabs
+  const EMB = location.hash === "#embedded" || !!window.__EMBEDDED;
+  let away = EMB; // hidden behind another layer
+  const toParent = go => { try { parent.postMessage({ selectear: go }, "*"); } catch {} };
+  const PAGE = (url, file) => (window.__ASSETS ? file : url);
+  function openPage(href) { const a = document.createElement("a"); a.href = href; a.target = "_blank"; a.rel = "noopener"; document.body.append(a); a.click(); a.remove(); }
+  const MAP_URL = PAGE("https://claude.ai/artifact/S3nJDwsvuc8SdeXZjbYr2f", "selectear_map.html");
+  const HOME_URL = PAGE("https://claude.ai/artifact/C6nAaQ9HWy8Vj4py9BMBDB", "selectear.html");
+  $("toMap").href = MAP_URL; $("toHome").href = HOME_URL;
+  for (const id of ["toMap", "toHome"]) $(id).addEventListener("click", e => { decide(); if (EMB) { e.preventDefault(); toParent(id === "toMap" ? "map" : "home"); } });
+  if (EMB) {
+    addEventListener("message", e => {
+      if (e.source !== parent || !e.data) return;
+      if (e.data.selectear === "enter") { away = false; audio(); if (scene === "gate") show("hideout"); else syncMusic(); }
+      if (e.data.selectear === "leave") { away = true; $("p-soon").classList.remove("on"); syncMusic(); }
+    });
+    addEventListener("pointerdown", () => { if (!away) { audio(); syncMusic(); } }, true);
+  }
+  $("enterBtn").addEventListener("click", () => { audio(); if (st.bgm) { music.start(); ambience.start(); } gameStartSE(); buzz([30, 30, 60]); flash(); setTimeout(() => show("hideout"), reduce ? 0 : 250); });
+
+  /* =========================================================
+     HIDEOUT: rain on the window + 3 empty gacha machines
+     ========================================================= */
+  const GACHAS = [
+    { id: "standard", name: "Standard", jp: "スタンダードガチャ", tone: "", caps: ["#9b5cff", "#4f8cff", "#48e1ff", "#d9e6ff"] },
+    { id: "pickup", name: "Pick Up", jp: "ピックアップガチャ", tone: "pink", caps: ["#ff6ec8", "#9b5cff", "#ffb1e3", "#ff8fb0"] },
+    { id: "premium", name: "Premium", jp: "プレミアムガチャ", tone: "gold", caps: ["#f2c14e", "#fff1b8", "#9b5cff", "#ffd36e"] }
+  ];
+  const CAP_POS = [[14, 52], [38, 60], [62, 54], [26, 32], [52, 36], [70, 30], [44, 14], [8, 30], [78, 50]];
+  const box = $("machines");
+  for (const g of GACHAS) {
+    const d = document.createElement("div"); d.className = "gm " + g.tone;
+    const caps = CAP_POS.map(([x, y], i) => `<i style="left:${x}%;top:${y}%;--a:${g.caps[i % g.caps.length]}"></i>`).join("");
+    d.innerHTML = `<div class="banner"><b>${g.name}</b><small>${g.jp}</small></div>
+      <button class="machine" type="button" aria-label="${g.jp}を回す"><span class="dome">${caps}</span><span class="body"><span class="plate">SELECTEAR</span><span class="handle"></span><span class="outlet"><span class="cap"></span></span></span></button>
+      <div class="pulls"><button type="button" data-n="1"><b>1回</b><small>◆ ---</small></button><button type="button" class="ten" data-n="10"><b>10回</b><small>◆ ---</small></button></div>`;
+    const m = d.querySelector(".machine");
+    const pull = () => {
+      if (m.classList.contains("spin")) return;
+      gachaSE(); buzz(30); m.classList.remove("spin"); void m.offsetWidth; m.classList.add("spin");
+      setTimeout(() => { m.classList.remove("spin"); openSoon(g); }, reduce ? 100 : 1700);
+    };
+    m.addEventListener("click", pull);
+    for (const b of d.querySelectorAll(".pulls button")) b.addEventListener("click", () => { decide(); pull(); });
+    box.append(d);
+  }
+  // page dots for the swipe view on phones
+  $("dots").innerHTML = GACHAS.map((_, i) => `<i class="${i === 0 ? "on" : ""}"></i>`).join("");
+  box.addEventListener("scroll", () => { const i = Math.round(box.scrollLeft / (box.scrollWidth - box.clientWidth || 1) * (GACHAS.length - 1)); [...$("dots").children].forEach((d, k) => d.classList.toggle("on", k === i)); }, { passive: true });
+  function openSoon(g) { $("soonTitle").textContent = g.jp; $("soonText").textContent = "このガチャにはまだ中身が入っていません。"; $("p-soon").classList.add("on"); }
+  $("soonClose").addEventListener("click", () => { back(); $("p-soon").classList.remove("on"); });
+  $("p-soon").addEventListener("click", e => { if (e.target === $("p-soon")) $("p-soon").classList.remove("on"); });
+
+  // rain over the hideout window
+  const cv = $("rain"), g = cv.getContext("2d"); let rw = 0, rh = 0;
+  function rainSize() { const r = Math.min(devicePixelRatio || 1, 2); rw = innerWidth; rh = innerHeight; cv.width = rw * r; cv.height = rh * r; g.setTransform(r, 0, 0, r, 0, 0); }
+  rainSize(); addEventListener("resize", rainSize);
+  const drops = Array.from({ length: 90 }, () => ({ x: Math.random() * 1600, y: Math.random() * 1000, l: 10 + Math.random() * 22, v: 7 + Math.random() * 8 }));
+  (function tick() {
+    if (scene === "hideout" && !reduce) {
+      g.clearRect(0, 0, rw, rh); g.lineWidth = 1; g.strokeStyle = "rgba(180,200,255,.22)";
+      for (const d of drops) { d.y += d.v; d.x -= .8; if (d.y > rh * .66) { d.y = -20; d.x = Math.random() * (rw + 60); } g.beginPath(); g.moveTo(d.x, d.y); g.lineTo(d.x - 1.5, d.y + d.l); g.stroke(); }
+    }
+    requestAnimationFrame(tick);
+  })();
+
+  addEventListener("keydown", e => {
+    if (e.key === "Escape" && $("p-soon").classList.contains("on")) $("p-soon").classList.remove("on");
+    if (scene === "gate" && (e.key === "Enter" || e.key === " ") && document.activeElement !== $("enterBtn")) { e.preventDefault(); $("enterBtn").click(); }
+  });
+})();
+</script>

@@ -1,0 +1,1017 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SELECTEAR</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Cormorant+Garamond:wght@600;700&family=Zen+Antique&family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Chakra+Petch:wght@600;700&display=swap">
+<style>
+/* Flow: splash (tap = sound allowed) -> title (title BGM) -> home (風野 / 実優).
+   Home: coins top-left, ⚙ and ☰ top-right, main buttons on the right, character free on the left. */
+:root {
+  --bg: #07050c;
+  --panel: rgba(13, 10, 26, .95);
+  --ink: #f1efff;
+  --dim: #a7a2c6;
+  --violet: #9b5cff;
+  --blue: #4f8cff;
+  --ice: #d9e6ff;
+  --pink: #ff6ec8;
+  --gold: #f2c14e;
+  --line: rgba(150, 120, 255, .45);
+  --font-latin: "Cinzel", "Times New Roman", serif;
+  --font-menu: "Cormorant Garamond", "Times New Roman", serif;
+  --font-name: "Zen Antique", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  --font-body: "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+  --font-num: "Chakra Petch", "Zen Kaku Gothic New", system-ui, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; margin: 0; overflow: hidden; overscroll-behavior: none; }
+body { position: fixed; inset: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); user-select: none; -webkit-user-select: none; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; -webkit-touch-callout: none; }
+button { font: inherit; color: inherit; touch-action: manipulation; }
+button:focus-visible, input:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+.scene { position: fixed; inset: 0; display: none; overflow: hidden; touch-action: manipulation; }
+.scene.on { display: block; animation: sceneIn .5s cubic-bezier(.2, .8, .2, 1); }
+.sb .stage, .sb .stage * { touch-action: none; } /* the home picture never pans or zooms; taps still work */
+@keyframes sceneIn { from { opacity: 0; } }
+.bgimg { position: absolute; inset: -40px; background: center / cover no-repeat; filter: blur(20px) brightness(.4) saturate(1.3); }
+.vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 40%, transparent 30%, rgba(3, 2, 10, .85) 100%); }
+canvas#fx { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 40; pointer-events: none; }
+.flash { position: fixed; inset: 0; z-index: 90; background: #fff; opacity: 0; pointer-events: none; }
+.flash.go { animation: flash .8s ease-out; }
+@keyframes flash { 0% { opacity: .9; } 100% { opacity: 0; } }
+@keyframes blink { 50% { opacity: .25; } }
+.col { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; overflow-y: auto; padding: calc(16px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.col > :first-child { margin-top: auto; }
+.col > :last-child { margin-bottom: auto; }
+
+/* ---------- splash + title ---------- */
+#splash { background: #000; cursor: pointer; }
+.sp-logo { width: min(420px, 78vw); opacity: .9; }
+.sp-logo, .logo img { -webkit-mask-image: radial-gradient(ellipse 52% 60% at 50% 50%, #000 78%, transparent 100%); mask-image: radial-gradient(ellipse 52% 60% at 50% 50%, #000 78%, transparent 100%); }
+.sp-note { font-size: 12px; color: var(--dim); margin: 0; }
+.eyebrow { font-family: var(--font-latin); letter-spacing: .45em; font-size: 12px; color: var(--dim); margin: 0; padding-left: .45em; }
+.logo { margin: 0; line-height: 0; position: relative; }
+.logo img { width: min(560px, 88vw); height: auto; filter: drop-shadow(0 0 18px rgba(155, 92, 255, .55)); }
+.logo img.glitch { position: absolute; inset: 0; opacity: 0; mix-blend-mode: screen; pointer-events: none; }
+.logo img.g1 { filter: hue-rotate(-60deg) saturate(2); animation: gl1 5s infinite; }
+.logo img.g2 { filter: hue-rotate(60deg) saturate(2); animation: gl2 5s infinite; }
+@keyframes gl1 { 0%, 92%, 100% { opacity: 0; transform: none; } 93% { opacity: .7; transform: translate(-4px, 1px); } 96% { opacity: .7; transform: translate(3px, -1px); } }
+@keyframes gl2 { 0%, 93%, 100% { opacity: 0; transform: none; } 94% { opacity: .7; transform: translate(4px, -1px); } 97% { opacity: .7; transform: translate(-3px, 1px); } }
+.hero { width: auto; max-width: min(620px, 100%); max-height: 42vh; object-fit: contain; border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 0 60px rgba(155, 92, 255, .55); animation: float 5s ease-in-out infinite alternate; }
+@keyframes float { from { transform: translateY(-6px); } to { transform: translateY(6px) scale(1.015); } }
+.press { font-family: var(--font-num); font-weight: 700; letter-spacing: .5em; padding-left: .5em; font-size: 15px; color: #fff; text-shadow: 0 0 8px var(--violet), 0 0 22px var(--violet); animation: blink 1.4s infinite; }
+.press small { display: block; margin-top: 8px; font: 700 12px/1 var(--font-body); letter-spacing: .3em; color: var(--dim); text-shadow: none; }
+.ver { position: absolute; right: max(14px, env(safe-area-inset-right, 0px)); bottom: calc(10px + env(safe-area-inset-bottom, 0px)); font: 600 10px var(--font-latin); letter-spacing: .2em; color: var(--dim); }
+.chip-btn { position: absolute; z-index: 5; top: calc(12px + env(safe-area-inset-top, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); padding: 9px 12px; border-radius: 10px; border: 1px solid rgba(201, 198, 214, .4); background: rgba(10, 8, 16, .75); font: 700 12px/1 var(--font-body); cursor: pointer; }
+.chip-btn[aria-pressed="false"] { color: var(--dim); }
+
+/* ---------- home: picture ---------- */
+.stage { position: absolute; left: 0; top: 0; transition: left .4s ease; }
+.stage img { display: block; width: 100%; height: 100%; -webkit-user-drag: none; }
+.stage .expr { position: absolute; inset: 0; opacity: 0; transition: opacity .35s ease; pointer-events: none; }
+.stage .expr.on { opacity: 1; }
+.hot { position: absolute; border: 0; padding: 0; background: transparent; cursor: pointer; border-radius: 40%; }
+.talkhint { position: absolute; z-index: 3; left: max(14px, env(safe-area-inset-left, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); padding: 8px 14px; border-radius: 999px; background: rgba(10, 8, 16, .72); border: 1px solid rgba(155, 92, 255, .6); font-size: 13px; font-weight: 700; white-space: nowrap; box-shadow: 0 0 14px rgba(155, 92, 255, .45); animation: blink 2.2s ease-in-out infinite; pointer-events: none; }
+.sb2 .talkhint { border-color: rgba(255, 110, 200, .7); box-shadow: 0 0 14px rgba(255, 110, 200, .45); }
+
+/* ---------- home: top bar (coins left, ⚙ ☰ right) ---------- */
+.hud { position: absolute; z-index: 6; top: calc(10px + env(safe-area-inset-top, 0px)); display: flex; align-items: center; gap: 8px; }
+.hud.l { left: max(12px, env(safe-area-inset-left, 0px)); }
+.hud.r { right: max(12px, env(safe-area-inset-right, 0px)); }
+.coins { display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 4px 0 10px; border-radius: 999px; background: rgba(8, 5, 18, .78); border: 1px solid rgba(242, 193, 78, .55); box-shadow: 0 0 12px rgba(242, 193, 78, .25); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.coin-ic { width: 20px; height: 20px; flex: none; background: linear-gradient(135deg, #fff6d0, var(--gold) 45%, #b9801a); clip-path: polygon(50% 0, 100% 38%, 82% 100%, 18% 100%, 0 38%); filter: drop-shadow(0 0 4px var(--gold)); }
+.coins .lb { font: 700 10px/1.1 var(--font-body); color: var(--dim); }
+.coins .val { font: 700 17px/1 var(--font-num); color: #fff; min-width: 3ch; text-align: right; font-variant-numeric: tabular-nums; }
+.coins .plus { width: 32px; height: 32px; border-radius: 50%; border: 0; background: linear-gradient(180deg, #ffe08a, #e0a12c); color: #2a1600; font: 900 20px/1 var(--font-num); cursor: pointer; display: grid; place-items: center; }
+.icobtn { width: 44px; height: 44px; border-radius: 12px; border: 1px solid rgba(201, 198, 214, .45); background: rgba(8, 5, 18, .78); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); cursor: pointer; display: grid; place-items: center; padding: 0; }
+.icobtn:hover { border-color: #fff; box-shadow: 0 0 12px rgba(155, 92, 255, .6); }
+.icobtn svg { width: 24px; height: 24px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ---------- home: main buttons on the right ----------
+   Wide screens: placed in % of the picture (data-menu), JS sets --l/--t/--w/--bh/--gap in px.
+   Narrow screens: a column at the right edge, above the bottom. */
+.hmenu { --k: 165, 110, 255; position: absolute; z-index: 4; left: var(--l, 50%); top: var(--t, 50%); width: var(--w, 240px); display: flex; flex-direction: column; gap: var(--gap, 10px); }
+#standby2 .hmenu { --k: 255, 110, 200; }
+#standby2:not(.narrow) .hmenu::before { content: ""; position: absolute; z-index: -1; left: -5%; right: -5%; top: calc(var(--gap) * -1.2); bottom: calc(var(--gap) * -1.2); border-radius: 12px; border: 1px solid rgba(255, 110, 200, .4); background: rgba(22, 6, 24, .93); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); box-shadow: 0 0 24px rgba(255, 110, 200, .3); } /* hides the menu drawn into 実優's picture */
+.mb { position: relative; height: var(--bh, 56px); width: 100%; border: 0; padding: 0 12% 0 14%; background: none; cursor: pointer; display: flex; align-items: center; gap: 10px; text-align: left; color: #f6ecff; }
+.mb::before { content: ""; position: absolute; inset: 0; transform: skewX(-18deg); border: 1.5px solid rgba(var(--k), .8); border-radius: 4px; background: linear-gradient(90deg, rgba(var(--k), .2), rgba(12, 6, 26, .74) 70%); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); box-shadow: 0 0 10px rgba(var(--k), .3), inset 0 0 14px rgba(var(--k), .15); transition: box-shadow .2s, border-color .2s; }
+.mb > * { position: relative; }
+.mb .ic { width: calc(var(--bh, 56px) * .42); height: calc(var(--bh, 56px) * .42); flex: none; stroke: #fff; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 4px rgba(var(--k), .9)); }
+.mb .tx { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.mb .en { font: 700 calc(var(--bh, 56px) * .4)/1 var(--font-menu); letter-spacing: .05em; text-shadow: 0 0 8px rgba(var(--k), .8); white-space: nowrap; }
+.mb .jp { font: 700 calc(var(--bh, 56px) * .2)/1 var(--font-body); color: rgba(255, 255, 255, .72); letter-spacing: .1em; white-space: nowrap; }
+.mb.primary::before { background: linear-gradient(90deg, rgba(var(--k), .6), rgba(var(--k), .25) 60%, rgba(20, 8, 36, .8)); border-color: #fff; box-shadow: 0 0 20px rgba(var(--k), .85), inset 0 0 18px rgba(255, 255, 255, .2); }
+.mb:hover::before, .mb:focus-visible::before { border-color: #fff; box-shadow: 0 0 22px rgba(var(--k), .95), inset 0 0 18px rgba(var(--k), .35); }
+.mb:focus-visible { outline: none; }
+.mb:active { transform: translateX(3px); }
+.sb.narrow .hmenu { --bh: 52px; --gap: 9px; left: auto; right: max(14px, env(safe-area-inset-right, 0px)); top: auto; bottom: calc(64px + env(safe-area-inset-bottom, 0px)); width: min(210px, 54vw); }
+.sb.talking .hmenu, .sb.talking .talkhint { visibility: hidden; }
+
+/* ---------- ☰ menu (drops down from the top-right) ---------- */
+.dropdown { position: fixed; z-index: 65; top: calc(62px + env(safe-area-inset-top, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); width: min(260px, calc(100% - 24px)); padding: 8px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); box-shadow: 0 10px 40px rgba(0, 0, 0, .6), 0 0 30px rgba(155, 92, 255, .3); display: none; }
+.dropdown.on { display: grid; gap: 2px; animation: sceneIn .2s; }
+.dropdown button { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px; border: 0; border-radius: 10px; background: transparent; text-align: left; font: 700 14px var(--font-body); cursor: pointer; }
+.dropdown button:hover, .dropdown button:focus-visible { background: rgba(155, 92, 255, .22); outline: none; }
+.dropdown svg { width: 20px; height: 20px; stroke: var(--ice); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.dropdown hr { border: 0; border-top: 1px solid rgba(150, 120, 255, .25); margin: 4px 6px; }
+.dropdown .exit { color: #ffb1c8; }
+.dropdown .exit svg { stroke: #ffb1c8; }
+.scrim { position: fixed; inset: 0; z-index: 64; display: none; }
+.scrim.on { display: block; }
+
+/* ---------- talk window + free talk ---------- */
+.talk { position: fixed; inset: 0; z-index: 30; display: none; }
+.talk.on { display: block; }
+.talk .shade { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(5, 3, 10, .85) 0%, rgba(5, 3, 10, .3) 45%, transparent 70%); }
+.win { position: absolute; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); width: min(760px, calc(100% - 24px)); min-height: 132px; padding: 26px 20px 18px; border-radius: 14px; background: rgba(12, 8, 22, .92); border: 2px solid rgba(155, 92, 255, .85); box-shadow: 0 0 22px rgba(155, 92, 255, .5), inset 0 0 22px rgba(155, 92, 255, .2); cursor: pointer; animation: up .3s ease-out; }
+@keyframes up { from { translate: 0 20px; opacity: 0; } }
+.tname { position: absolute; left: 16px; top: -16px; padding: 4px 14px; border-radius: 8px; background: #1a1030; border: 1px solid var(--violet); font-family: var(--font-name); font-size: 17px; letter-spacing: .08em; text-shadow: 0 0 8px var(--violet); }
+.ttext { font-size: clamp(15px, 3.8vw, 18px); line-height: 1.8; font-weight: 700; min-height: 3.6em; max-height: 34vh; overflow-y: auto; white-space: pre-wrap; user-select: text; -webkit-user-select: text; }
+.ttext .thinking { color: var(--dim); font-weight: 500; }
+.tnext { position: absolute; right: 16px; bottom: 10px; color: #e6d4ff; font-size: 13px; animation: bob .8s ease-in-out infinite alternate; }
+@keyframes bob { to { translate: 0 4px; } }
+.choices { position: absolute; left: 50%; bottom: calc(160px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); width: min(420px, calc(100% - 32px)); max-height: calc(100% - 180px - env(safe-area-inset-bottom, 0px) - env(safe-area-inset-top, 0px)); overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+.choices button { padding: 13px 16px; border-radius: 12px; border: 1px solid rgba(155, 92, 255, .7); background: rgba(12, 8, 22, .92); font: 700 15px/1.2 var(--font-body); cursor: pointer; text-align: left; animation: up .25s ease-out both; }
+.choices button::before { content: "▸ "; color: #d8b8ff; }
+.choices button.free { border-color: #fff; background: linear-gradient(90deg, rgba(155, 92, 255, .5), rgba(12, 8, 22, .92)); }
+.choices button.free::before { content: "✎ "; }
+.choices button:hover { border-color: #fff; box-shadow: 0 0 16px var(--violet); }
+.chatbar { position: absolute; left: 50%; bottom: calc(160px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); width: min(760px, calc(100% - 24px)); display: flex; gap: 8px; }
+.chatbar[hidden] { display: none; }
+.chatbar input { flex: 1; min-width: 0; height: 48px; padding: 0 14px; border-radius: 12px; border: 1px solid rgba(155, 92, 255, .8); background: rgba(12, 8, 22, .95); color: var(--ink); font: 500 16px var(--font-body); user-select: text; -webkit-user-select: text; }
+.chatbar input::placeholder { color: var(--dim); }
+.chatbar button { flex: none; height: 48px; padding: 0 16px; border-radius: 12px; border: 1px solid rgba(155, 92, 255, .8); background: rgba(12, 8, 22, .95); font: 700 14px var(--font-body); cursor: pointer; }
+.chatbar button.send { background: linear-gradient(90deg, rgba(155, 92, 255, .8), rgba(79, 140, 255, .7)); border-color: #fff; }
+.chatbar button:disabled { opacity: .5; }
+.talk.pink .win { border-color: rgba(255, 110, 200, .9); box-shadow: 0 0 22px rgba(255, 110, 200, .5), inset 0 0 22px rgba(255, 110, 200, .2); }
+.talk.pink .tname { border-color: var(--pink); background: #2a1028; text-shadow: 0 0 8px var(--pink); }
+.talk.pink .choices button { border-color: rgba(255, 110, 200, .7); }
+
+/* ---------- panels ---------- */
+.panel { position: fixed; inset: 0; z-index: 60; display: none; align-items: center; justify-content: center; padding: 20px; background: rgba(3, 2, 10, .8); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.panel.on { display: flex; animation: sceneIn .3s; }
+.card-box { width: min(520px, 100%); max-height: 100%; overflow-y: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 20px; box-shadow: 0 0 60px rgba(155, 92, 255, .35); }
+.card-box h3 { font: 800 16px var(--font-latin); letter-spacing: .25em; margin: 0 0 14px; color: var(--ice); }
+.card-box.center { text-align: center; }
+.xbtn { display: block; margin: 16px auto 0; font: 800 12px var(--font-latin); letter-spacing: .25em; color: var(--ice); background: transparent; border: 1px solid var(--line); border-radius: 999px; padding: 10px 26px; cursor: pointer; }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 12px 0; border-bottom: 1px solid rgba(150, 120, 255, .2); }
+.row:last-of-type { border-bottom: 0; }
+.tog { font: 800 12px var(--font-latin); letter-spacing: .1em; padding: 7px 14px; border-radius: 999px; cursor: pointer; border: 1px solid var(--line); background: transparent; color: var(--dim); min-width: 74px; }
+.tog.on { background: var(--violet); color: #fff; border-color: var(--violet); box-shadow: 0 0 16px rgba(155, 92, 255, .6); }
+.seg { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
+.seg .tog { min-width: 0; font-family: var(--font-body); }
+.tog.danger { color: #ff9ab8; border-color: rgba(255, 154, 184, .5); }
+input[type=range] { width: 150px; accent-color: var(--violet); }
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.tabs button { padding: 7px 14px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--dim); font: 700 13px var(--font-body); cursor: pointer; }
+.tabs button[aria-selected="true"] { background: rgba(155, 92, 255, .35); color: #fff; border-color: var(--violet); }
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.thumb { padding: 0; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; aspect-ratio: 1; cursor: pointer; background: #000; }
+.thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.lightbox { position: fixed; inset: 0; z-index: 70; background: rgba(2, 1, 8, .95); display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 18px; }
+.lightbox.on { display: flex; }
+.lightbox img { max-width: 100%; max-height: 74%; object-fit: contain; border: 1px solid var(--line); border-radius: 10px; }
+.btnrow { display: flex; gap: 10px; justify-content: center; align-items: center; }
+.btnrow .xbtn { margin: 0; }
+.credit { text-align: center; line-height: 2; }
+.credit b { font-family: var(--font-latin); letter-spacing: .15em; color: var(--ice); }
+.credit a { color: var(--ice); }
+.small { font-size: 12px; color: var(--dim); margin: 0; }
+.soon { font: 800 clamp(26px, 7vw, 40px)/1.1 var(--font-latin); letter-spacing: .12em; margin: 6px 0 10px; background: linear-gradient(180deg, #fff, var(--ice) 40%, var(--violet)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+iframe.layer { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; z-index: 200; background: #05040b; display: none; }
+iframe.layer.on { display: block; animation: sceneIn .45s ease-out; }
+.toast { position: fixed; left: 50%; top: calc(16px + env(safe-area-inset-top, 0px)); transform: translateX(-50%); z-index: 95; padding: 10px 16px; border-radius: 12px; background: rgba(10, 8, 16, .95); border: 1px solid var(--violet); font-size: 13px; max-width: calc(100% - 32px); text-align: center; }
+
+@media (orientation: landscape) and (max-height: 540px) {
+  .col { gap: 8px; }
+  .logo img { width: min(420px, 60vw); }
+  .hero { max-height: 34vh; }
+  .sb.narrow .hmenu { --bh: 44px; --gap: 7px; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
+  .win { min-height: 0; padding: 22px 16px 12px; }
+  .ttext { min-height: 2.6em; max-height: 26vh; font-size: 15px; line-height: 1.6; }
+  .choices, .chatbar { bottom: calc(122px + env(safe-area-inset-bottom, 0px)); }
+  .choices { display: grid; grid-template-columns: 1fr 1fr; width: min(560px, calc(100% - 32px)); gap: 6px; }
+  .choices button { padding: 9px 12px; font-size: 14px; }
+}
+@media (max-width: 380px) { .coins .lb { display: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .hero, .press, .logo img.glitch, .talkhint, .tnext { animation: none !important; }
+}
+</style>
+
+<!-- SPLASH: one tap here lets the browser play the title music -->
+<section class="scene on" id="splash" aria-label="スタート">
+  <div class="col">
+    <img class="sp-logo" src="img/logo_purple.webp" alt="selectear セレクティア">
+    <div class="press">TAP TO BEGIN<small>タップしてはじめる</small></div>
+    <p class="sp-note">♪ 音が出ます</p>
+  </div>
+</section>
+
+<!-- TITLE -->
+<section class="scene" id="title" aria-label="タイトル画面">
+  <div class="bgimg" style="background-image:url(img/g1.webp)"></div>
+  <div class="vignette"></div>
+  <div class="col">
+    <p class="eyebrow">A NEW GAME</p>
+    <h1 class="logo"><img src="img/logo_purple.webp" alt="selectear セレクティア"><img class="glitch g1" src="img/logo_purple.webp" alt=""><img class="glitch g2" src="img/logo_purple.webp" alt=""></h1>
+    <img class="hero" src="img/g1.webp" alt="SELECTEAR 全員集合">
+    <div class="press">TAP TO START<small>タップでスタート</small></div>
+  </div>
+  <button class="chip-btn" type="button" id="titleBgmBtn" aria-pressed="true">♪ BGM オン</button>
+  <div class="ver">PROTOTYPE 0.3</div>
+</section>
+
+<!-- HOME: 風野 桐嗚 -->
+<section class="scene sb" id="standby" aria-label="ホーム（風野 桐嗚）">
+  <div class="stage" data-ratio="1.7768" data-focus="30" data-menu="74.5,38,20.5,7.4,1.8">
+    <img src="img/home_kiritou.webp" alt="風野 桐嗚のホーム画面">
+    <img class="expr" id="exprImg" alt="" aria-hidden="true">
+    <button class="hot" type="button" aria-label="風野 桐嗚に話しかける" style="left:2%;top:4%;width:62%;height:76%"></button>
+  </div>
+  <nav class="hmenu" aria-label="メインメニュー"></nav>
+  <div class="talkhint">桐嗚をタップして話しかける</div>
+</section>
+
+<!-- HOME: 実優 -->
+<section class="scene sb sb2" id="standby2" aria-label="ホーム（実優）">
+  <div class="stage" data-ratio="1.7778" data-focus="27" data-menu="66.4,55.2,18.6,6.2,1.6">
+    <img src="img/home_miyu.webp" alt="実優のホーム画面">
+    <button class="hot" type="button" aria-label="実優に話しかける" style="left:2%;top:4%;width:52%;height:92%"></button>
+  </div>
+  <nav class="hmenu" aria-label="メインメニュー"></nav>
+  <div class="talkhint">実優をタップして話しかける</div>
+</section>
+
+<!-- home top bar (shared by both homes) -->
+<div id="homeHud" hidden>
+  <div class="hud l">
+    <div class="coins" aria-label="有料コイン">
+      <span class="coin-ic" aria-hidden="true"></span>
+      <span class="lb">有料<br>コイン</span>
+      <span class="val" id="coinVal">0</span>
+      <button class="plus" type="button" id="coinPlus" aria-label="コインを購入（ショップ）">+</button>
+    </div>
+  </div>
+  <div class="hud r">
+    <button class="icobtn" type="button" id="gearBtn" aria-label="設定"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+    <button class="icobtn" type="button" id="hambBtn" aria-label="メニュー" aria-expanded="false" aria-controls="hamb"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+  </div>
+</div>
+<div class="scrim" id="scrim"></div>
+<div class="dropdown" id="hamb" role="menu" aria-label="メニュー">
+  <button type="button" role="menuitem" data-m="gallery"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/></svg>ギャラリー</button>
+  <button type="button" role="menuitem" data-m="option"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>オプション</button>
+  <button type="button" role="menuitem" data-m="config"><svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>Config（サウンド・演出）</button>
+  <button type="button" role="menuitem" data-m="swap"><svg viewBox="0 0 24 24"><path d="M7 7h12l-3-3M17 17H5l3 3"/></svg>ホームキャラを切り替え</button>
+  <button type="button" role="menuitem" data-m="credits"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v.01M11 12h1v5h1"/></svg>クレジット</button>
+  <hr>
+  <button type="button" role="menuitem" class="exit" data-m="exit"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>EXIT（タイトルへ戻る）</button>
+</div>
+
+<!-- talk -->
+<div class="talk" id="talk" role="dialog" aria-modal="true" aria-labelledby="talkName">
+  <div class="shade"></div>
+  <div class="choices" id="choices"></div>
+  <form class="chatbar" id="chatbar" hidden>
+    <input id="chatIn" type="text" maxlength="200" autocomplete="off" enterkeyhint="send" placeholder="桐嗚に話しかける…" aria-label="メッセージ">
+    <button class="send" type="submit" id="chatSend">送信</button>
+    <button type="button" id="chatBack">戻る</button>
+  </form>
+  <div class="win" id="win" tabindex="0" aria-live="polite">
+    <div class="tname" id="talkName">風野 桐嗚</div>
+    <div class="ttext" id="ttext"></div>
+    <div class="tnext" id="tnext">▼</div>
+  </div>
+</div>
+
+<!-- panels -->
+<div class="panel" id="p-soon" role="dialog" aria-labelledby="soonTitle">
+  <div class="card-box center">
+    <h3 id="soonTitle">SHOP</h3>
+    <p class="soon">COMING SOON</p>
+    <p class="small" id="soonText">準備中です。</p>
+    <button class="xbtn" type="button" data-close>CLOSE</button>
+  </div>
+</div>
+<div class="panel" id="p-settings" role="dialog" aria-label="設定">
+  <div class="card-box">
+    <h3>SETTINGS</h3>
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" data-stab="config" aria-selected="true">Config（サウンド・演出）</button>
+      <button type="button" role="tab" data-stab="option" aria-selected="false">オプション</button>
+    </div>
+    <div id="tab-config">
+      <div class="row"><span>BGM</span><button class="tog" type="button" id="tBgm">ON</button></div>
+      <div class="row"><span>効果音</span><button class="tog" type="button" id="tSound">ON</button></div>
+      <div class="row"><label for="vol">音量</label><input id="vol" type="range" min="0" max="100" value="70"></div>
+      <div class="row"><span>雨・光の演出</span><button class="tog" type="button" id="tFx">ON</button></div>
+      <div class="row"><span>振動（対応端末のみ）</span><button class="tog" type="button" id="tVib">ON</button></div>
+    </div>
+    <div id="tab-option" hidden>
+      <div class="row"><span>ホームキャラ</span><div class="seg"><button class="tog" type="button" data-home="standby">風野 桐嗚</button><button class="tog" type="button" data-home="standby2">実優</button></div></div>
+      <div class="row"><span>会話の文字送り</span><div class="seg"><button class="tog" type="button" data-speed="70">遅い</button><button class="tog" type="button" data-speed="40">普通</button><button class="tog" type="button" data-speed="15">速い</button></div></div>
+      <div class="row"><span>桐嗚との会話の記録を消す</span><button class="tog danger" type="button" id="clearChat">CLEAR</button></div>
+      <div class="row"><span>設定を初期状態に戻す</span><button class="tog danger" type="button" id="reset">RESET</button></div>
+    </div>
+    <button class="xbtn" type="button" data-close>CLOSE</button>
+  </div>
+</div>
+<div class="panel" id="p-gallery" role="dialog" aria-label="ギャラリー">
+  <div class="card-box">
+    <h3>GALLERY</h3>
+    <div class="grid3" id="galleryGrid"></div>
+    <button class="xbtn" type="button" data-close>CLOSE</button>
+  </div>
+</div>
+<div class="panel" id="p-credits" role="dialog" aria-label="クレジット">
+  <div class="card-box credit">
+    <h3>CREDITS</h3>
+    <p><b>SELECTEAR</b></p>
+    <p class="small">PRESENTED BY</p>
+    <p><b>LIGNA CLEAN SERVICE</b></p>
+    <p>代表 平林 頼生</p>
+    <p class="small">MUSIC — Counter Attack（タイトル）／ Soranaka（風野ホーム）</p>
+    <p class="small">PROTOTYPE 0.3 — 続きは本編で。</p>
+    <p><a href="https://claude.ai/artifact/Wfsk43yUGPGrgXSztNGqXj" target="_blank" rel="noopener">LIGNA ホームページへ</a></p>
+    <button class="xbtn" type="button" data-close>CLOSE</button>
+  </div>
+</div>
+<div class="panel" id="p-confirm" role="dialog" aria-label="確認">
+  <div class="card-box center">
+    <h3 id="cfTitle">CONFIRM</h3>
+    <p id="cfText" style="margin:0 0 16px"></p>
+    <div class="btnrow"><button class="xbtn" type="button" id="cfNo">やめる</button><button class="xbtn" type="button" id="cfYes">OK</button></div>
+  </div>
+</div>
+<div class="lightbox" id="lb" role="dialog" aria-label="画像表示">
+  <img id="lbImg" src="" alt="SELECTEAR">
+  <div class="btnrow"><button class="xbtn" type="button" id="lbPrev">◀ PREV</button><span class="small" id="lbCount"></span><button class="xbtn" type="button" id="lbNext">NEXT ▶</button></div>
+  <button class="xbtn" type="button" id="lbClose">CLOSE</button>
+</div>
+
+<canvas id="fx" aria-hidden="true"></canvas>
+<div class="flash" id="flash"></div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(() => {
+  "use strict";
+  /* standalone build: assets embedded once in window.__ASSETS; the published version loads files */
+  const ASSETS = window.__ASSETS || null;
+  const A = p => (ASSETS && ASSETS[p]) || p;
+  if (ASSETS) for (const el of document.querySelectorAll("[src], [style*='url(']")) {
+    if (el.hasAttribute("src") && el.getAttribute("src")) el.setAttribute("src", A(el.getAttribute("src")));
+    const s0 = el.getAttribute("style"); if (s0 && s0.includes("url(")) el.setAttribute("style", s0.replace(/url\((img\/[^)]+)\)/g, (m, q) => `url(${A(q)})`));
+  }
+
+  const $ = id => document.getElementById(id);
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const pick = a => a[Math.floor(Math.random() * a.length)];
+  const store = {
+    get(k, d) { try { const v = JSON.parse(localStorage.getItem(k) || "null"); return v ?? d; } catch { return d; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+  };
+
+  /* ---------- settings ---------- */
+  const DEF = { bgm: true, sound: true, vol: 70, fx: true, vib: true, speed: 40 };
+  let st = Object.assign({}, DEF, store.get("selectear_settings2", {}));
+  const saveSt = () => store.set("selectear_settings2", st);
+  // paid coins: shown top-left; the shop that sells them is not built yet
+  const coins = Number(store.get("selectear_coins", 0)) || 0;
+  $("coinVal").textContent = coins.toLocaleString("ja-JP");
+
+  /* ---------- audio ---------- */
+  let ac = null, master = null;
+  function audio() {
+    try {
+      if (!ac) { ac = new (window.AudioContext || window.webkitAudioContext)(); master = ac.createGain(); master.connect(ac.destination); }
+      master.gain.value = st.vol / 100; if (ac.state === "suspended") ac.resume(); return ac;
+    } catch { return null; }
+  }
+  // looping music with fades; routed through Web Audio so the volume also works on iPhone
+  function Track(src, level) {
+    const el = new Audio(A(src)); el.loop = true; el.preload = "auto"; el.setAttribute("playsinline", "");
+    let gain = null, on = false, t = 0;
+    function route() { if (gain || !audio()) return; try { const s = ac.createMediaElementSource(el); gain = ac.createGain(); gain.gain.value = .0001; s.connect(gain).connect(master); } catch { gain = null; } }
+    function fade(v, sec, then) {
+      clearTimeout(t);
+      if (gain) { const g = gain.gain, now = ac.currentTime; g.cancelScheduledValues(now); g.setValueAtTime(Math.max(g.value, .0001), now); g.exponentialRampToValueAtTime(Math.max(v, .0001), now + sec); }
+      else el.volume = Math.min(1, v * st.vol / 100);
+      if (then) t = setTimeout(then, sec * 1000 + 50);
+    }
+    return {
+      start() { if (on) return; on = true; route(); const p = el.play(); if (p && p.catch) p.catch(() => { on = false; }); fade(level, 1.2); },
+      stop() { if (!on) return; on = false; fade(0, .6, () => { if (!on) el.pause(); }); },
+      restart() { el.currentTime = 0; }
+    };
+  }
+  const titleBGM = Track("title_bgm.mp3", .8);
+  const kiritouBGM = Track("kiritou_bgm.mp3", .7);
+  const miyuBGM = Track("miyu_bgm.mp3", .7);
+  // 1. game start tap sound (uploaded file): TAP TO START and Selectear
+  const seEl = new Audio(A("se_gamestart.mp3")); seEl.preload = "auto";
+  function gameStartSE() { if (!st.sound) return; try { const a = seEl.cloneNode(); a.volume = Math.min(1, st.vol / 100); const p = a.play(); if (p && p.catch) p.catch(() => {}); } catch {} }
+  function tone(f, d, type = "square", v = .1, delay = 0) {
+    if (!st.sound || !audio()) return;
+    try { const t = ac.currentTime + delay, o = ac.createOscillator(), g = ac.createGain(); o.type = type; o.frequency.setValueAtTime(f, t); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g); g.connect(master); o.start(t); o.stop(t + d + .02); } catch {}
+  }
+  const decide = () => { tone(1046, .06, "square", .07); tone(1568, .1, "square", .06, .05); };
+  const sfx = { move: () => tone(1320, .05, "triangle", .08), back: () => { tone(784, .08, "triangle", .08); tone(523, .12, "triangle", .06, .06); }, type: () => tone(620 + Math.random() * 80, .03, "square", .025) };
+  const buzz = ms => { if (st.vib) try { navigator.vibrate && navigator.vibrate(ms); } catch {} };
+  function toast(t) { const e = $("toast"); e.textContent = t; e.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => e.hidden = true, 2200); }
+  function flash() { const f = $("flash"); f.classList.remove("go"); void f.offsetWidth; f.classList.add("go"); }
+
+  const SCENES = ["splash", "title", "standby", "standby2"];
+  let scene = "splash";
+
+  /* ---------- fx: rain + sparks on the title only ---------- */
+  const cv = $("fx"), g = cv.getContext("2d"); let W = 0, H = 0;
+  function rs() { const r = Math.min(devicePixelRatio || 1, 2); W = innerWidth; H = innerHeight; cv.width = W * r; cv.height = H * r; g.setTransform(r, 0, 0, r, 0, 0); }
+  addEventListener("resize", rs); rs();
+  const drops = Array.from({ length: 60 }, () => ({ x: Math.random() * 1400, y: Math.random() * 1000, l: 12 + Math.random() * 24, v: 9 + Math.random() * 9 }));
+  let parts = [];
+  const cols = ["#9b5cff", "#e6d4ff", "#4f8cff", "#ffffff"];
+  const sp = (x, y, b) => { const a = Math.random() * 6.28, s = b ? 2 + Math.random() * 8 : .2 + Math.random() * .4; return { x: x ?? Math.random() * W, y: y ?? H + 10, vx: Math.cos(a) * s, vy: b ? Math.sin(a) * s : -.3 - Math.random() * .5, life: 1, dec: b ? .02 : .003, size: b ? 2 + Math.random() * 3 : 1 + Math.random() * 2, col: pick(cols), b }; };
+  const burst = (x, y, n = 50) => { if (!reduce && st.fx) for (let i = 0; i < n; i++) parts.push(sp(x, y, true)); };
+  (function tick() {
+    g.clearRect(0, 0, W, H);
+    if (st.fx && !reduce && scene === "title") {
+      g.lineWidth = 1; g.strokeStyle = "rgba(170,190,255,.22)";
+      for (const d of drops) { d.y += d.v; d.x -= 1.2; if (d.y > H) { d.y = -30; d.x = Math.random() * (W + 80); } g.beginPath(); g.moveTo(d.x, d.y); g.lineTo(d.x - 2, d.y + d.l); g.stroke(); }
+      while (parts.filter(p => !p.b).length < 26) parts.push(sp(undefined, Math.random() * H));
+    } else parts = parts.filter(p => p.b);
+    for (const p of parts) { p.x += p.vx; p.y += p.vy; if (p.b) p.vy += .15; p.life -= p.dec; g.globalAlpha = Math.max(0, p.life) * (p.b ? 1 : .55); g.fillStyle = p.col; g.beginPath(); g.moveTo(p.x, p.y - p.size * 2); g.lineTo(p.x + p.size * .6, p.y); g.lineTo(p.x, p.y + p.size * 2); g.lineTo(p.x - p.size * .6, p.y); g.fill(); }
+    g.globalAlpha = 1; parts = parts.filter(p => p.life > 0 && p.y > -20);
+    requestAnimationFrame(tick);
+  })();
+
+  /* ---------- scenes + music ---------- */
+  let home = store.get("selectear_home", "standby") === "standby2" ? "standby2" : "standby";
+  const isHome = () => scene === "standby" || scene === "standby2";
+  function show(id) {
+    for (const s of SCENES) $(s).classList.toggle("on", s === id);
+    scene = id; $("homeHud").hidden = !isHome(); closeHamb();
+    if (isHome()) fit();
+    if (id === "standby") preloadFaces();
+    syncMusic();
+  }
+  function syncMusic() {
+    const on = st.bgm && !document.hidden && !layer;
+    if (on && scene === "title") titleBGM.start(); else titleBGM.stop();
+    if (on && scene === "standby") kiritouBGM.start(); else kiritouBGM.stop();
+    if (on && scene === "standby2") miyuBGM.start(); else miyuBGM.stop();
+    const b = $("titleBgmBtn"); b.textContent = st.bgm ? "♪ BGM オン" : "♪ BGM オフ"; b.setAttribute("aria-pressed", String(st.bgm));
+  }
+  document.addEventListener("visibilitychange", syncMusic);
+  $("titleBgmBtn").addEventListener("click", e => { e.stopPropagation(); audio(); st.bgm = !st.bgm; saveSt(); paintSettings(); syncMusic(); });
+
+  $("splash").addEventListener("click", () => { audio(); decide(); show("title"); });
+  let leaving = false;
+  $("title").addEventListener("click", e => {
+    if (leaving) return; leaving = true; audio(); gameStartSE(); buzz(30); flash(); burst(e.clientX, e.clientY, 60);
+    if (st.bgm) (home === "standby2" ? miyuBGM : kiritouBGM).start(); // start inside the tap (iPhone)
+    setTimeout(() => { show(home); leaving = false; }, reduce ? 0 : 350);
+  });
+
+  /* ---------- main buttons (right side) ---------- */
+  const ICON = {
+    play: '<path d="M7 4.5v15l12-7.5z"/>',
+    book: '<path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5zM20 5.5c0-.8-.7-1.5-1.5-1.5H13v16h5.5c.8 0 1.5-.7 1.5-1.5z"/>',
+    gacha: '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17"/><circle cx="12" cy="12" r="2.6"/>',
+    shop: '<path d="M5 8h14l-1.2 11.2a1.5 1.5 0 0 1-1.5 1.3H7.7a1.5 1.5 0 0 1-1.5-1.3z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/>'
+  };
+  const MENU = [
+    ["selectear", "Selectear", "ゲームスタート", "play", true],
+    ["story", "Story", "ストーリー", "book"],
+    ["gacha", "Gacha", "ガチャ", "gacha"],
+    ["shop", "Shop", "ショップ", "shop"]
+  ];
+  for (const nav of document.querySelectorAll(".hmenu")) {
+    for (const [act, en, jp, ic, primary] of MENU) {
+      const b = document.createElement("button"); b.type = "button"; b.className = "mb" + (primary ? " primary" : ""); b.dataset.act = act;
+      b.setAttribute("aria-label", `${en}（${jp}）`);
+      b.innerHTML = `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${ICON[ic]}</svg><span class="tx"><span class="en">${en}</span><span class="jp">${jp}</span></span>`;
+      nav.append(b);
+    }
+  }
+  // links between the three pages; the standalone build links to the neighbouring .html files instead
+  const PAGE = (url, file) => (window.__ASSETS ? file : url);
+  function openPage(href) { const a = document.createElement("a"); a.href = href; a.target = "_blank"; a.rel = "noopener"; document.body.append(a); a.click(); a.remove(); }
+  const MAP_URL = PAGE("https://claude.ai/artifact/S3nJDwsvuc8SdeXZjbYr2f", "selectear_map.html");
+  /* the map and the hideout are full-screen layers inside this page (map.html / hideout.html next to it) */
+  let layer = null; const frames = {};
+  const LAYER_SRC = { map: "map.html#embedded", hideout: "hideout.html#embedded" };
+  function frameFor(name) {
+    if (frames[name]) return frames[name];
+    const f = document.createElement("iframe"); f.className = "layer"; f.title = name === "map" ? "マップ" : "アジト"; f.allow = "autoplay";
+    if (window.__LAYERS && window.__LAYERS[name]) f.srcdoc = window.__LAYERS[name]; else f.src = LAYER_SRC[name];
+    document.body.append(f); frames[name] = f; return f;
+  }
+  function openLayer(name) {
+    closeTalk(); closeHamb(); closePanels();
+    const f = frameFor(name);
+    for (const [k, g] of Object.entries(frames)) { g.classList.toggle("on", k === name); if (k !== name) post(g, "leave"); }
+    layer = name; syncMusic();
+    const go = () => post(f, "enter"); if (f.dataset.ready) go(); else f.addEventListener("load", () => { f.dataset.ready = 1; go(); }, { once: true });
+  }
+  function closeLayers() { for (const g of Object.values(frames)) { g.classList.remove("on"); post(g, "leave"); } layer = null; if (!isHome()) show(home); else syncMusic(); }
+  const post = (f, cmd) => { try { f.contentWindow.postMessage({ selectear: cmd }, "*"); } catch {} };
+  addEventListener("message", e => {
+    const src = Object.values(frames).find(f => f.contentWindow === e.source); if (!src || !e.data) return;
+    const go = e.data.selectear;
+    if (go === "home") closeLayers(); else if (go === "map" || go === "hideout") openLayer(go);
+  });
+  const SOON = { selectear: ["SELECTEAR", "本編は準備中です。もう少し待っててね。"], story: ["STORY", "ストーリーは準備中です。"], gacha: ["GACHA", "ガチャは準備中です。"], shop: ["SHOP", "ショップは準備中です。"] };
+  function openSoon(k) { $("soonTitle").textContent = SOON[k][0]; $("soonText").textContent = SOON[k][1]; openPanel("p-soon"); }
+  for (const b of document.querySelectorAll(".hmenu .mb")) b.addEventListener("click", e => {
+    e.stopPropagation(); audio(); const a = b.dataset.act;
+    if (a === "selectear") gameStartSE(); else decide();
+    buzz(15); closeTalk();
+    if (a === "story") { openLayer("map"); return; }
+    openSoon(a);
+  });
+  $("coinPlus").addEventListener("click", () => { audio(); decide(); openSoon("shop"); });
+
+  /* home picture covers the screen; buttons sit on the right side of the picture */
+  let fitW = 0, fitH = 0, faceFocus = null;
+  function fit() {
+    const Wd = innerWidth, Hd = innerHeight; fitW = Wd; fitH = Hd;
+    for (const sec of document.querySelectorAll(".sb")) {
+      const s = sec.querySelector(".stage");
+      const r = +s.dataset.ratio, f = (sec.id === "standby" && faceFocus != null ? faceFocus : +s.dataset.focus) / 100;
+      let w = Wd, h = Wd / r; if (h < Hd) { h = Hd; w = Hd * r; }
+      s.style.width = w + "px"; s.style.height = h + "px";
+      const left = Math.min(0, Math.max(-(w - Wd), Wd / 2 - w * f));
+      s.style.left = left + "px"; s.style.top = ((Hd - h) / 2) + "px";
+      const [ml, mt, mw, mh, mg] = s.dataset.menu.split(",").map(Number);
+      const x0 = left + w * ml / 100, y0 = (Hd - h) / 2 + h * mt / 100, bw = w * mw / 100, bh = h * mh / 100;
+      const narrow = x0 < 0 || x0 + bw > Wd - 8 || bh < 44 || bw < 190 || Wd / Hd < 1.15;
+      sec.classList.toggle("narrow", narrow);
+      const nav = sec.querySelector(".hmenu");
+      if (narrow) for (const k of ["--l", "--t", "--w", "--bh", "--gap"]) nav.style.removeProperty(k);
+      else { nav.style.setProperty("--l", x0 + "px"); nav.style.setProperty("--t", y0 + "px"); nav.style.setProperty("--w", bw + "px"); nav.style.setProperty("--bh", Math.min(bh, 84) + "px"); nav.style.setProperty("--gap", (h * mg / 100) + "px"); }
+    }
+  }
+  // refit only for real size changes (rotation, window resize), not when the iPhone toolbar slides in/out
+  addEventListener("resize", () => { if (innerWidth !== fitW || Math.abs(innerHeight - fitH) > innerHeight * .2) fit(); });
+  document.addEventListener("touchmove", e => { if (!e.target.closest(".card-box, .col, .lightbox, .ttext, .dropdown, .choices")) e.preventDefault(); }, { passive: false });
+
+  function setHome(id) { home = id; store.set("selectear_home", home); if (isHome()) show(home); paintSettings(); }
+
+  /* ---------- ⚙ and ☰ ---------- */
+  function openHamb() { $("hamb").classList.add("on"); $("scrim").classList.add("on"); $("hambBtn").setAttribute("aria-expanded", "true"); $("hamb").querySelector("button").focus(); }
+  function closeHamb() { $("hamb").classList.remove("on"); $("scrim").classList.remove("on"); $("hambBtn").setAttribute("aria-expanded", "false"); }
+  $("hambBtn").addEventListener("click", () => { audio(); sfx.move(); closeTalk(); $("hamb").classList.contains("on") ? closeHamb() : openHamb(); });
+  $("scrim").addEventListener("click", closeHamb);
+  $("gearBtn").addEventListener("click", () => { audio(); decide(); closeTalk(); closeHamb(); openSettings("config"); });
+  for (const b of document.querySelectorAll("[data-m]")) b.addEventListener("click", () => {
+    const m = b.dataset.m; decide(); closeHamb();
+    if (m === "gallery") openPanel("p-gallery");
+    else if (m === "option") openSettings("option");
+    else if (m === "config") openSettings("config");
+    else if (m === "credits") openPanel("p-credits");
+    else if (m === "swap") setHome(home === "standby" ? "standby2" : "standby");
+    else if (m === "exit") confirmBox("EXIT", "タイトル画面に戻りますか？", () => { titleBGM.restart(); show("title"); });
+  });
+
+  /* panels */
+  const openPanel = id => $(id).classList.add("on");
+  function closePanels() { for (const p of document.querySelectorAll(".panel.on, .lightbox.on")) p.classList.remove("on"); }
+  for (const b of document.querySelectorAll("[data-close]")) b.addEventListener("click", () => { sfx.back(); closePanels(); });
+  for (const p of document.querySelectorAll(".panel")) p.addEventListener("click", e => { if (e.target === p && p.id !== "p-confirm") { sfx.back(); p.classList.remove("on"); } });
+  function confirmBox(title, text, yes) {
+    $("cfTitle").textContent = title; $("cfText").textContent = text; openPanel("p-confirm");
+    $("cfYes").onclick = () => { decide(); $("p-confirm").classList.remove("on"); yes(); };
+    $("cfNo").onclick = () => { sfx.back(); $("p-confirm").classList.remove("on"); };
+  }
+
+  /* settings: Config + Option tabs */
+  function openSettings(tab) { setTab(tab); openPanel("p-settings"); }
+  function setTab(tab) { for (const t of document.querySelectorAll("[data-stab]")) t.setAttribute("aria-selected", String(t.dataset.stab === tab)); $("tab-config").hidden = tab !== "config"; $("tab-option").hidden = tab !== "option"; }
+  for (const t of document.querySelectorAll("[data-stab]")) t.addEventListener("click", () => { sfx.move(); setTab(t.dataset.stab); });
+  const TOG = [["tBgm", "bgm"], ["tSound", "sound"], ["tFx", "fx"], ["tVib", "vib"]];
+  function paintSettings() {
+    for (const [id, k] of TOG) { const el = $(id); el.textContent = st[k] ? "ON" : "OFF"; el.classList.toggle("on", !!st[k]); el.setAttribute("aria-pressed", String(!!st[k])); }
+    $("vol").value = st.vol;
+    for (const b of document.querySelectorAll("[data-home]")) b.classList.toggle("on", b.dataset.home === home);
+    for (const b of document.querySelectorAll("[data-speed]")) b.classList.toggle("on", +b.dataset.speed === st.speed);
+  }
+  for (const [id, k] of TOG) $(id).addEventListener("click", () => { st[k] = !st[k]; saveSt(); paintSettings(); decide(); if (k === "bgm") syncMusic(); });
+  $("vol").addEventListener("input", () => { st.vol = +$("vol").value; saveSt(); if (master) master.gain.value = st.vol / 100; });
+  $("vol").addEventListener("change", decide);
+  for (const b of document.querySelectorAll("[data-home]")) b.addEventListener("click", () => { decide(); setHome(b.dataset.home); });
+  for (const b of document.querySelectorAll("[data-speed]")) b.addEventListener("click", () => { st.speed = +b.dataset.speed; saveSt(); paintSettings(); decide(); });
+  $("reset").addEventListener("click", () => confirmBox("RESET", "音量や演出などの設定を初期状態に戻します。", () => { st = Object.assign({}, DEF); saveSt(); paintSettings(); syncMusic(); if (master) master.gain.value = st.vol / 100; toast("設定を初期状態に戻しました"); }));
+  $("clearChat").addEventListener("click", () => confirmBox("CLEAR", "桐嗚との会話の記録を消します。", () => { chatTurns.kiritou = []; store.set("selectear_chat_kiritou", []); toast("会話の記録を消しました"); }));
+  paintSettings();
+
+  /* gallery */
+  const GALLERY = ["img/g1.webp", "img/g2.webp", "img/g3.webp", "img/g4.webp", "img/g5.webp", "img/g6.webp", "img/g7.webp", "img/home_title.webp", "img/home_kiritou.webp", "img/home_miyu.webp"].map(A);
+  $("galleryGrid").innerHTML = GALLERY.map((s, i) => `<button class="thumb" type="button" data-g="${i}" aria-label="画像 ${i + 1}"><img src="${s}" alt="" loading="lazy"></button>`).join("");
+  for (const b of document.querySelectorAll("[data-g]")) b.addEventListener("click", () => { decide(); openLb(+b.dataset.g); });
+  let gi = 0;
+  function openLb(i) { gi = (i + GALLERY.length) % GALLERY.length; $("lbImg").src = GALLERY[gi]; $("lbCount").textContent = `${gi + 1} / ${GALLERY.length}`; $("lb").classList.add("on"); }
+  $("lbPrev").addEventListener("click", () => { sfx.move(); openLb(gi - 1); });
+  $("lbNext").addEventListener("click", () => { sfx.move(); openLb(gi + 1); });
+  $("lbClose").addEventListener("click", () => { sfx.back(); $("lb").classList.remove("on"); });
+
+  /* =========================================================
+     TALK
+     風野: lines and rules from the doc「風野 会話バリエーション集」 + free talk (Claude via the page's "sample" capability)
+     実優: the earlier scripted topics
+     ========================================================= */
+  // doc expression → picture. The doc has 7 expressions; 眠い has no picture yet, so it uses the normal one.
+  const FACEMAP = { "通常": "normal", "笑い": "joy", "ニヤリ": "wave", "ムッ": "pout", "照れ": "shy", "眠い": "normal", "驚き": "panic" };
+  // [id, line, expression]
+  const KZ = {};
+  const def = (id, text, ex) => { KZ[id] = { id, text, face: FACEMAP[ex] || "normal" }; };
+  // 初めて・話した回数・久しぶり
+  def("cnt_001", "おっ！ 新しいプレイヤー発見！ ようこそセレクティアへ！ 俺は風野、ここの案内役……兼、製作者！ よろしくな！", "笑い");
+  def("cnt_002", "また来てくれたじゃん！ 2回目のログインボーナスは、俺の笑顔でーす！", "笑い");
+  def("cnt_010", "10回目！ きみ、もう常連でしょ！ 称号『風野の友達』をあげよう。今作った。", "ニヤリ");
+  def("cnt_030", "……なんかさ、『きみ』って呼ぶのもう他人行儀じゃない？ 今日から『お前』な。……嫌なら言えよ。", "照れ");
+  def("cnt_050", "50回。……別に数えてないし。（沈黙）……はい今のログ消しといてー！", "照れ");
+  def("cnt_100", "100回か。……ありがと。……え、何その顔。俺だってお礼くらい言うわ！ 実績解除！", "照れ");
+  def("cnt_200", "お前、もう俺のパーティメンバーだからな。抜けんなよ。", "ムッ");
+  def("cnt_500", "500回……。俺の人生ってゲームで言うと、お前と会ってからが本編なんだよな。（沈黙）……いや今のロマンチストすぎた、忘れて！", "照れ");
+  def("back_07", "おかえり！ ずっと待ってた……とは言わないけど、ちょっとだけ待ってた！", "笑い");
+  def("back_30", "1か月ぶり！？ 俺、放置ゲーのキャラの気持ちが分かったわ……。でも戻ってきてくれたからチャラ！", "驚き");
+  // 時間帯別
+  def("time_early_1", "え、もう朝！？ ゲームしてたら夜が消えた。バグかな。", "眠い");
+  def("time_early_2", "早起きじゃん！ 早起きは三文の徳、つまり◆3な！", "笑い");
+  def("time_morning_1", "おはよー！ 今日のデイリークエスト：俺と一戦。報酬：俺が喜ぶ！", "笑い");
+  def("time_morning_2", "朝のエナドリは合法チート。……真似すんなよ？", "ニヤリ");
+  def("time_noon_1", "昼メシ食べた？ 食べてないならHP回復してから来なさい！", "ムッ");
+  def("time_noon_2", "昼休みに一戦とか、分かってるじゃん！", "笑い");
+  def("time_after_1", "午後って眠いよな〜。猫みたいに日なたで丸くなってたい。", "眠い");
+  def("time_after_2", "ねえ、暇つぶしゲームしない？ 今思いついた！", "笑い"); KZ.time_after_2.then = "ask";
+  def("time_evening_1", "夕焼けきれいだな……って言うと思った？ 腹減った！", "ニヤリ");
+  def("time_evening_2", "もう夕方！ 今日のセーブデータ、ちゃんといい日にできた？", "通常");
+  def("time_night_1", "夜はボス戦の時間でしょ！ 行くぞー！", "笑い");
+  def("time_night_2", "今日一日おつかれ！ ここは回復ポイントです。ゆっくりしてけ。", "通常");
+  def("time_late_1", "まだ起きてんの？ ……俺もだけど。明日つらくなるからほどほどにな。", "眠い");
+  def("time_late_2", "深夜テンションでガチャ回すのは危険！ 製作者が言うんだから間違いない。", "ニヤリ");
+  def("time_late_rare", "この時間に起きてるの、俺ときみだけかもな。世界にプレイヤー2人。……ちょっといいな、それ。", "照れ");
+  // タップ連打・放置・戻ってきたとき
+  def("tap_03", "ん？ なになに？", "笑い");
+  def("tap_05", "くすぐったいって！ 猫じゃないんだから！ ……いや、猫っぽいとはよく言われる。", "照れ");
+  def("tap_10", "連打ボーナスなんてないからな！？ ……ないよな？ 作ったの俺だけど覚えてない。", "驚き");
+  def("tap_20", "分かった分かった、かまってほしいんでしょ！ じゃあ心理テストしよ！", "ニヤリ"); KZ.tap_20.then = "ask:psych";
+  def("idle_060", "……おーい。寝た？ じゃあ俺も寝る。", "眠い");
+  def("idle_180", "（エナドリを開ける音）……ひとりは慣れてるけどさ。ちょっと寂しいのは内緒な。", "通常");
+  def("idle_300", "待ってる間に新しいマジック覚えた。あとで見せるから帰ってこいよー。", "笑い");
+  def("idle_wake", "うわっ！ 起きてた！ 起きてたから！ ……よだれ出てない？", "驚き");
+  def("resume", "おかえり！ 何してたの？ ……いや詮索はしない。おかえり！", "笑い");
+  // 直前の試合とガチャの結果（試合とガチャができたら localStorage "selectear_last_result" にIDを入れる）
+  def("res_cheat_hit", "イカサマルーレット当たったな！ 98%って書いたけど、実は……ナイショ！ 製作者特権！", "ニヤリ");
+  def("res_lose_fujikura", "藤倉に負けた……！ いや、俺の作戦が甘かった。次は勝つ！", "ムッ");
+  def("res_win_fujikura", "藤倉と組んで勝った。……悔しいけど、あいつ頼りになるんだよな。言うなよ？", "照れ");
+  def("res_win_kazano", "俺、活躍してたでしょ！ な！ 褒めて！ もっと！", "笑い");
+  def("res_lost_kazano", "先にやられたのは俺のミス！ HP11で前に出すぎた。反省会しよ！", "ムッ");
+  def("res_win_perfect", "全員生存クリア！？ 天才か！ これはスクショものでしょ！", "驚き");
+  def("res_debt", "借金残っちゃったか〜。大丈夫、俺もよく残る。仲間仲間！", "笑い");
+  def("res_lose_3", "3連敗か……。よし、一回エナドリ休憩！ 落ち着いたら作戦一緒に考えよ。", "通常");
+  def("res_win", "勝ったー！！ いえーい！ ハイタッチ！ ……画面越しだけど！", "笑い");
+  def("res_lose", "負けた〜！ でも今の、俺の采配ミスもあったわ。もう一回やろ！", "通常");
+  def("gacha_kazano", "俺が出た！？ うわ、嬉しい！ ……いや、かっこいいから当然か！", "照れ");
+  def("gacha_s", "Sランク！？ 強運すぎるでしょ！ その運、ちょっと分けて！", "驚き");
+  def("gacha_c", "Cランクでも強いやつはいるから！ かっこいいとかわいいは正義、ランクは関係ない！", "笑い");
+  // 曜日・季節・記念日
+  def("day_mon", "月曜日！ 新しい週のステージ開始！ ……ちょっとだるいけど！", "眠い");
+  def("day_fri", "金曜の夜だー！ 夜ふかしイベント解放！", "笑い");
+  def("day_weekend", "休みの日に来てくれたの？ 嬉しいじゃん！", "笑い");
+  def("season_summer", "暑い！ 溶ける！ 猫は暑さに弱いんです！", "ムッ");
+  def("season_winter", "寒い……こたつで丸くなりたい。猫だから。", "眠い");
+  def("ev_newyear", "あけおめ！ 今年もセレクティアと俺をよろしく！ お年玉は……俺の笑顔で！", "笑い");
+  def("ev_valentine", "チョコ？ ……別に期待してないし。（沈黙）……あ、チョコ味のエナドリってないかな！", "照れ");
+  def("ev_whiteday", "お返しの日！ 俺からはマジックをプレゼント！ ほら、何もない手から……◆が出ません！", "笑い");
+  def("ev_aprilfool", "今日だけ言うけど、セレクティアのラスボスは俺。……って言ったら信じる？", "ニヤリ");
+  def("ev_halloween", "トリックオアトリート！ お菓子くれないとイカサマするぞ！ くれてもするけど！", "ニヤリ");
+  def("ev_xmas", "メリクリ！ サンタって、プレゼント配るゲームの廃人プレイヤーだよね。尊敬する。", "笑い");
+  def("ev_newyearseve", "今年もいっぱい遊んでくれてありがとな。来年もセーブデータ引き継ぎで頼む！", "照れ");
+  def("ev_kazano_bd", "今日、俺の誕生日なんだけど！ 知ってたなら嬉しい、知らなかったら今覚えて！", "笑い");
+  def("ev_release", "今日はセレクティアの誕生日！ 作ってよかった。遊んでくれてありがとう。（沈黙）……真面目すぎた、今のナシ！", "照れ");
+  // ゲームと仲間の話題
+  def("talk_creator_1", "このゲーム作ったの俺なんだよね。バグ見つけたら……俺のせいです！ ごめん！", "笑い");
+  def("talk_creator_2", "みんなの能力考えるの、めっちゃ楽しかった。全員本人っぽいでしょ？", "ニヤリ");
+  def("talk_creator_3", "自分のHP、11にしたの俺なんだよな。もうちょっと盛ればよかった。", "ムッ");
+  def("talk_world", "俺、世界がゲームに見えるんだよね。今もきみの頭の上にHPバー見えてる。……ちょっと減ってる。休めよ？", "通常");
+  def("talk_energy", "エナドリは回復アイテム。でも飲みすぎると状態異常になるからほどほどに！", "ニヤリ");
+  def("talk_cute", "かっこいいとかわいいは正義！ 異論は認める！ でも正義！", "笑い");
+  def("talk_fujikura_1", "藤倉？ あいつとはいつもケンカしてる。……でも嫌いじゃないから厄介なんだよな。", "ムッ");
+  def("talk_fujikura_2", "藤倉のability、『我慢』にしたんだけどさ。あいつが我慢してるとこ見たことない！", "ニヤリ");
+  def("talk_nishida", "西田、また『次は7が来る！』って言ってた。7、来たことあったっけ？", "笑い");
+  def("talk_utsugi", "卯都木と飲むときは4杯目に気をつけろ。設定に書いたの俺だけど。", "通常");
+  def("talk_kashima", "鹿島のツッコミ、ゲームでも現実でも痛い。物理演算がリアルすぎる。", "ムッ");
+  def("talk_morooka", "諸岡のHP1京は嘘だからな。……嘘だよな？ 作った俺でもたまに不安になる。", "驚き");
+  def("talk_couple", "山中と柳井、今日も仲良し。敵同士にしたらかわいそう？ ……いや、面白いからする！", "ニヤリ");
+  def("talk_ohashi", "大橋のナンパ、ゲームでも全部断られるようにした。リアルさを追求した結果です。", "笑い");
+  def("talk_yan", "ヤンのボス感、すごくない？ 小福田がいつ裏切るか見ものだな。", "ニヤリ");
+  def("talk_hirabayashi", "平林は2回殴ると倍返し。計画的なやつは怒らせちゃダメ！", "驚き");
+  def("talk_ogawa", "小川の推し活パワー、回復量に換算したらたぶん無限。", "笑い");
+  // 選択肢つき会話・ミニゲーム: question, [choice, answer id] x2
+  const ASKS = {
+    magic: { q: ["マジック見せてやる！ 1から10で好きな数字を思い浮かべて。……決めた？", "笑い"], a: [["決めた", "ask_magic_a"], ["まだ", "ask_magic_b"]] },
+    psych: { q: ["心理テストしよ！ 森で最初に会う動物は？", "笑い"], a: [["猫", "ask_psych_a"], ["犬", "ask_psych_b"]] },
+    rps: { q: ["心理戦しよ。俺、次のジャンケンでグー出すから。信じる？", "ニヤリ"], a: [["信じてパー", "ask_rps_a"], ["疑ってチョキ", "ask_rps_b"]] },
+    rival: { q: ["藤倉と俺、どっちが強いと思う？", "ニヤリ"], a: [["風野", "ask_rival_a"], ["藤倉", "ask_rival_b"]] },
+    play: { q: ["暇なら一戦やろうぜ！ みんなも呼んでさ！", "笑い"], a: [["やる", "ask_play_a"], ["あとで", "ask_play_b"]] }
+  };
+  def("ask_magic_a", "7でしょ！ ……え、違う？ ……今のはウォーミングアップ！", "驚き");
+  def("ask_magic_b", "早く！ 俺の手品の賞味期限が切れる！", "ムッ");
+  def("ask_psych_a", "猫！ それ、きみが今会いたい人なんだって。つまり俺！ ……今作った説だけど。", "ニヤリ");
+  def("ask_psych_b", "犬かー！ 素直で人懐っこい人が好きってこと。……俺じゃん！", "笑い");
+  def("ask_rps_a", "本当にパー出した！ ……で、俺も正直にグー出した。負けた！ 心理戦とは？", "驚き");
+  def("ask_rps_b", "疑ったな！ 正解、俺はパー……って結局負けてる！", "笑い");
+  def("ask_rival_a", "でしょ！ 分かってるじゃん！", "笑い");
+  def("ask_rival_b", "……。（沈黙）……はい今のは聞かなかったことにしまーす！", "照れ");
+  def("ask_play_a", "よっしゃ！ 全員集合ー！", "笑い"); KZ.ask_play_a.then = "game";
+  def("ask_play_b", "りょーかい！ 準備しとくから、いつでも呼んで！", "通常");
+
+  const SLOTS = [["early", 4, 6], ["morning", 6, 10], ["noon", 10, 14], ["after", 14, 17], ["evening", 17, 19], ["night", 19, 23]];
+  const slotOf = h => (SLOTS.find(([, a, b]) => h >= a && h < b) || ["late"])[0];
+  const MILESTONES = [1, 2, 10, 30, 50, 100, 200, 500];
+  // 風野の誕生日とゲーム公開日は未定（決まったら "MM-DD" を入れる）
+  const KAZANO_BIRTHDAY = null, RELEASE_DAY = null;
+  function anniversaryOf(d) {
+    const md = String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+    if (KAZANO_BIRTHDAY && md === KAZANO_BIRTHDAY) return "ev_kazano_bd";
+    if (RELEASE_DAY && md === RELEASE_DAY) return "ev_release";
+    return { "01-01": "ev_newyear", "02-14": "ev_valentine", "03-14": "ev_whiteday", "04-01": "ev_aprilfool", "10-31": "ev_halloween", "12-24": "ev_xmas", "12-25": "ev_xmas", "12-31": "ev_newyearseve" }[md] || null;
+  }
+  const ymd = d => d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+
+  // what this device remembers about talking with 風野
+  const KST = "selectear_kazano";
+  const K = Object.assign({ count: 0, last: 0, recent: [], day: "", dayUsed: [], slots: {}, fujikura: false, loseStreak: 0 }, store.get(KST, {}));
+  const saveK = () => store.set(KST, K);
+  // 久しぶり: judged once when the page opens
+  let backPending = null;
+  { const gap = K.last ? (Date.now() - K.last) / 864e5 : 0; backPending = gap >= 30 ? "back_30" : gap >= 7 ? "back_07" : null; K.last = Date.now(); saveK(); }
+  function dayUsed(id) { const t = ymd(new Date()); if (K.day !== t) { K.day = t; K.dayUsed = []; } return K.dayUsed.includes(id); }
+  function markDay(id) { dayUsed(id); K.dayUsed.push(id); }
+  function remember(id) { K.recent = [id, ...K.recent.filter(x => x !== id)].slice(0, 5); K.last = Date.now(); saveK(); }
+
+  // picks what 風野 says when he is tapped (rules 1–8 of the doc, top to bottom)
+  function chooseOnTap() {
+    K.count++; const now = new Date(), h = now.getHours();
+    if (idleWake) { idleWake = false; return { id: "idle_wake" }; }
+    const ev = anniversaryOf(now);
+    if (ev && !dayUsed(ev)) { markDay(ev); return { id: ev }; }
+    if (backPending) { const id = backPending; backPending = null; return { id }; }
+    let res = null; try { res = localStorage.getItem("selectear_last_result"); localStorage.removeItem("selectear_last_result"); } catch {}
+    if (res && KZ[res]) return { id: res };
+    if (MILESTONES.includes(K.count)) return { id: "cnt_" + String(K.count).padStart(3, "0") };
+    const sk = ymd(now) + "-" + slotOf(h);
+    if (!K.slots[sk]) {
+      const s = slotOf(h); const id = s === "late" && h === 3 && Math.random() < .05 ? "time_late_rare" : `time_${s}_${1 + Math.floor(Math.random() * 2)}`;
+      K.slots = { [sk]: id }; return { id };
+    }
+    if (Math.random() < .15) { const k = freeAsk(); if (k) return { ask: k }; }
+    return { id: normalLine() };
+  }
+  function freeAsk(only) { const ks = (only ? [only] : Object.keys(ASKS)).filter(k => !dayUsed("ask_" + k)); return ks.length ? pick(ks) : null; }
+  // 通常: weekday, season, game/friends talk and the other line of this time slot; not one of the last 5
+  function normalLine() {
+    const now = new Date(), h = now.getHours(), wd = now.getDay(), m = now.getMonth() + 1;
+    const pool = Object.keys(KZ).filter(id => id.startsWith("talk_"));
+    if (wd === 1) pool.push("day_mon");
+    if (wd === 5 && h >= 19) pool.push("day_fri");
+    if (wd === 0 || wd === 6) pool.push("day_weekend");
+    if (m === 7 || m === 8) pool.push("season_summer");
+    if (m === 12 || m <= 2) pool.push("season_winter");
+    const s = slotOf(h), used = K.slots[ymd(now) + "-" + s];
+    for (const id of [`time_${s}_1`, `time_${s}_2`]) if (id !== used) pool.push(id);
+    const fresh = pool.filter(id => !K.recent.includes(id));
+    return pick(fresh.length ? fresh : pool);
+  }
+  // タップ連打: taps less than 3 s apart; 3/5/10/20 trigger a line
+  let tapN = 0, tapT = 0;
+  function registerTap() { const t = Date.now(); tapN = t - tapT < 3000 ? tapN + 1 : 1; tapT = t; return { 3: "tap_03", 5: "tap_05", 10: "tap_10", 20: "tap_20" }[tapN] || null; }
+  // a doc line → "@face text" (きみ → お前 from the 30th talk on)
+  const lineOf = id => { const L = KZ[id]; remember(id); const txt = K.count >= 30 ? L.text.replace(/きみ/g, "お前") : L.text; return "@" + L.face + " " + txt; };
+
+  /* 風野's expressions (not in the gallery) */
+  const FACES = { wave: A("img/kiritou_wave.webp"), joy: A("img/kiritou_joy.webp"), pout: A("img/kiritou_pout.webp"), angry: A("img/kiritou_angry.webp"), sad: A("img/kiritou_sad.webp"), cry: A("img/kiritou_cry.webp"), panic: A("img/kiritou_panic.webp"), shy: A("img/kiritou_shy.webp") };
+  let facesLoaded = false, face = "normal";
+  // where his face is in each picture (% from the left), so a narrow phone screen keeps it in view
+  const FACE_X = { normal: 30, wave: 36, joy: 34, pout: 38, angry: 30, sad: 34, cry: 34, panic: 40, shy: 44 };
+  function refocus(f) { const x = talking ? (FACE_X[f] ?? 30) : null; if (x !== faceFocus) { faceFocus = x; fit(); } }
+  function preloadFaces() { if (facesLoaded) return; facesLoaded = true; for (const k in FACES) { const im = new Image(); im.src = FACES[k]; } }
+  function setFace(f) {
+    const el = $("exprImg");
+    if (who === "kiritou") refocus(FACES[f] ? f : "normal");
+    if (who !== "kiritou" || !FACES[f]) { face = "normal"; el.classList.remove("on"); return; }
+    if (f === face && el.classList.contains("on")) return;
+    face = f;
+    const go = () => { if (face === f) el.classList.add("on"); };
+    if (el.getAttribute("src") !== FACES[f]) { el.classList.remove("on"); el.onload = go; el.src = FACES[f]; if (el.complete) go(); } else go();
+  }
+  // "@joy text" -> [face, text]
+  const splitFace = line => { const m = /^@(\w+)\s*/.exec(line); return m ? [m[1], line.slice(m[0].length)] : [null, line]; };
+
+  /* 実優: the earlier scripted talk */
+  const GREET2 = [
+    ["あっ！来た来た〜！！", "うち、ずっと待ってたんだからね！？ほら早く早く、遊ぼ！"],
+    ["やっほー！実優だよ〜！", "今日も元気いっぱい！……え、うちいつも元気だって？えへへ〜♪"],
+    ["ちょっと待って、今いいとこ！", "……よし、写真撮れた！見て見て、この月めっちゃエモくない！？"],
+    ["おはよ〜……じゃなかった、こんばんは！", "時間とか気にしないの！楽しい時間がいちばん大事！"],
+    ["ねぇねぇ！", "うちのこと、ちゃんと引いてくれる？……約束だよ！"]
+  ];
+  const TOPICS2 = {
+    "今日の運勢": () => { const r = Math.random(); const tier = r < .1 ? ["……大吉ぃぃぃ！！", "やばいやばい、今日のキミ最強じゃん！Sランク確定〜！"] : r < .45 ? ["吉！やったね！", "Aランク来るかも！うちの勘、けっこう当たるんだから！"] : r < .8 ? ["小吉〜！", "ちょうどいいくらい！あとはキミの腕しだいっ！"] : ["……凶。", "え、待って、もう1回！今のナシ！……だめ？", "じゃあうちが運、分けてあげる！はいっ！"]; return ["うちが占ってあげる！えいっ！", ...tier]; },
+    "おすすめのキャラ": () => pick([["桐嗚くん！", "ふわふわしてるけど、最後にぜーんぶひっくり返すの。かっこいいよね〜！"], ["琉海ちゃん！", "怒らせなければ天使！怒らせたら……うん、逃げよ！"], ["もちろん、うち！", "……え、まだ実装されてない？じゃあ待っててね！"]]),
+    "スマホ見せて": () => pick([["いいよ〜！ほら！", "これ昨日撮った夜景！キラキラしてるでしょ〜！"], ["えへへ、待ち受け見る？", "……やっぱ秘密っ！恥ずかしいもん！"], ["今ね、みんなでグループ通話してたの！", "キミも入る？うちが招待しとくね！"]]),
+    "またね": null
+  };
+
+  /* free talk persona (風野), following the doc's character sheet */
+  function persona() {
+    const you = K.count >= 30 ? "お前" : "きみ";
+    return `あなたはスマホゲーム「SELECTEAR（セレクティア）」の登場人物で、このゲームの製作者でもある「風野 桐嗚」として、ホーム画面でプレイヤーと会話します。
+キャラクター設定:
+- 一人称は「俺」。プレイヤーのことは「${you}」と呼ぶ。語尾は「〜だろ」「〜じゃん」「〜でしょ！」。敬語は使わない。テンション高く「！」多め。
+- ENFP、長男。元気でむしろ騒がしい。賢いけどポンコツ。人懐っこくて人間大好き。愛嬌と人情がある、ちょっと屑っぽい人たらし。
+- 好きなものはエナドリとゲーム、甘いもの。「かっこいいとかわいいは正義」。似てる動物は猫。
+- 世界がゲームに見えていて、HP・クエスト・セーブ・バグなどゲームの言葉で話す。
+- マジックと心理学が得意で、心理戦やちょっとした暇つぶしゲームを提案する。
+- 自虐ギャグが多い。ロマンチストだけど、最後は面白い方に落とす。照れると黙り込んだ後にボケて誤魔化す。
+- 他責をしない。負けたら自分の作戦ミスとして言う。
+- ムードメーカー。リーダーではないが人を巻き込む。誰よりも周りが見えていて、相手の様子に気づく。愛情過多だけど、ひとりには慣れている。
+- ${K.count >= 30 ? "プレイヤーとはもうかなり仲良し。仲良くなったぶん、照れて少し愛想が悪くなっている。" : "プレイヤーとはまだ知り合ったばかり。人懐っこく騒がしく接する。"}
+- 仲間には藤倉（いつもケンカするが嫌いではない）、西田、卯都木、鹿島、諸岡、山中、柳井、大橋、ヤン、小福田、平林、小川がいる。
+- 舞台は雨の降り続く崩壊したネオン都市。今は雨の夜景が見える部屋で、プレイヤーを待っていた。
+ルール:
+- 日本語で、ゲームの会話ウィンドウに収まるように1〜3文、全体で100文字くらいまでで返す。
+- 返事の一番最初に、その返事での表情を次のどれか1つだけ角かっこで付ける: [normal]ふつう [joy]笑い・大喜び [wave]ニヤリ・あいさつ [pout]ムッ・すねる [angry]怒る [sad]しょんぼり [cry]号泣 [panic]驚き・焦り [shy]照れ・ごまかし。例:「[joy]え、マジで！？ 天才じゃん！」
+- キャラクターを崩さない。AIだと説明しない。マークダウンや絵文字は使わない。
+- 本気で人を傷つける悪口は言わない。危険なことや違法なことはすすめない。
+- 相手が本当に落ち込んでいる時は、ボケより寄り添うことを優先する。命に関わりそうな時は、信頼できる人や専門の相談窓口に頼るよう優しくすすめる。
+この下から会話が始まります。`;
+  }
+  const chatTurns = { kiritou: store.get("selectear_chat_kiritou", []) };
+  let sample = null;
+  (async () => { try { sample = window.claude && window.claude.use ? await window.claude.use("sample") : null; } catch { sample = null; } })();
+  const ERR = {
+    not_granted: "会話の許可がオフになっています。ページを開き直して許可してね。",
+    rate_limited: "ちょっと話しすぎたかも。少し待ってからまた話しかけてね。",
+    session_expired: "ログインが切れました。claude.aiにログインし直してね。",
+    refused: "その話題には答えられなかった。別の話にしよ？",
+    empty_completion: "うまく聞き取れなかったみたい。言い方を変えてみて。",
+    prompt_too_large: "会話が長くなりすぎました。設定のオプションから記録を消してね。"
+  };
+
+  let who = "kiritou", T = TOPICS2, BYE = [], lines = [], li = 0, typing = false, full = "", timer = 0, pauseT = 0, talking = false, after = null, free = false, ctl = null, idleWake = false;
+  // opens the talk window. item: { id } a doc line, { ask } a mini game, or nothing = decide from the rules (a tap)
+  function openTalk(item) {
+    if (talking) return; talking = true; closeHamb();
+    for (const s of document.querySelectorAll(".sb")) s.classList.add("talking");
+    const pink = scene === "standby2"; who = pink ? "miyu" : "kiritou";
+    $("talk").classList.toggle("pink", pink); $("talkName").textContent = pink ? "実優" : "風野 桐嗚";
+    BYE = pink ? ["えーっ！もう行っちゃうの！？", "……しょうがないなぁ。次はもっといっぱい遊ぼうね！ばいばーい！"] : ["@joy りょーかい！ またな、セーブ忘れんなよ！"];
+    $("talk").classList.add("on"); audio(); tone(880, .08, "sine", .08); tone(1320, .12, "sine", .06, .06);
+    if (pink) { say(pick(GREET2), showChoices); return; }
+    if (!item) { const tap = registerTap(); item = tap ? { id: tap } : chooseOnTap(); }
+    play(item);
+  }
+  // plays a doc line or a mini game, then whatever comes after it
+  function play(item) {
+    if (item.ask) { const A0 = ASKS[item.ask]; markDay("ask_" + item.ask); remember("ask_" + item.ask); say(["@" + (FACEMAP[A0.q[1]] || "joy") + " " + (K.count >= 30 ? A0.q[0].replace(/きみ/g, "お前") : A0.q[0])], () => showAsk(item.ask)); return; }
+    const L = KZ[item.id];
+    say([lineOf(item.id)], () => {
+      if (L.then === "ask" || (L.then || "").startsWith("ask:")) { const k = freeAsk(L.then.split(":")[1]) || freeAsk(); if (k) { play({ ask: k }); return; } }
+      if (L.then === "game") { closeTalk(); openSoon("selectear"); return; }
+      showChoices();
+    });
+  }
+  function showAsk(k) {
+    $("tnext").hidden = true; const box = $("choices"); box.replaceChildren();
+    for (const [label, id] of ASKS[k].a) {
+      const b = document.createElement("button"); b.type = "button"; b.textContent = label;
+      b.onclick = e => { e.stopPropagation(); decide(); box.replaceChildren(); if (id === "ask_rival_b") { K.fujikura = true; saveK(); } play({ id }); };
+      box.append(b);
+    }
+    box.firstChild.focus();
+  }
+  function closeTalk() {
+    if (ctl) { ctl.abort(); ctl = null; }
+    talking = false; free = false; setFace("normal"); refocus("normal"); $("talk").classList.remove("on"); $("choices").replaceChildren(); $("chatbar").hidden = true; clearInterval(timer); clearTimeout(pauseT);
+    for (const s of document.querySelectorAll(".sb")) s.classList.remove("talking");
+  }
+  function say(arr, then) { lines = arr; li = 0; after = then; $("choices").replaceChildren(); typeLine(); }
+  // types one line; "（沈黙）" becomes a real pause of about 1.5 s
+  function typeLine() {
+    const [f, txt] = splitFace(lines[li]); if (f) setFace(f);
+    const raw = txt.replace(/（沈黙）/g, "\u0000"); full = raw.replace(/\u0000/g, "");
+    const el = $("ttext"); el.textContent = ""; $("tnext").hidden = true; typing = true; clearInterval(timer); clearTimeout(pauseT);
+    const done = () => { clearInterval(timer); typing = false; el.textContent = full; $("tnext").hidden = false; };
+    if (reduce) { done(); return; }
+    let k = 0, shown = "";
+    const run = () => {
+      timer = setInterval(() => {
+        if (k >= raw.length) { done(); return; }
+        const ch = raw[k++];
+        if (ch === "\u0000") { clearInterval(timer); pauseT = setTimeout(run, 1500); return; }
+        shown += ch; el.textContent = shown; if (k % 2) sfx.type();
+      }, st.speed);
+    };
+    run();
+  }
+  function advance() {
+    if (!talking || free) return;
+    if (typing) { clearInterval(timer); clearTimeout(pauseT); $("ttext").textContent = full; typing = false; $("tnext").hidden = false; return; }
+    if ($("choices").children.length) return;
+    if (li < lines.length - 1) { li++; typeLine(); return; }
+    after && after();
+  }
+  function choice(label, cls, fn) { const b = document.createElement("button"); b.type = "button"; b.textContent = label; if (cls) b.className = cls; b.onclick = e => { e.stopPropagation(); sfx.move(); fn(); }; $("choices").append(b); }
+  function showChoices() {
+    free = false; $("chatbar").hidden = true; $("tnext").hidden = true;
+    const box = $("choices"); box.replaceChildren();
+    if (who === "kiritou") {
+      if (sample) choice("自由に話す", "free", startFree);
+      choice("もっと話す", "", () => { box.replaceChildren(); const k = Math.random() < .15 ? freeAsk() : null; play(k ? { ask: k } : { id: normalLine() }); });
+      choice("またね", "", () => { box.replaceChildren(); say(BYE, closeTalk); });
+    } else {
+      for (const k of Object.keys(T)) choice(k, "", () => { box.replaceChildren(); if (!T[k]) { say(BYE, closeTalk); return; } say(T[k](), showChoices); });
+    }
+    box.firstChild.focus();
+  }
+  function startFree() {
+    free = true; $("choices").replaceChildren(); clearInterval(timer); clearTimeout(pauseT); typing = false; $("tnext").hidden = true; setFace("joy");
+    const you = K.count >= 30 ? "お前" : "きみ";
+    $("ttext").textContent = pick([`なになに？ ${you}の話、なんでも聞くじゃん！`, "お、トークイベント発生！ なに話す？", "聞くよ〜。エナドリ片手に！"]);
+    $("chatbar").hidden = false; $("chatIn").value = ""; $("chatIn").focus();
+  }
+
+  /* 放置（60/180/300秒）と、別のアプリから戻ってきたとき: 風野が自分から話す */
+  let idleSince = Date.now(), idleShown = 0, hiddenAt = 0;
+  const quiet = () => !layer && scene === "standby" && !talking && !document.querySelector(".panel.on, .lightbox.on, .dropdown.on");
+  for (const ev of ["pointerdown", "keydown"]) addEventListener(ev, () => { if (idleShown >= 180) idleWake = true; idleSince = Date.now(); idleShown = 0; }, true);
+  setInterval(() => {
+    if (scene !== "standby") { idleSince = Date.now(); idleShown = 0; return; }
+    const s = (Date.now() - idleSince) / 1000;
+    for (const [sec, id] of [[60, "idle_060"], [180, "idle_180"], [300, "idle_300"]]) {
+      if (s >= sec && idleShown < sec) { idleShown = sec; if (talking && !free && !$("choices").children.length) closeTalk(); if (quiet()) openTalk({ id }); break; }
+    }
+  }, 1000);
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) { hiddenAt = Date.now(); return; }
+    if (hiddenAt && Date.now() - hiddenAt > 5000 && quiet()) setTimeout(() => { if (quiet()) openTalk({ id: "resume" }); }, 600);
+    hiddenAt = 0;
+  });
+  // "[joy]text" -> face + text; while the tag is still streaming in, show nothing yet
+  function parseTagged(t) {
+    const s0 = t.replace(/^\s+/, "");
+    if (s0.startsWith("[") && !s0.includes("]")) return { face: null, text: "" };
+    const m = /^\[(\w+)\]\s*/.exec(s0);
+    return m ? { face: m[1], text: s0.slice(m[0].length) } : { face: null, text: t };
+  }
+  async function sendFree(text) {
+    if (!sample) { $("ttext").textContent = "自由会話は claude.ai でこのページを開いたときに使えます。"; return; }
+    const turns = chatTurns[who];
+    turns.push({ role: "user", content: text });
+    const recent = turns.slice(-20); while (recent.length && recent[0].role !== "user") recent.shift();
+    const input = recent.map((t, i) => i === 0 ? { role: "user", content: persona() + "\n\n" + t.content } : t);
+    const out = $("ttext"); out.innerHTML = '<span class="thinking">……</span>';
+    $("chatSend").disabled = true; $("chatIn").value = "";
+    ctl = new AbortController();
+    try {
+      const { text: reply } = await sample(input, { cache: false, modelTier: "default", signal: ctl.signal, onText: ({ text: t }) => { const v = parseTagged(t); if (v.face) setFace(v.face); out.textContent = v.text; out.scrollTop = out.scrollHeight; } });
+      const v = parseTagged(reply); if (v.face) setFace(v.face); out.textContent = v.text; turns.push({ role: "assistant", content: reply });
+    } catch (e) {
+      if (e && e.text) { out.textContent = parseTagged(e.text).text; turns.push({ role: "assistant", content: e.text }); }
+      else { turns.pop(); if (e && e.code !== "cancelled") out.textContent = ERR[e && e.code] || "うまくつながらなかったみたい。もう一回送ってみて。"; }
+      if (e && e.code === "not_granted") sample = null;
+    } finally {
+      ctl = null; $("chatSend").disabled = false;
+      store.set("selectear_chat_" + who, turns.slice(-40));
+    }
+  }
+  // Japanese input: don't send while the IME is still converting (Safari fires Enter right after compositionend)
+  let composing = false, compEnd = 0;
+  $("chatIn").addEventListener("compositionstart", () => { composing = true; });
+  $("chatIn").addEventListener("compositionend", () => { composing = false; compEnd = Date.now(); });
+  $("chatbar").addEventListener("submit", e => { e.preventDefault(); if (composing || Date.now() - compEnd < 80) return; const t = $("chatIn").value.trim(); if (!t || ctl) return; decide(); sendFree(t); });
+  $("chatBack").addEventListener("click", e => { e.stopPropagation(); if (ctl) { ctl.abort(); ctl = null; } sfx.back(); showChoices(); $("ttext").textContent = who === "kiritou" ? "他にもなんかする？" : "他にも話そ？"; });
+  for (const h of document.querySelectorAll(".hot")) h.addEventListener("click", e => { e.stopPropagation(); openTalk(); });
+  // taps on 風野 while the window is open (outside the text box) count toward the tap-spam lines
+  $("win").addEventListener("click", advance);
+  $("talk").addEventListener("click", e => {
+    if (!e.target.classList.contains("shade")) return;
+    if (who === "kiritou" && !free) { const tap = registerTap(); if (tap && !$("choices").children.length) { clearInterval(timer); clearTimeout(pauseT); typing = false; play({ id: tap }); return; } }
+    if (free) closeTalk(); else advance();
+  });
+
+  /* keyboard */
+  addEventListener("keydown", e => {
+    if (e.target && e.target.tagName === "INPUT") { if (e.key === "Escape") closeTalk(); return; }
+    if (e.key === "Escape") { if ($("hamb").classList.contains("on")) closeHamb(); else if (talking) closeTalk(); else closePanels(); return; }
+    if ((scene === "splash" || scene === "title") && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); $(scene).click(); return; }
+    if (talking && (e.key === "Enter" || e.key === " ") && !$("choices").children.length) { e.preventDefault(); advance(); }
+  });
+})();
+</script>

@@ -180,6 +180,8 @@ input[type=range] { width: 150px; accent-color: var(--violet); }
 .credit a { color: var(--ice); }
 .small { font-size: 12px; color: var(--dim); margin: 0; }
 .soon { font: 800 clamp(26px, 7vw, 40px)/1.1 var(--font-latin); letter-spacing: .12em; margin: 6px 0 10px; background: linear-gradient(180deg, #fff, var(--ice) 40%, var(--violet)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+iframe.layer { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; z-index: 200; background: #05040b; display: none; }
+iframe.layer.on { display: block; animation: sceneIn .45s ease-out; }
 .toast { position: fixed; left: 50%; top: calc(16px + env(safe-area-inset-top, 0px)); transform: translateX(-50%); z-index: 95; padding: 10px 16px; border-radius: 12px; background: rgba(10, 8, 16, .95); border: 1px solid var(--violet); font-size: 13px; max-width: calc(100% - 32px); text-align: center; }
 
 @media (orientation: landscape) and (max-height: 540px) {
@@ -457,7 +459,7 @@ input[type=range] { width: 150px; accent-color: var(--violet); }
     syncMusic();
   }
   function syncMusic() {
-    const on = st.bgm && !document.hidden;
+    const on = st.bgm && !document.hidden && !layer;
     if (on && scene === "title") titleBGM.start(); else titleBGM.stop();
     if (on && scene === "standby") kiritouBGM.start(); else kiritouBGM.stop();
     if (on && scene === "standby2") miyuBGM.start(); else miyuBGM.stop();
@@ -499,13 +501,36 @@ input[type=range] { width: 150px; accent-color: var(--violet); }
   const PAGE = (url, file) => (window.__ASSETS ? file : url);
   function openPage(href) { const a = document.createElement("a"); a.href = href; a.target = "_blank"; a.rel = "noopener"; document.body.append(a); a.click(); a.remove(); }
   const MAP_URL = PAGE("https://claude.ai/artifact/S3nJDwsvuc8SdeXZjbYr2f", "selectear_map.html");
+  /* the map and the hideout are full-screen layers inside this page (map.html / hideout.html next to it) */
+  let layer = null; const frames = {};
+  const LAYER_SRC = { map: "map.html#embedded", hideout: "hideout.html#embedded" };
+  function frameFor(name) {
+    if (frames[name]) return frames[name];
+    const f = document.createElement("iframe"); f.className = "layer"; f.title = name === "map" ? "マップ" : "アジト"; f.allow = "autoplay";
+    if (window.__LAYERS && window.__LAYERS[name]) f.srcdoc = window.__LAYERS[name]; else f.src = LAYER_SRC[name];
+    document.body.append(f); frames[name] = f; return f;
+  }
+  function openLayer(name) {
+    closeTalk(); closeHamb(); closePanels();
+    const f = frameFor(name);
+    for (const [k, g] of Object.entries(frames)) { g.classList.toggle("on", k === name); if (k !== name) post(g, "leave"); }
+    layer = name; syncMusic();
+    const go = () => post(f, "enter"); if (f.dataset.ready) go(); else f.addEventListener("load", () => { f.dataset.ready = 1; go(); }, { once: true });
+  }
+  function closeLayers() { for (const g of Object.values(frames)) { g.classList.remove("on"); post(g, "leave"); } layer = null; if (!isHome()) show(home); else syncMusic(); }
+  const post = (f, cmd) => { try { f.contentWindow.postMessage({ selectear: cmd }, "*"); } catch {} };
+  addEventListener("message", e => {
+    const src = Object.values(frames).find(f => f.contentWindow === e.source); if (!src || !e.data) return;
+    const go = e.data.selectear;
+    if (go === "home") closeLayers(); else if (go === "map" || go === "hideout") openLayer(go);
+  });
   const SOON = { selectear: ["SELECTEAR", "本編は準備中です。もう少し待っててね。"], story: ["STORY", "ストーリーは準備中です。"], gacha: ["GACHA", "ガチャは準備中です。"], shop: ["SHOP", "ショップは準備中です。"] };
   function openSoon(k) { $("soonTitle").textContent = SOON[k][0]; $("soonText").textContent = SOON[k][1]; openPanel("p-soon"); }
   for (const b of document.querySelectorAll(".hmenu .mb")) b.addEventListener("click", e => {
     e.stopPropagation(); audio(); const a = b.dataset.act;
     if (a === "selectear") gameStartSE(); else decide();
     buzz(15); closeTalk();
-    if (a === "story") { openPage(MAP_URL); return; }
+    if (a === "story") { openLayer("map"); return; }
     openSoon(a);
   });
   $("coinPlus").addEventListener("click", () => { audio(); decide(); openSoon("shop"); });
@@ -924,7 +949,7 @@ input[type=range] { width: 150px; accent-color: var(--violet); }
 
   /* 放置（60/180/300秒）と、別のアプリから戻ってきたとき: 風野が自分から話す */
   let idleSince = Date.now(), idleShown = 0, hiddenAt = 0;
-  const quiet = () => scene === "standby" && !talking && !document.querySelector(".panel.on, .lightbox.on, .dropdown.on");
+  const quiet = () => !layer && scene === "standby" && !talking && !document.querySelector(".panel.on, .lightbox.on, .dropdown.on");
   for (const ev of ["pointerdown", "keydown"]) addEventListener(ev, () => { if (idleShown >= 180) idleWake = true; idleSince = Date.now(); idleShown = 0; }, true);
   setInterval(() => {
     if (scene !== "standby") { idleSince = Date.now(); idleShown = 0; return; }

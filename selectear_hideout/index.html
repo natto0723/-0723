@@ -271,7 +271,7 @@ canvas.fx { position: absolute; inset: 0; width: 100%; height: 100%; pointer-eve
     return api;
   })();
   function syncMusic() {
-    const on = st.bgm && !document.hidden && scene === "hideout";
+    const on = st.bgm && !document.hidden && !away && scene === "hideout";
     if (on) { music.start(); ambience.start(); ambience.room(scene === "hideout"); } else { music.stop(); ambience.stop(); }
     for (const b of document.querySelectorAll("[data-snd]")) b.setAttribute("aria-pressed", String(st.bgm));
   }
@@ -294,12 +294,24 @@ canvas.fx { position: absolute; inset: 0; width: 100%; height: 100%; pointer-eve
   function show(id) { $("toast").hidden = true; for (const s of ["gate", "hideout"]) $(s).classList.toggle("on", s === id); scene = id; if (id === "hideout") rainSize(); syncMusic(); }
   // the map page (separate artifact); the map's own link back is set there
   // links between the three pages; the standalone build links to the neighbouring .html files instead
+  // inside the combined game the map and hideout are layers of the home page: talk to it instead of opening tabs
+  const EMB = location.hash === "#embedded" || !!window.__EMBEDDED;
+  let away = EMB; // hidden behind another layer
+  const toParent = go => { try { parent.postMessage({ selectear: go }, "*"); } catch {} };
   const PAGE = (url, file) => (window.__ASSETS ? file : url);
   function openPage(href) { const a = document.createElement("a"); a.href = href; a.target = "_blank"; a.rel = "noopener"; document.body.append(a); a.click(); a.remove(); }
   const MAP_URL = PAGE("https://claude.ai/artifact/S3nJDwsvuc8SdeXZjbYr2f", "selectear_map.html");
   const HOME_URL = PAGE("https://claude.ai/artifact/C6nAaQ9HWy8Vj4py9BMBDB", "selectear.html");
   $("toMap").href = MAP_URL; $("toHome").href = HOME_URL;
-  for (const id of ["toMap", "toHome"]) $(id).addEventListener("click", () => decide());
+  for (const id of ["toMap", "toHome"]) $(id).addEventListener("click", e => { decide(); if (EMB) { e.preventDefault(); toParent(id === "toMap" ? "map" : "home"); } });
+  if (EMB) {
+    addEventListener("message", e => {
+      if (e.source !== parent || !e.data) return;
+      if (e.data.selectear === "enter") { away = false; audio(); if (scene === "gate") show("hideout"); else syncMusic(); }
+      if (e.data.selectear === "leave") { away = true; $("p-soon").classList.remove("on"); syncMusic(); }
+    });
+    addEventListener("pointerdown", () => { if (!away) { audio(); syncMusic(); } }, true);
+  }
   $("enterBtn").addEventListener("click", () => { audio(); if (st.bgm) { music.start(); ambience.start(); } gameStartSE(); buzz([30, 30, 60]); flash(); setTimeout(() => show("hideout"), reduce ? 0 : 250); });
 
   /* =========================================================

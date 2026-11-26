@@ -325,6 +325,10 @@ canvas#water { position: absolute; inset: 0; width: 100%; height: 100%; }
   $("coinVal").textContent = (Number(store.get("selectear_coins", 0)) || 0).toLocaleString("ja-JP");
   // the hideout is its own page
   // links between the three pages; the standalone build links to the neighbouring .html files instead
+  // inside the combined game the map and hideout are layers of the home page: talk to it instead of opening tabs
+  const EMB = location.hash === "#embedded" || !!window.__EMBEDDED;
+  let away = EMB; // hidden behind another layer
+  const toParent = go => { try { parent.postMessage({ selectear: go }, "*"); } catch {} };
   const PAGE = (url, file) => (window.__ASSETS ? file : url);
   function openPage(href) { const a = document.createElement("a"); a.href = href; a.target = "_blank"; a.rel = "noopener"; document.body.append(a); a.click(); a.remove(); }
   const HIDEOUT_URL = PAGE("https://claude.ai/artifact/3GSx5C75eQ4oDq7jjGWaa5", "selectear_hideout.html");
@@ -525,7 +529,7 @@ canvas#water { position: absolute; inset: 0; width: 100%; height: 100%; }
     if (a === "go") { decide(); toast("バトルと探索は準備中です"); }
     if (a === "demo") clearCity(p.i);
     if (a === "gz") { decide(); toast("GROUND ZERO は準備中です"); }
-    if (a === "home") { decide(); openPage(HIDEOUT_URL); }
+    if (a === "home") { decide(); if (EMB) toParent("hideout"); else openPage(HIDEOUT_URL); }
   }
   function openDetail() { const p = PLACES[sel]; if (p.kind === "city") openCity(p.i); else if (p.kind === "gz") openGZ(); else openHideout(); }
   function draw() { build(); }
@@ -612,7 +616,7 @@ canvas#water { position: absolute; inset: 0; width: 100%; height: 100%; }
       <div class="sh-body"><p>プレイヤーの拠点である広い屋敷。外の世界への出発点で、電脳世界への入り口でもある。ホーム画面への帰還ポイント。</p>
       <div><h3>WHAT YOU CAN DO — アジトでできること</h3><ul><li>デッキ構築</li><li>記憶の解放（スキルツリー）</li><li>相棒との会話</li><li>電脳世界へ入る（インターネット対戦・CPU対戦など）</li></ul></div></div>
       <div class="sh-foot"><a class="act" href="${HIDEOUT_URL}" target="_blank" rel="noopener" id="goHide">アジトに入る</a></div>`);
-    $("goHide").addEventListener("click", () => decide());
+    $("goHide").addEventListener("click", e => { decide(); if (EMB) { e.preventDefault(); closeSheet(); toParent("hideout"); } });
   }
   function clearCity(i) {
     if (i !== cleared) return;
@@ -660,7 +664,7 @@ canvas#water { position: absolute; inset: 0; width: 100%; height: 100%; }
     return api;
   })();
   function syncMusic() {
-    const on = st.bgm && !document.hidden && (scene === "map" || scene === "overview");
+    const on = st.bgm && !document.hidden && !away && (scene === "map" || scene === "overview");
     if (on) { music.start(); ambience.start(); } else { music.stop(); ambience.stop(); }
     $("snd").setAttribute("aria-pressed", String(st.bgm));
   }
@@ -716,7 +720,7 @@ canvas#water { position: absolute; inset: 0; width: 100%; height: 100%; }
   $("overview").addEventListener("pointerdown", e => { if (!ovMax) return; ovDrag = { x: e.clientX, o: ovX }; ovMoved = false; });
   addEventListener("pointermove", e => { if (!ovDrag) return; const dx = e.clientX - ovDrag.x; if (Math.abs(dx) > 8) ovMoved = true; if (ovMoved) { ovX = Math.max(-ovMax, Math.min(ovMax, ovDrag.o + dx)); $("ovWrap").style.left = `calc(50% + ${ovX}px)`; } });
   addEventListener("pointerup", () => { ovDrag = null; setTimeout(() => { ovMoved = false; }, 0); });
-  $("ovBack").addEventListener("click", () => { back(); show("start"); });
+  $("ovBack").addEventListener("click", () => { back(); if (EMB) toParent("home"); else show("start"); });
   $("ovHome").addEventListener("click", () => flyTo(0, 50, 100));
   addEventListener("resize", () => { if (scene === "overview") ovLayout(); });
 
@@ -729,6 +733,17 @@ canvas#water { position: absolute; inset: 0; width: 100%; height: 100%; }
   }
   $("startBtn").addEventListener("click", () => { audio(); if (st.bgm) { music.start(); ambience.start(); } gameStartSE(); buzz([30, 30, 60]); flash(); setTimeout(() => show("overview"), reduce ? 0 : 250); });
   $("toStart").addEventListener("click", () => { back(); closeSheet(); show("overview"); });
+  // embedded: the home page says when this layer is shown or hidden; skip the start screen
+  if (EMB) {
+    $("ovBack").querySelector("span").textContent = "ホーム";
+    addEventListener("message", e => {
+      if (e.source !== parent || !e.data) return;
+      if (e.data.selectear === "enter") { away = false; audio(); if (scene === "start") show("overview"); else syncMusic(); }
+      if (e.data.selectear === "leave") { away = true; closeSheet(); syncMusic(); }
+    });
+    // audio may need a tap inside this frame first
+    addEventListener("pointerdown", () => { if (!away) { audio(); syncMusic(); } }, true);
+  }
   addEventListener("keydown", e => {
     if (e.key === "Escape") { if ($("sheet").classList.contains("on")) closeSheet(); else if (scene === "map") show("overview"); else if (scene === "overview") show("start"); }
     if (scene === "start" && (e.key === "Enter" || e.key === " ") && document.activeElement !== $("startBtn")) { e.preventDefault(); $("startBtn").click(); }
