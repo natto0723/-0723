@@ -558,7 +558,7 @@ canvas.spark { position: absolute; inset: 0; width: 100%; height: 100%; z-index:
   function se(k) { if (!st.sound) return; try { const a = SE[k].cloneNode(); a.volume = Math.min(1, st.vol / 100); const p = a.play(); if (p && p.catch) p.catch(() => {}); } catch {} }
   // ① played while the hologram is up (stopped once the card is confirmed)
   let holoEl = null;
-  function holoSE(on) { try { if (holoEl) { holoEl.pause(); holoEl = null; } if (on && st.sound) { holoEl = SE.holo.cloneNode(); holoEl.volume = Math.min(1, st.vol / 100) * .8; const p = holoEl.play(); if (p && p.catch) p.catch(() => {}); } } catch {} }
+  function holoSE(on) { try { if (holoEl) { holoEl.pause(); holoEl = null; } if (on && st.sound) { holoEl = SE.holo.cloneNode(); holoEl.volume = Math.min(1, st.vol / 100); const p = holoEl.play(); if (p && p.catch) p.catch(() => {}); } } catch {} }
   const buzz = ms => { if (st.vib) try { navigator.vibrate && navigator.vibrate(ms); } catch {} };
   function toast(t) { const e = $("toast"); e.textContent = t; e.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => e.hidden = true, 2200); }
   function flash() { const f = $("flash"); f.classList.remove("go"); void f.offsetWidth; f.classList.add("go"); }
