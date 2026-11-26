@@ -312,6 +312,23 @@ canvas.spark { position: absolute; inset: 0; width: 100%; height: 100%; z-index:
 .card3d.cut .tilt { animation: cut .16s steps(1) 1; }
 @keyframes cut { 0% { transform: scaleY(.02) scaleX(1.2); filter: brightness(4); } 50% { transform: scaleY(1); filter: brightness(2.5) contrast(1.4); } 100% { transform: none; } }
 #summon.cutbg .bg { animation: cutbg .16s steps(1) 1; }
+/* rewind-style background change (card confirm): the old scene rolls back like tape, the new one tracks in */
+#summon .bg.rwOut { animation: rwOut .9s cubic-bezier(.5, 0, .3, 1) forwards !important; }
+@keyframes rwOut { 0% { transform: none; filter: none; } 15% { transform: translateY(4%) skewX(-3deg); filter: blur(1px) contrast(1.3); } 30% { transform: translateY(-9%) skewX(4deg); filter: blur(2px) hue-rotate(40deg) contrast(1.4); } 50% { transform: translateY(14%) scaleY(1.08); filter: blur(3px) hue-rotate(-60deg) saturate(1.8); } 70% { transform: translateY(-22%) skewX(-5deg) scaleY(1.15); filter: blur(4px) hue-rotate(90deg); } 100% { transform: translateY(40%) scaleY(1.25); filter: blur(6px) brightness(1.4); } }
+#summon .rwIn { position: absolute; inset: 0; background: center / cover no-repeat; pointer-events: none; animation: rwIn .9s cubic-bezier(.6, 0, .25, 1) forwards; }
+@keyframes rwIn { 0% { clip-path: inset(100% 0 0 0); transform: translateY(-18%) skewX(6deg); filter: blur(5px) hue-rotate(120deg) saturate(2); }
+  25% { clip-path: inset(72% 0 0 0); transform: translateY(-10%) skewX(-4deg); }
+  35% { clip-path: inset(80% 0 0 0); }
+  55% { clip-path: inset(38% 0 0 0); transform: translateY(-5%) skewX(3deg); filter: blur(3px) hue-rotate(40deg) saturate(1.6); }
+  65% { clip-path: inset(46% 0 0 0); }
+  85% { clip-path: inset(4% 0 0 0); transform: translateY(-1%) skewX(-1deg); filter: blur(1px); }
+  100% { clip-path: inset(0 0 0 0); transform: none; filter: none; } }
+#summon .rwBand { position: absolute; inset: 0; pointer-events: none; z-index: 1; mix-blend-mode: screen; animation: rwBand .9s linear forwards;
+  background: linear-gradient(180deg, transparent 0 40%, rgba(255, 255, 255, .55) 40% 41%, rgba(120, 255, 240, .25) 41% 46%, transparent 46% 70%, rgba(255, 90, 200, .3) 70% 72%, transparent 72%), repeating-linear-gradient(0deg, rgba(255, 255, 255, .09) 0 2px, transparent 2px 5px);
+  background-size: 100% 60%, 100% 100%; }
+@keyframes rwBand { 0% { opacity: 0; background-position: 0 0, 0 0; } 10% { opacity: 1; } 85% { opacity: 1; } 100% { opacity: 0; background-position: 0 -600%, 0 -40px; } }
+#summon .rwBand::after { content: "◀◀ REW"; position: absolute; left: max(18px, 4vw); top: calc(64px + env(safe-area-inset-top, 0px)); font: 700 clamp(13px, 2vw, 18px) var(--font-sf); letter-spacing: .2em; color: #fff; text-shadow: 2px 0 #ff3ea5, -2px 0 #3efff0; animation: rwBlink .18s steps(1) infinite; }
+@keyframes rwBlink { 50% { opacity: .2; } }
 @keyframes cutbg { 0% { filter: brightness(0); } 50% { filter: brightness(2.2) saturate(1.6); } }
 /* the hologram becomes a solid card */
 #summon.holo-mode .card3d.solid .back { opacity: 1 !important; mix-blend-mode: normal; animation: none; filter: drop-shadow(0 0 22px var(--tc)) !important; }
@@ -742,13 +759,23 @@ canvas.spark { position: absolute; inset: 0; width: 100%; height: 100%; z-index:
     sumStage = "holo2"; $("sumCue").textContent = "もう一度タップでカード確定";
   }
   // tap 2 → the hologram becomes a solid card (チョウ・ヤン and 小川 結菜 turn rainbow here). ②
+  // background change in a tape-rewind style (no blackout)
+  function rewindBg(url) {
+    const sm = $("summon"), bg = $("sumBg");
+    for (const x of sm.querySelectorAll(".rwIn, .rwBand")) x.remove();
+    sm.classList.remove("cutbg", "sway");
+    const nb = document.createElement("div"); nb.className = "rwIn"; nb.style.backgroundImage = `url(${url})`;
+    const band = document.createElement("div"); band.className = "rwBand";
+    bg.after(nb, band); bg.classList.add("rwOut");
+    setTimeout(() => { bg.style.backgroundImage = `url(${url})`; bg.classList.remove("rwOut"); nb.remove(); band.remove(); sm.classList.add("sway"); }, 920);
+  }
   async function confirmCard() {
     const my = ++runId, m = team[si], live = () => my === runId, rb = isRainbow(m);
     sumStage = "anim"; $("sumCue").textContent = ""; const c = $("card3d"), sm = $("summon"), tag = $("attrTag");
     holoSE(false);
     // every card: the attribute background turns rainbow when it is confirmed
-    se("confirm"); buzz([30, 20, 60]); flash(); retrig(sm, "cutbg");
-    $("sumBg").style.backgroundImage = `url(${A("img/st_oshi.webp")})`; sm.style.setProperty("--tc", "#c25cff");
+    se("confirm"); buzz([30, 20, 60]);
+    rewindBg(A("img/st_oshi.webp")); sm.style.setProperty("--tc", "#c25cff");
     const r = c.getBoundingClientRect(); burstAt(r.left + r.width / 2, r.top + r.height / 2, ["#ff4d5e", "#f2c14e", "#3ddc84", "#4f8cff", "#c25cff", "#fff"], 140, 14);
     if (rb) { // チョウ・ヤン and 小川 結菜: the card itself turns rainbow too
       retrig(c, "rainbow"); c.style.setProperty("--tc", "#c25cff");
