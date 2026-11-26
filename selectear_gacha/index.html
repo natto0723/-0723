@@ -843,8 +843,6 @@ canvas.spark { position: absolute; inset: 0; width: 100%; height: 100%; z-index:
     const locked = lastMode === "oshi";
     $("redraw").disabled = locked; $("lockMsg").hidden = !locked;
   }
-  // card id in the battle build (old numbering p01..p17)
-  const PID = { kazano: "p01", ushida: "p02", sato: "p03", yanai: "p04", hirabayashi: "p05", fujikura: "p06", morooka: "p07", nishida: "p08", yamanaka: "p09", ohashi: "p10", kobukuda: "p11", utsugi: "p12", sakayori: "p13", kashima: "p14", ogawa: "p15", endo: "p16", chou: "p17" };
   let backTo = "holo";
   function openBattle(hash, from) {
     backTo = from; holoSE(false);
@@ -853,7 +851,7 @@ canvas.spark { position: absolute; inset: 0; width: 100%; height: 100%; z-index:
   }
   function closeBattle() { const L = $("battleLayer"); L.hidden = true; $("battleFrame").src = "about:blank"; show(backTo); }
   addEventListener("message", e => { if (e.data && e.data.selectear === "battleBack") closeBattle(); });
-  $("toBattle").addEventListener("click", () => { se("decide"); openBattle("battle=" + team.map(m => PID[m.id]).join(","), "result"); });
+  $("toBattle").addEventListener("click", () => { se("decide"); openBattle("battle=" + team.map(m => m.id).join(","), "result"); });
   $("redraw").addEventListener("click", () => { if ($("redraw").disabled) return; mode = lastMode; paintMode(); $("drawBtn").click(); });
   $("toMenu").addEventListener("click", () => { se("tap"); show("menu"); });
 
