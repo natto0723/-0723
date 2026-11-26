@@ -844,7 +844,7 @@ canvas.spark { position: absolute; inset: 0; width: 100%; height: 100%; z-index:
     $("redraw").disabled = locked; $("lockMsg").hidden = !locked;
   }
   /* BGM for the hologram select and the gacha (Relative brilliance) */
-  const BGM = new Audio(A("bgm_relative.mp3")); BGM.loop = true; BGM.preload = "auto";
+  const BGM = new Audio(A("bgm_relative.mp3")); BGM.loop = true; BGM.preload = "auto"; window.__bgm = BGM;
   let inBattle = false, duck = false;
   function bgmVol() { BGM.volume = Math.max(0, Math.min(1, st.vol / 100 * .45 * (duck ? .3 : 1))); }
   function bgmPlay() { if (!st.sound || inBattle) return; bgmVol(); if (BGM.paused) { const p = BGM.play(); if (p && p.catch) p.catch(() => {}); } }
@@ -852,12 +852,12 @@ canvas.spark { position: absolute; inset: 0; width: 100%; height: 100%; z-index:
   bgmPlay();
   let backTo = "holo";
   function openBattle(hash, from) {
-    backTo = from; holoSE(false); inBattle = true; BGM.pause();
+    backTo = from; holoSE(false); inBattle = hash !== "dev"; if (inBattle) BGM.pause();   // developer mode: the music keeps going
     const L = $("battleLayer"), f = $("battleFrame");
     f.src = A("battle.html") + "#" + hash; L.hidden = false; retrig(L, "in");
   }
   function closeBattle() { const L = $("battleLayer"); L.hidden = true; $("battleFrame").src = "about:blank"; inBattle = false; show(backTo); bgmPlay(); }
-  addEventListener("message", e => { if (e.data && e.data.selectear === "battleBack") closeBattle(); });
+  addEventListener("message", e => { if (!e.data) return; if (e.data.selectear === "battleBack") closeBattle(); if (e.data.selectear === "bgm") { inBattle = true; BGM.pause(); } });
   $("toBattle").addEventListener("click", () => { se("decide"); openBattle("battle=" + team.map(m => m.id).join(","), "result"); });
   $("redraw").addEventListener("click", () => { if ($("redraw").disabled) return; mode = lastMode; paintMode(); $("drawBtn").click(); });
   $("toMenu").addEventListener("click", () => { se("tap"); show("menu"); });
