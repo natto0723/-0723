@@ -9,7 +9,7 @@ import base64, json, pathlib, re
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 MIME = {".webp": "image/webp", ".mp3": "audio/mpeg"}
 # page folder -> output file
-PAGES = {"selectear": "selectear.html", "selectear_map": "selectear_map.html"}
+PAGES = {"selectear": "selectear.html", "selectear_map": "selectear_map.html", "selectear_hideout": "selectear_hideout.html"}
 
 
 def build(folder, out_name):
