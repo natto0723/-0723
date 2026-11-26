@@ -3,7 +3,7 @@
 <title>SELECTEAR Gacha</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Orbitron:wght@700;900&family=Cormorant+Garamond:wght@600;700&family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Chakra+Petch:wght@600;700&family=DotGothic16&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Orbitron:wght@700;900&family=Dela+Gothic+One&family=Cormorant+Garamond:wght@600;700&family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Chakra+Petch:wght@600;700&family=DotGothic16&display=swap">
 <style>
 /* Gacha: pick a mode (normal / balance / oshi), draw 3, watch them arrive in one of two styles
    (intercom gag or SELECTEAR card summon), then see the team of three. Single dark neon look. */
@@ -271,26 +271,52 @@ canvas.spark { position: absolute; inset: 0; width: 100%; height: 100%; z-index:
 @keyframes nudgeR { 50% { transform: translateX(6px); } }
 .attrtag { position: absolute; z-index: 10; left: 50%; top: calc(var(--cy) - var(--cw) * .72 - 40px); transform: translateX(-50%); font: 900 clamp(14px, 3.4vw, 20px) var(--font-sf); letter-spacing: .4em; padding-left: .4em; color: #fff; text-shadow: 0 0 10px var(--tc), 0 0 24px var(--tc); white-space: nowrap; }
 /* the cut-in: a slanted band slams across the screen with the name and the attribute */
-:root { --font-sf: "Orbitron", "Chakra Petch", sans-serif; }
+:root { --font-sf: "Orbitron", "Chakra Petch", sans-serif; --font-cut: "Dela Gothic One", "Zen Kaku Gothic New", sans-serif; }
 .cutin { position: absolute; z-index: 12; inset: 0; pointer-events: none; display: none; }
 .cutin.on { display: block; }
-.cutin .band { position: absolute; left: -10%; right: -10%; top: calc(var(--cy) + var(--cw) * .5); padding: 14px 14% 16px; transform: skewY(-7deg) translateX(-110%); background: linear-gradient(90deg, rgba(4, 3, 12, .92) 0%, color-mix(in srgb, var(--tc) 55%, #05030c) 45%, rgba(4, 3, 12, .92) 100%); border-top: 2px solid var(--tc); border-bottom: 2px solid var(--tc); box-shadow: 0 0 40px color-mix(in srgb, var(--tc) 70%, transparent); display: grid; gap: 2px; text-align: center; }
-.cutin.on .band { animation: bandIn .55s cubic-bezier(.2, 1.2, .3, 1) forwards; }
-@keyframes bandIn { 0% { transform: skewY(-7deg) translateX(-110%); } 100% { transform: skewY(-7deg) translateX(0); } }
-.cutin .band > * { transform: skewY(7deg); }
-.cutin .code { font: 700 clamp(9px, 2vw, 12px) var(--font-sf); letter-spacing: .35em; color: rgba(255, 255, 255, .7); }
-.cutin b { font: 900 clamp(30px, 8vw, 64px)/1.05 var(--font-body); letter-spacing: .06em; color: #fff; text-shadow: 0 0 12px var(--tc), 0 0 34px var(--tc), 3px 3px 0 rgba(0, 0, 0, .6); }
-.cutin .attr { font: 900 clamp(14px, 3.6vw, 24px) var(--font-sf); letter-spacing: .55em; padding-left: .55em; color: var(--tc); text-shadow: 0 0 10px #000, 0 0 14px var(--tc); }
-.cutin.on b { animation: nameIn .7s .25s cubic-bezier(.2, 1.4, .4, 1) both; }
-@keyframes nameIn { 0% { opacity: 0; letter-spacing: .8em; filter: blur(8px); } 100% { opacity: 1; letter-spacing: .06em; filter: none; } }
-.cutin .ln { position: absolute; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, transparent, #fff, var(--tc), transparent); transform: skewY(-7deg) translateX(-120%); }
-.cutin .l1 { top: calc(var(--cy) + var(--cw) * .5 - 16px); }
-.cutin .l2 { top: calc(var(--cy) + var(--cw) * .5 + 120px); }
-.cutin.on .ln { animation: lineX .7s ease-out forwards; }
-.cutin.on .l2 { animation-delay: .12s; animation-direction: reverse; }
-@keyframes lineX { to { transform: skewY(-7deg) translateX(120%); } }
-@media (orientation: landscape) { .cutin .band { top: auto; bottom: 10%; } .cutin .l1 { top: auto; bottom: calc(10% + 110px); } .cutin .l2 { top: auto; bottom: 7%; } }
+.cutin .band { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%) scaleY(0); height: clamp(150px, 30vh, 230px); display: flex; align-items: center; gap: clamp(14px, 3vw, 34px); padding: 0 max(18px, 7vw);
+  border-top: 3px solid var(--cg); border-bottom: 3px solid var(--cg); box-shadow: 0 0 18px var(--cg), 0 0 40px color-mix(in srgb, var(--cg) 50%, transparent), inset 0 0 40px rgba(0, 0, 0, .6);
+  background: repeating-linear-gradient(115deg, rgba(255, 255, 255, .07) 0 2px, transparent 2px 26px), linear-gradient(90deg, rgba(6, 5, 18, .96), rgba(10, 8, 28, .88) 50%, rgba(6, 5, 18, .96)); --cg: #f2b33d; }
+.cutin.on .band { animation: bandOpen .35s cubic-bezier(.2, 1.4, .4, 1) forwards; }
+@keyframes bandOpen { to { transform: translateY(-50%) scaleY(1); } }
+.cutin .band::before, .cutin .band::after { content: ""; position: absolute; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, #fff 20%, var(--cg) 50%, #fff 80%, transparent); opacity: 0; }
+.cutin .band::before { top: -9px; } .cutin .band::after { bottom: -9px; }
+.cutin.on .band::before, .cutin.on .band::after { animation: rule .6s .2s ease-out forwards; }
+@keyframes rule { 0% { opacity: 1; clip-path: inset(0 100% 0 0); } 100% { opacity: .8; clip-path: inset(0 0 0 0); } }
+.cutin .thumb2 { height: 112%; aspect-ratio: 5 / 7; object-fit: cover; border-radius: 8px; border: 2px solid #fff; box-shadow: 0 0 18px var(--tc), 0 0 40px var(--tc); transform: translateX(-60vw) rotate(-8deg); }
+.cutin.on .thumb2 { animation: thumbIn .5s .15s cubic-bezier(.2, 1.3, .4, 1) forwards; }
+@keyframes thumbIn { to { transform: none; } }
+.cutin .txt { display: grid; gap: 4px; min-width: 0; }
+.cutin .attr { font: 400 clamp(13px, 2.6vw, 20px) var(--font-cut); letter-spacing: .08em; color: var(--tc); text-shadow: 0 0 8px var(--tc); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 600px) { .cutin .attr { font-size: 11px; letter-spacing: 0; } .cutin .code { font-size: 10px; } }
+.cutin b { font: 400 clamp(40px, 10vw, 96px)/1.05 var(--font-cut); font-weight: 400; color: #fff7d6; letter-spacing: .02em; white-space: nowrap;
+  -webkit-text-stroke: 1.5px #ffd47a; text-shadow: 0 0 6px #ffcf6a, 0 0 16px #f2b33d, 0 0 34px #e0801c, 0 0 60px rgba(242, 179, 61, .6); }
+.cutin.on b { animation: nameIn .55s .3s cubic-bezier(.2, 1.4, .4, 1) both; }
+@keyframes nameIn { 0% { opacity: 0; transform: translateX(40vw) skewX(-20deg); filter: blur(6px); } 70% { opacity: 1; transform: translateX(-10px) skewX(4deg); filter: none; } 100% { opacity: 1; transform: none; } }
+.cutin .code { font: 400 clamp(11px, 2vw, 15px) var(--font-cut); color: rgba(255, 240, 210, .78); letter-spacing: .06em; }
+.cutin.on .attr, .cutin.on .code { animation: fadeUp .4s .45s both; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } }
+.cutin.rb .band { --cg: #fff; border-image: linear-gradient(90deg, #ff4d5e, #f2c14e, #3ddc84, #4f8cff, #c25cff) 1; }
+.cutin.rb b { -webkit-text-stroke-color: #fff; text-shadow: 0 0 6px #fff, 0 0 18px #ff6ec8, 0 0 34px #4f8cff, 0 0 60px #c25cff; }
+@media (max-width: 600px) { .cutin .band { height: 22vh; } .cutin b { font-size: clamp(30px, 9.5vw, 48px); } }
 #summon.holo-mode .slam, #summon.holo-mode .sum-info { display: none !important; }
+
+#summon.sway .bg { animation: sway 5s ease-in-out infinite; }
+@keyframes sway { 0%, 100% { transform: scale(1.06) translate(0, 0) rotate(0); } 25% { transform: scale(1.07) translate(-8px, 4px) rotate(-.4deg); } 50% { transform: scale(1.06) translate(6px, -3px) rotate(.3deg); } 75% { transform: scale(1.08) translate(-4px, -5px) rotate(-.2deg); } }
+/* プツン: a one-frame CRT cut */
+.card3d.cut .tilt { animation: cut .16s steps(1) 1; }
+@keyframes cut { 0% { transform: scaleY(.02) scaleX(1.2); filter: brightness(4); } 50% { transform: scaleY(1); filter: brightness(2.5) contrast(1.4); } 100% { transform: none; } }
+#summon.cutbg .bg { animation: cutbg .16s steps(1) 1; }
+@keyframes cutbg { 0% { filter: brightness(0); } 50% { filter: brightness(2.2) saturate(1.6); } }
+/* the hologram becomes a solid card */
+#summon.holo-mode .card3d.solid .back { opacity: 1 !important; mix-blend-mode: normal; animation: none; filter: drop-shadow(0 0 22px var(--tc)) !important; }
+#summon.holo-mode .card3d.solid .back::after { display: none; }
+#summon.holo-mode .card3d.solid::before { opacity: 0; transition: opacity .5s; }
+.card3d.materialize .tilt { animation: mat .6s ease-out 1; }
+@keyframes mat { 0% { filter: brightness(3) blur(2px); transform: scale(1.06); } 100% { filter: none; transform: none; } }
+.card3d.rainbow .tilt { animation: rainbowUp .8s ease-out 1; }
+@keyframes rainbowUp { 0% { filter: hue-rotate(0) brightness(1); } 40% { filter: hue-rotate(180deg) brightness(2.4) saturate(2); transform: scale(1.08); } 100% { filter: none; transform: none; } }
+#summon.holo-mode .in.flip { transition: transform .75s cubic-bezier(.3, 1.3, .5, 1); }
 
 /* ---------- RESULT ---------- */
 #result { background: radial-gradient(ellipse at 50% 30%, #1d1040 0%, #07050c 70%); }
@@ -423,7 +449,7 @@ canvas.spark { position: absolute; inset: 0; width: 100%; height: 100%; z-index:
   <div class="card3d" id="card3d"><div class="tilt" id="tilt"><div class="in" id="cardIn"><div class="back" id="cardBack"></div><div class="front" id="cardFront"></div></div></div></div>
   <div class="tease" id="tease"></div>
   <div class="glitchbars" id="gbars" aria-hidden="true"></div>
-  <div class="cutin" id="cutin" aria-live="polite"><div class="band"><span class="code" id="ciCode"></span><b id="ciName"></b><span class="attr" id="ciAttr"></span></div><i class="ln l1"></i><i class="ln l2"></i></div>
+  <div class="cutin" id="cutin" aria-live="polite"><div class="band"><img class="thumb2" id="ciImg" alt=""><div class="txt"><span class="attr" id="ciAttr"></span><b id="ciName"></b><span class="code" id="ciCode"></span></div></div></div>
   <div class="swipehint" id="swipeHint" hidden><span>⟵</span> スワイプで回転 <span>⟶</span></div>
   <div class="slam" id="slam"><small id="slamType"></small><b id="slamName"></b></div>
   <span class="fliphint" id="flipHint" hidden>カードをタップで裏表を確認</span>
@@ -512,7 +538,9 @@ canvas.spark { position: absolute; inset: 0; width: 100%; height: 100%; z-index:
   function flash() { const f = $("flash"); f.classList.remove("go"); void f.offsetWidth; f.classList.add("go"); }
   // card backs by type (rainbow for the oshi)
   const BACK = { atk: "img/back_atk.webp", def: "img/back_def.webp", sup: "img/back_sup.webp", heal: "img/back_heal.webp", spd: "img/back_spd.webp" };
-  const backOf = m => A(m.oshi ? "img/back_oshi.webp" : BACK[m.type]);
+  const RAINBOW = ["chou", "ogawa"]; // these two turn rainbow on the second tap
+  const isRainbow = m => RAINBOW.includes(m.id);
+  const backOf = m => A(isRainbow(m) ? "img/back_oshi.webp" : BACK[m.type]);
   function show(id) { for (const s of ["holo", "menu", "door", "summon", "result"]) $(s).classList.toggle("on", s === id); }
 
   /* =========================================================
@@ -662,109 +690,89 @@ canvas.spark { position: absolute; inset: 0; width: 100%; height: 100%; z-index:
 
   /* =========================================================
      SELECTEAR summon (hologram):
-     1. the hologram card back floats in the centre → tap: it glitches and turns the attribute's colour
-     2. swipe to spin it: fast at first, slowing down, landing on the front
-     3. a sci-fi cut-in shows the name and the attribute
+     1. the hologram card back floats in the centre (background sways) → tap: "プツン", the colour switches in one cut
+        and the hologram becomes a solid card; only the attribute is shown
+     2. tap again: (チョウ・ヤン and 小川 結菜 turn rainbow first) the card turns over and the cut-in shows the name
      ========================================================= */
   const wait = ms => new Promise(r => setTimeout(r, reduce ? Math.min(ms, 60) : ms));
   let si = 0, sumStage = "charge", runId = 0, ang = 0, spinRAF = 0;
   function quake() { const s0 = $("summon"); s0.classList.remove("quake"); void s0.offsetWidth; s0.classList.add("quake"); }
-  const bgOf = m => A(m.oshi ? "img/st_oshi.webp" : TYPES[m.type].bg);
-  const attrOf = m => (m.oshi ? "OSHI ✦ " : "") + TYPES[m.type].en;
+  const bgOf = m => A(TYPES[m.type].bg);
+  const attrOf = m => TYPES[m.type].en;
   const inn = () => $("cardIn");
   const setAng = a => { ang = a; inn().style.transform = `rotateY(${a}deg)`; };
+  const retrig = (el, cls) => { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); };
   function startSummon() { show("summon"); $("summon").classList.add("holo-mode"); si = 0; chargeFor(0); }
   function chargeFor(i) {
-    si = i; sumStage = "charge"; runId++; cancelAnimationFrame(spinRAF);
-    const sm = $("summon"); sm.classList.remove("dark", "info", "gl"); sm.style.setProperty("--tc", "#b48cff");
+    si = i; sumStage = "charge"; runId++;
+    const sm = $("summon"); sm.classList.remove("dark", "info", "gl", "cutbg"); sm.classList.add("sway"); sm.style.setProperty("--tc", "#b48cff");
     const bg = $("sumBg"); bg.style.backgroundImage = `url(${A("img/st_charge.webp")})`; bg.classList.remove("charge");
     const c = $("card3d"); c.className = "card3d holo"; c.style.visibility = "visible"; c.style.setProperty("--tc", "#b48cff");
     inn().className = "in"; setAng(0);
     $("cardBack").style.backgroundImage = `url(${A("img/back_charge.webp")})`; $("cardFront").innerHTML = "";
-    $("rays").classList.remove("on"); $("cutin").classList.remove("on"); $("swipeHint").hidden = true; $("flipHint").hidden = true; $("sumInfo").hidden = true;
-    $("tease").classList.remove("on"); const at = $("attrTag"); if (at) at.remove();
+    $("rays").classList.remove("on"); $("cutin").classList.remove("on", "rb"); $("swipeHint").hidden = true; $("flipHint").hidden = true; $("sumInfo").hidden = true;
+    const at = $("attrTag"); if (at) at.remove();
     $("sumTitle").textContent = `HOLOGRAM ${i + 1} / 3`; $("sumCue").textContent = "ホログラムをタップ";
     $("pips").innerHTML = [0, 1, 2].map(k => `<i class="${k < i ? "on" : ""}"></i>`).join("");
   }
-  // glitch noise
-  function glitchSE(dur) { if (!audio()) return; const t0 = ac.currentTime; for (let k = 0; k < dur * 28; k++) { const t = t0 + k / 28 + Math.random() * .02, o = ac.createOscillator(); o.type = Math.random() < .5 ? "square" : "sawtooth"; o.frequency.value = 80 + Math.random() * 2400; env(o, t, .002, .09, .03 + Math.random() * .03); o.start(t); o.stop(t + .07); } const n = noise(dur), f = ac.createBiquadFilter(); f.type = "bandpass"; f.frequency.value = 3000; f.Q.value = .7; n.connect(f); env(f, t0, .01, .35, dur); n.start(t0); n.stop(t0 + dur); }
-  function tick() { if (!audio()) return; const t = ac.currentTime, o = ac.createOscillator(); o.type = "square"; o.frequency.value = 1800; env(o, t, .001, .05, .03); o.start(t); o.stop(t + .05); }
+  function snapSE() { if (!audio()) return; const t = ac.currentTime; const o = ac.createOscillator(); o.type = "square"; o.frequency.setValueAtTime(1600, t); o.frequency.exponentialRampToValueAtTime(90, t + .06); env(o, t, .001, .35, .07); o.start(t); o.stop(t + .09); const n = noise(.08), f = ac.createBiquadFilter(); f.type = "highpass"; f.frequency.value = 3000; n.connect(f); env(f, t, .001, .5, .05); n.start(t); n.stop(t + .08); }
 
-  // 1. tap → glitch into the attribute's colour
-  async function glitchIn() {
-    const my = ++runId, m = team[si], t = TYPES[m.type], live = () => my === runId, col = m.oshi ? "#c25cff" : t.c;
+  // 1. tap → プツン: the colour switches in one cut, the hologram turns into a solid card
+  async function cutTo() {
+    const my = ++runId, m = team[si], t = TYPES[m.type], live = () => my === runId;
     sumStage = "anim"; $("sumCue").textContent = ""; $("sumTitle").textContent = "";
     const c = $("card3d"), sm = $("summon");
-    c.classList.add("glitch"); sm.classList.add("gl"); glitchSE(1.3); SFX.riser(1.2); buzz([15, 30, 15, 30, 15, 30, 60]);
-    // flicker through random colours while it glitches
-    const keys = Object.keys(TYPES); let k = 0;
-    const flick = setInterval(() => { const r = TYPES[keys[k++ % keys.length]]; c.style.setProperty("--tc", r.c); sm.style.setProperty("--tc", r.c); c.style.setProperty("--hr", Math.floor(Math.random() * 360) + "deg"); $("cardBack").style.backgroundImage = `url(${A(BACK[keys[(k + 2) % keys.length]])})`; }, 90);
-    await wait(1250); clearInterval(flick); if (!live()) return;
-    c.classList.remove("glitch"); sm.classList.remove("gl"); c.style.setProperty("--hr", "0deg");
-    c.style.setProperty("--tc", col); sm.style.setProperty("--tc", col);
-    $("sumBg").style.backgroundImage = `url(${bgOf(m)})`; $("cardBack").style.backgroundImage = `url(${backOf(m)})`;
-    flash(); SFX.boom(.7); SFX.crack();
-    const r = c.getBoundingClientRect(); burstAt(r.left + r.width / 2, r.top + r.height / 2, [col, "#fff", col], 110, 15);
+    snapSE(); SFX.boom(.45); buzz(25);
+    retrig(c, "cut"); retrig(sm, "cutbg");
+    c.style.setProperty("--tc", t.c); sm.style.setProperty("--tc", t.c);
+    $("sumBg").style.backgroundImage = `url(${bgOf(m)})`; $("cardBack").style.backgroundImage = `url(${A(BACK[m.type])})`;
     $("cardFront").innerHTML = `<img class="art" src="${A(m.img)}" alt="${esc(m.name)}のカード">${m.oshi ? '<span class="dup">推し確定</span>' : m.dup ? '<span class="dup">ダブり</span>' : ""}`;
     const tag = document.createElement("div"); tag.className = "attrtag"; tag.id = "attrTag"; tag.textContent = attrOf(m); sm.append(tag);
-    sumStage = "swipe"; $("swipeHint").hidden = false; $("sumCue").textContent = "カードを左右にスワイプして回転";
+    await wait(380); if (!live()) return;
+    c.classList.remove("holo", "cut"); c.classList.add("solid"); retrig(c, "materialize"); SFX.whoosh();
+    await wait(500); if (!live()) return;
+    sumStage = "card"; $("sumCue").textContent = "カードをタップしてひっくり返す";
   }
 
-  // 2. swipe → spin. Drag turns it live; release throws it: fast, then slowing, landing on the front (180° mod 360)
-  let drag = null;
-  function onDown(e) { if (sumStage !== "swipe") return; cancelAnimationFrame(spinRAF); drag = { x: e.clientX, a: ang, t: performance.now(), lx: e.clientX, lt: performance.now(), v: 0 }; $("card3d").setPointerCapture && $("card3d").setPointerCapture(e.pointerId); }
-  function onMove(e) { if (!drag) return; const now = performance.now(), dx = e.clientX - drag.x; setAng(drag.a + dx * .9); const dt = now - drag.lt; if (dt > 0) drag.v = (e.clientX - drag.lx) / dt; drag.lx = e.clientX; drag.lt = now; }
-  function onUp(e) {
-    if (!drag) return; const d = drag; drag = null; const dx = e.clientX - d.x;
-    if (Math.abs(dx) < 25 && Math.abs(d.v) < .3) { setAng(d.a); toast("左右にスワイプしてね"); return; }
-    throwSpin(Math.sign(dx || d.v || 1), Math.abs(d.v));
-  }
-  function throwSpin(dir, v) {
-    sumStage = "spin"; $("swipeHint").hidden = true; $("sumCue").textContent = ""; const tg = $("attrTag"); if (tg) tg.remove();
-    const turns = Math.min(9, Math.max(4, Math.round(3 + v * 3)));
-    let target = ang + dir * turns * 360; // land on the front: rotateY ≡ 180 (mod 360)
-    const mod = ((target % 360) + 360) % 360; target += dir > 0 ? ((180 - mod + 360) % 360) : -((mod - 180 + 360) % 360);
-    const start = ang, dist = target - start, dur = 2600 + turns * 180, t0 = performance.now();
-    SFX.whoosh(); let lastHalf = Math.floor(start / 180);
-    $("rays").classList.remove("on"); void $("rays").offsetWidth; $("rays").classList.add("on");
-    const ease = x => 1 - Math.pow(1 - x, 4); // fast → slow
-    const step = now => {
-      const x = Math.min(1, (now - t0) / (reduce ? 200 : dur)); setAng(start + dist * ease(x));
-      const h = Math.floor(ang / 180); if (h !== lastHalf) { lastHalf = h; tick(); }
-      if (x < 1) spinRAF = requestAnimationFrame(step); else land();
-    };
-    spinRAF = requestAnimationFrame(step);
-  }
-  $("card3d").addEventListener("pointerdown", onDown);
-  addEventListener("pointermove", onMove);
-  addEventListener("pointerup", onUp); addEventListener("pointercancel", onUp);
-
-  // 3. landing → cut-in with the name and the attribute
-  async function land() {
-    const my = ++runId, m = team[si], t = TYPES[m.type], live = () => my === runId, col = m.oshi ? "#c25cff" : t.c;
-    sumStage = "anim"; $("card3d").classList.remove("holo");
-    SFX.boom(1); SFX.choir(m.oshi ? "oshi" : m.type); quake(); flash(); buzz([80, 40, 160]);
-    const r = $("card3d").getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-    const cols = m.oshi ? ["#ff4d5e", "#f2c14e", "#3ddc84", "#4f8cff", "#c25cff", "#fff"] : [col, "#fff", col, "#ffe9a8"];
-    burstAt(cx, cy, cols, 220, 20); setTimeout(() => burstAt(cx, cy - 40, cols, 120, 12), 250);
-    await wait(450); if (!live()) return;
-    $("ciCode").textContent = `SELECTEAR // UNIT ${String(ROSTER.indexOf(ROSTER.find(x => x.id === m.id)) + 1).padStart(2, "0")} // ${m.dup ? "DUPLICATE" : "ACQUIRED"}`;
-    $("ciName").textContent = m.name; $("ciAttr").textContent = attrOf(m);
-    const ci = $("cutin"); ci.classList.remove("on"); void ci.offsetWidth; ci.classList.add("on"); SFX.whoosh(); SFX.boom(.5);
-    await wait(900); if (!live()) return;
+  // 2. tap again → (rainbow for チョウ・ヤン and 小川 結菜) → the card turns over → cut-in
+  async function turnOver() {
+    const my = ++runId, m = team[si], t = TYPES[m.type], live = () => my === runId, rb = isRainbow(m);
+    sumStage = "anim"; $("sumCue").textContent = ""; const tag = $("attrTag"); const c = $("card3d"), sm = $("summon");
+    if (rb) {
+      snapSE(); retrig(c, "rainbow"); retrig(sm, "cutbg"); flash(); SFX.riser(.7);
+      c.style.setProperty("--tc", "#c25cff"); sm.style.setProperty("--tc", "#c25cff");
+      $("sumBg").style.backgroundImage = `url(${A("img/st_oshi.webp")})`; $("cardBack").style.backgroundImage = `url(${A("img/back_oshi.webp")})`;
+      if (tag) tag.textContent = "✦ RAINBOW ✦";
+      const r = c.getBoundingClientRect(); burstAt(r.left + r.width / 2, r.top + r.height / 2, ["#ff4d5e", "#f2c14e", "#3ddc84", "#4f8cff", "#c25cff", "#fff"], 160, 16);
+      await wait(900); if (!live()) return;
+    }
+    sm.classList.remove("sway"); if (tag) tag.remove();
+    inn().classList.add("flip"); setAng(180); SFX.whoosh();
+    await wait(650); if (!live()) return;
+    inn().classList.remove("flip");
+    SFX.boom(1); SFX.choir(rb ? "oshi" : m.type); quake(); flash(); buzz([80, 40, 160]);
+    const r = c.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    const cols = rb ? ["#ff4d5e", "#f2c14e", "#3ddc84", "#4f8cff", "#c25cff", "#fff"] : [t.c, "#fff", t.c, "#ffe9a8"];
+    burstAt(cx, cy, cols, 200, 18);
+    await wait(500); if (!live()) return;
+    // cut-in: card on the left, attribute, the name in big glowing letters, and the battle style
+    $("ciImg").src = A(m.img); $("ciAttr").textContent = `[${attrOf(m)}] ${t.jp}${m.oshi ? " ・ 推し確定" : ""}`;
+    $("ciName").textContent = m.name; $("ciCode").textContent = m.style;
+    const ci = $("cutin"); ci.classList.toggle("rb", rb); ci.style.setProperty("--tc", rb ? "#ff9be0" : t.c); retrig(ci, "on"); SFX.whoosh(); SFX.boom(.5);
+    await wait(1100); if (!live()) return;
     sumStage = "open"; $("flipHint").hidden = false;
     $("sumCue").textContent = si < 2 ? "画面をタップで次へ" : "画面をタップでチーム確認";
     $("pips").innerHTML = [0, 1, 2].map(k => `<i class="${k <= si ? "on" : ""}"></i>`).join("");
   }
-  function flipCard() { // tap the card afterwards to see the back again
-    cancelAnimationFrame(spinRAF); const start = ang, t0 = performance.now(), end = start + 180;
-    const step = now => { const x = Math.min(1, (now - t0) / 600); setAng(start + 180 * (1 - Math.pow(1 - x, 3))); if (x < 1) spinRAF = requestAnimationFrame(step); };
-    spinRAF = requestAnimationFrame(step); se("switch");
-  }
+  function flipCard() { inn().classList.add("flip"); setAng(ang + 180); se("switch"); }
   $("summon").addEventListener("click", e => {
     if (e.target.closest("#skipSum")) return;
-    if (sumStage === "charge") { if (e.target.closest("#card3d")) { audio(); glitchIn(); } return; }
-    if (sumStage === "open") { if (e.target.closest("#card3d")) { flipCard(); return; } se("switch"); if (si < 2) chargeFor(si + 1); else toResult(); }
+    if (sumStage === "charge") { if (e.target.closest("#card3d")) { audio(); cutTo(); } return; }
+    if (sumStage === "card") { if (e.target.closest("#card3d")) turnOver(); return; }
+    if (sumStage === "open") {
+      if (e.target.closest("#card3d")) { $("cutin").classList.remove("on"); flipCard(); return; }
+      se("switch"); if (si < 2) chargeFor(si + 1); else toResult();
+    }
   });
   $("skipSum").addEventListener("click", () => { runId++; cancelAnimationFrame(spinRAF); $("black").classList.remove("on"); $("summon").classList.remove("gl"); se("tap"); toResult(); });
 
