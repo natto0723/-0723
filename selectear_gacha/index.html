@@ -28,6 +28,9 @@
 html, body { height: 100%; margin: 0; overflow: hidden; overscroll-behavior: none; }
 body { position: fixed; inset: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); user-select: none; -webkit-user-select: none; -webkit-text-size-adjust: 100%; -webkit-touch-callout: none; }
 button { font: inherit; color: inherit; touch-action: manipulation; }
+[hidden] { display: none !important; }
+#summon.info .sumtxt b { display: none; }
+.tc .oshi { top: 30px; }
 button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 .scene { position: fixed; inset: 0; display: none; overflow: hidden; }
 .scene.on { display: block; animation: sceneIn .45s ease-out; }
@@ -118,7 +121,7 @@ button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 
 /* faces: a portrait when we have one, else a silhouette in the type colour */
 .face { position: relative; overflow: hidden; background: radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--tc) 55%, #fff 0%), #120c24 75%); }
-.face img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 25%; }
+.face img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 12%; }
 .face svg { position: absolute; left: 10%; bottom: 0; width: 80%; height: 88%; fill: rgba(10, 6, 20, .85); }
 
 /* ---------- INTERCOM (pattern 1) ---------- */
@@ -168,6 +171,16 @@ button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 .card3d .front { transform: rotateY(180deg); border: 2px solid #fff; background: linear-gradient(160deg, color-mix(in srgb, var(--tc) 45%, #0b0716), #0b0716 70%); box-shadow: 0 0 30px var(--tc), 0 0 80px color-mix(in srgb, var(--tc) 60%, transparent); overflow: hidden; display: flex; flex-direction: column; }
 .card3d.oshi .front { border-image: linear-gradient(135deg, #ff4d5e, #f2c14e, #3ddc84, #4f8cff, #c25cff) 1; }
 .card3d .front .face { flex: 1; }
+.card3d .front img.art, .tc img.art { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.card3d .front { border: 0 !important; background: #0b0716; }
+.sum-info { position: absolute; z-index: 7; left: 50%; top: calc(47% + min(25vh, 45vw) + 36px); transform: translateX(-50%); width: min(420px, 92vw); text-align: center; display: grid; gap: 2px; padding: 8px 12px; border-radius: 12px; background: rgba(4, 3, 12, .72); border: 1px solid var(--tc, #fff); }
+.sum-info b { font: 900 18px var(--font-body); }
+.sum-info small { font: 700 11px var(--font-body); color: var(--tc); }
+.sum-info em { font: 500 11.5px var(--font-body); font-style: normal; color: var(--ice); }
+.sum-info .rk { position: absolute; left: 10px; top: 8px; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font: 700 14px var(--font-num); background: var(--tc); color: #0b0716; }
+.tcw .nm { text-align: center; margin-top: 6px; display: grid; gap: 1px; }
+.tcw .nm b { font: 900 clamp(12px, 3.2vw, 16px)/1.2 var(--font-body); }
+.tcw .nm small { font: 700 10.5px var(--font-body); color: var(--tc); }
 .card3d .front .meta { padding: 10px 12px 12px; background: rgba(6, 4, 14, .85); display: grid; gap: 4px; text-align: center; }
 .card3d .front .meta b { font: 900 clamp(18px, 3.6vh, 26px)/1.1 var(--font-body); }
 .card3d .front .meta small { font: 700 12px var(--font-body); color: var(--tc); letter-spacing: .1em; }
@@ -305,6 +318,7 @@ button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
   <div class="pips" id="pips"></div>
   <div class="card3d" id="card3d"><div class="in"><div class="back" id="cardBack"></div><div class="front" id="cardFront"></div></div></div>
   <span class="fliphint" id="flipHint" hidden>カードをタップで裏表を確認</span>
+  <div class="sum-info" id="sumInfo" hidden></div>
   <div class="sumtxt"><b id="sumTitle">SUMMON</b><span id="sumCue">タップして召喚</span></div>
   <button class="btn-s skip" type="button" id="skipSum">スキップ ▶▶</button>
 </section>
@@ -355,23 +369,26 @@ button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
     heal: { en: "HEAL", jp: "ヒール", c: "#ff6ec8", bg: "img/bg_heal.webp" },
     spd: { en: "SPEED", jp: "スピード", c: "#3ddc84", bg: "img/bg_speed.webp" }
   };
-  // [id, name, type, portrait, intercom line] — full names still needed for everyone except 風野 桐嗚
+  // the 16 SELECTEAR members (full names, rank and HP from the character sheet; type = provisional, from each card's colour)
+  // [id, full name, reading, type, rank, HP, ability, intercom line]
   const ROSTER = [
-    ["kazano", "風野 桐嗚", "sup", "img/p_kazano.webp", "どうもー！ 製作者兼、案内役でーす！ 開けて開けて！"],
-    ["miyu", "実優", "heal", "img/p_miyu.webp", "やっほー！ うちだよ、うち！ 写真撮りに来ちゃった♪"],
-    ["fujikura", "藤倉", "def", "", "……開けろ。我慢の限界だ。"],
-    ["nishida", "西田", "spd", "", "次は7が来る！ 絶対来る！ だから開けてくれ！"],
-    ["utsugi", "卯都木", "sup", "", "4杯目、付き合ってくれる？ ……冗談だよ。"],
-    ["kashima", "鹿島", "atk", "", "ツッコミの配達でーす。痛いけどサインお願いします。"],
-    ["morooka", "諸岡", "def", "", "HP1京の男、ただいま参上。……嘘じゃないぞ。"],
-    ["yamanaka", "山中", "def", "", "柳井と一緒じゃないとダメ？ ……今日は1人で来た。"],
-    ["yanai", "柳井", "sup", "", "山中知らない？ 先に着いてるはずなんだけど。"],
-    ["ohashi", "大橋", "spd", "", "お姉さんいます？ ……あ、いない？ じゃあ君でいいや。"],
-    ["yan", "ヤン", "atk", "", "……ボスが来たと伝えろ。"],
-    ["kobukuda", "小福田", "spd", "", "怪しい者じゃないです。……たぶん裏切りません。"],
-    ["hirabayashi", "平林", "atk", "", "2回押したら、倍返しでピンポンします。"],
-    ["ogawa", "小川", "heal", "", "推しの話、3時間だけ聞いてくれる？ 回復するから！"]
-  ].map(([id, name, type, img, line]) => ({ id, name, type, img, line }));
+    ["kazano", "風野 桐嗚", "かざの きりお", "sup", "B", 11, "乞食：アイテムを2枚引く（HP3以下なら3枚）", "どうもー！ 製作者兼、案内役でーす！ 開けて開けて！"],
+    ["hirabayashi", "平林 頼生", "ひらばやし らお", "def", "B", 10, "計画：ジョブを選んで仲間に付ける", "段取りはできてる。2回押したら倍返しね。"],
+    ["utsugi", "卯都木 海渡", "うつぎ かいと", "sup", "A", 10, "泥酔：酔うほど強い。4杯目で潰れる", "もう3杯目……4杯目は付き合ってくれる？"],
+    ["kobukuda", "小福田 彪流", "こふくだ たける", "spd", "C", 8, "脱獄：敵のabilityをそのターンだけ盗む", "……データはもう取ってある。開けてくれるよね？"],
+    ["sakayori", "酒寄 将龍", "さかより きりゅう", "atk", "S", 9, "亀甲：場の1人にランダムで状態を付ける", "お値段以上〜？ ……ヒトリ！！"],
+    ["endo", "遠藤 龍", "えんどう りゅう", "spd", "B", 10, "フルカスタム：台パンかエナドリを手札に", "チューニング終わった。背後から失礼するね。"],
+    ["kashima", "鹿島 咲恵", "かしま さえ", "heal", "A", 10, "暴食：3回復。あふれた分は最大HPに", "ご飯おごってくれるなら、開けてあげてもいいけど？"],
+    ["fujikura", "藤倉 琉海", "ふじくら るみ", "atk", "B", 8, "我慢：3回やられたら敵に4ダメージ", "……我慢してるうちに開けて。限界近いから。"],
+    ["yamanaka", "山中 雅文", "やまなか まさふみ", "atk", "C", 13, "銀行：敵1人に借金を押し付ける", "紗彩いる？ ……いない？ じゃあ取り立てに来た。"],
+    ["yanai", "柳井 紗彩", "やない さあや", "heal", "C", 8, "横取：敵のバフを全部奪う", "あれ？ なんで来たんだっけ。忘れた。"],
+    ["sato", "佐藤 麗皇", "さとう れの", "atk", "A", 11, "聖力：50%でHP1で耐える", "悪く思うなよ。……用があって来ただけだ。"],
+    ["morooka", "諸岡 星南", "もろおか せな", "def", "S", 10, "降霊：ロストした仲間の力をもらう", "HP1京の男、参上。……嘘じゃないって。"],
+    ["ohashi", "大橋 央玲", "おおはし ひろあ", "heal", "C", 9, "夜逃：借金して◆+2。取り立て前に飛ぶ", "ねえ、このあと時間ある？"],
+    ["ushida", "牛田 苺花", "うしだ いちか", "atk", "C", 9, "醒：自分以外の全員に1ダメージ", "押したの自分じゃないです。自分は悪くないんで。"],
+    ["chou", "チョウ・ヤン", "チョウ・ヤン", "atk", "A", 12, "龍炎：HPがいちばん低い敵に2ダメージ", "……シマを広げに来た。開けろ。"],
+    ["ogawa", "小川 結菜", "おがわ ゆうな", "heal", "B", 9, "蝶の加護：いちばん弱った仲間を2回復", "推し以外興味ないので✌ ……でも開けて？"]
+  ].map(([id, name, kana, type, rank, hp, abil, line]) => ({ id, name, kana, type, rank, hp, abil, line, img: `img/f_${id}.webp` }));
   const byType = t => ROSTER.filter(r => r.type === t);
   const SIL = '<svg viewBox="0 0 100 110" aria-hidden="true"><circle cx="50" cy="34" r="22"/><path d="M8 110c2-30 20-46 42-46s40 16 42 46z"/></svg>';
   const faceHTML = r => `<div class="face" style="--tc:${TYPES[r.type].c}">${r.img ? `<img src="${A(r.img)}" alt="">` : SIL}</div>`;
@@ -410,7 +427,7 @@ button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
     for (const b of document.querySelectorAll("[data-s]")) b.addEventListener("click", () => { slots.splice(+b.dataset.s, 1); se("tap"); paintSlots(); paintDraw(); });
   }
   function paintRoster() {
-    $("roster").innerHTML = ROSTER.map(r => `<button class="pick" type="button" data-r="${r.id}" aria-pressed="${oshi === r.id}" style="--tc:${TYPES[r.type].c}">${faceHTML(r)}<b>${esc(r.name)}</b><small>${TYPES[r.type].jp}</small></button>`).join("");
+    $("roster").innerHTML = ROSTER.map(r => `<button class="pick" type="button" data-r="${r.id}" aria-pressed="${oshi === r.id}" style="--tc:${TYPES[r.type].c}">${faceHTML(r)}<b>${esc(r.name)}</b><small>${r.rank} ・ ${TYPES[r.type].jp}</small></button>`).join("");
     for (const b of document.querySelectorAll("[data-r]")) b.addEventListener("click", () => { oshi = b.dataset.r; se("tap"); paintRoster(); paintDraw(); });
   }
   function paintDraw() {
@@ -474,7 +491,7 @@ button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
     const now = new Date(); $("clock").textContent = String(now.getHours()).padStart(2, "0") + ":" + String(now.getMinutes()).padStart(2, "0");
     $("monCount").textContent = `VISITOR ${i + 1} / 3`;
     const n = $("noise"); n.classList.remove("go"); void n.offsetWidth; n.classList.add("go");
-    $("vis").innerHTML = faceHTML(m);
+    $("vis").innerHTML = `<div class="face" style="--tc:${t.c}"><img src="${A(m.img)}" alt="" style="object-position:50% 12%;transform:scale(1.6);transform-origin:50% 18%"></div>`;
     $("visTag").textContent = "玄関カメラ ・ " + t.en;
     $("speech").style.setProperty("--tc", t.c);
     $("speech").innerHTML = `<b>${esc(m.name)}</b>${m.oshi ? "（推し確定！）" : ""}${m.dup ? "（ダブり）" : ""}：「${esc(m.line)}」`;
@@ -491,7 +508,7 @@ button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
   function chargeFor(i) {
     si = i; sumStage = "charge"; const bg = $("sumBg");
     bg.style.backgroundImage = `url(${A("img/bg_charge.webp")})`; bg.classList.add("charge");
-    $("card3d").classList.remove("open", "oshi"); $("card3d").style.visibility = "hidden"; $("flipHint").hidden = true;
+    $("card3d").classList.remove("open", "oshi"); $("card3d").style.visibility = "hidden"; $("flipHint").hidden = true; $("sumInfo").hidden = true; $("summon").classList.remove("info");
     $("sumTitle").textContent = `SUMMON ${i + 1} / 3`; $("sumCue").textContent = "タップして召喚";
     $("pips").innerHTML = [0, 1, 2].map(k => `<i class="${k < i ? "on" : ""}"></i>`).join("");
   }
@@ -502,7 +519,8 @@ button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
     $("summon").style.setProperty("--tc", m.oshi ? "#c25cff" : t.c);
     const c = $("card3d"); c.style.visibility = "visible"; c.style.setProperty("--tc", t.c); c.classList.toggle("oshi", !!m.oshi);
     $("cardBack").style.backgroundImage = `url(${backOf(m)})`; c.classList.remove("open");
-    $("cardFront").innerHTML = `${faceHTML(m)}<span class="badge">${t.en}</span>${m.oshi ? '<span class="dup">推し確定</span>' : m.dup ? '<span class="dup">ダブり</span>' : ""}<div class="meta"><b>${esc(m.name)}</b><small>${t.jp}</small></div>`;
+    $("cardFront").innerHTML = `<img class="art" src="${A(m.img)}" alt="${esc(m.name)}のカード">${m.oshi ? '<span class="dup">推し確定</span>' : m.dup ? '<span class="dup">ダブり</span>' : ""}`;
+    $("sumInfo").innerHTML = `<span class="rk">${m.rank}</span><b>${esc(m.name)}</b><small>${esc(m.kana)} ・ ${t.jp} ・ HP ${m.hp}</small><em>${esc(m.abil)}</em>`; $("sumInfo").hidden = false; $("summon").classList.add("info");
     // show the back first, then turn it over
     clearTimeout(reveal.t); reveal.t = setTimeout(() => { c.classList.add("open"); $("flipHint").hidden = false; }, reduce ? 0 : 900);
     $("sumTitle").textContent = m.oshi ? "OSHI ✦ GET" : t.en; $("sumCue").textContent = si < 2 ? "タップで次へ" : "タップでチーム確認";
@@ -524,7 +542,7 @@ button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
     vDoor.pause(); vMon.pause(); doorStage = 0;
     show("result"); se("decide");
     $("resMode").textContent = MODE_JP[lastMode] + " の結果";
-    $("team").innerHTML = team.map(m => { const t = TYPES[m.type]; return `<div class="tcw" role="button" tabindex="0" aria-label="${esc(m.name)}のカード（タップで裏表）" style="--tc:${t.c}"><div class="in"><div class="tc">${faceHTML(m)}<span class="badge">${t.en}</span>${m.oshi ? '<span class="oshi">推し</span>' : ""}<div class="meta"><b>${esc(m.name)}${m.dup ? " ×2" : ""}</b><small>${t.jp}</small></div></div><div class="tb" style="background-image:url(${backOf(m)})"></div></div></div>`; }).join("");
+    $("team").innerHTML = team.map(m => { const t = TYPES[m.type]; return `<div class="tcw" role="button" tabindex="0" aria-label="${esc(m.name)}のカード（タップで裏表）" style="--tc:${t.c}"><div class="in"><div class="tc"><img class="art" src="${A(m.img)}" alt=""><span class="badge">${m.rank} ・ ${t.en}</span>${m.oshi ? '<span class="oshi">推し</span>' : ""}</div><div class="tb" style="background-image:url(${backOf(m)})"></div></div><div class="nm"><b>${esc(m.name)}${m.dup ? " ×2" : ""}</b><small>${t.jp} ・ HP ${m.hp}</small></div></div>`; }).join("");
     for (const w of $("team").querySelectorAll(".tcw")) { const f = () => { w.classList.toggle("flip"); se("switch"); }; w.addEventListener("click", f); w.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); f(); } }); }
     const counts = {}; for (const m of team) counts[m.type] = (counts[m.type] || 0) + 1;
     $("mix").innerHTML = Object.entries(counts).map(([k, n]) => `<span style="--tc:${TYPES[k].c}">${TYPES[k].jp} ×${n}</span>`).join("");
