@@ -1,0 +1,759 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SELECTEAR City Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Cormorant+Garamond:wght@600;700&family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Chakra+Petch:wght@600;700&display=swap">
+<style>
+/* NEON RUIN CITY — the outside world, drawn as a 2D tactical map (spec: 「NEON RUIN CITY マップデザイン説明書」).
+   7 cities of the seven deadly sins sit round GROUND ZERO like a clock face turned 90°: 1 怠惰 on the right, then clockwise.
+   アジト is next to 怠惰. Single dark neon look, same tokens and buttons as the home and hideout pages. */
+:root {
+  --bg: #05040b;
+  --panel: rgba(12, 9, 24, .96);
+  --ink: #f1efff;
+  --dim: #a7a2c6;
+  --violet: #9b5cff;
+  --blue: #4f8cff;
+  --ice: #d9e6ff;
+  --gold: #f2c14e;
+  --cyan: #48e1ff;
+  --red: #ff4d5e;
+  --line: rgba(150, 120, 255, .45);
+  --font-latin: "Cinzel", "Times New Roman", serif;
+  --font-menu: "Cormorant Garamond", "Times New Roman", serif;
+  --font-body: "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+  --font-num: "Chakra Petch", "Zen Kaku Gothic New", system-ui, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; margin: 0; overflow: hidden; overscroll-behavior: none; }
+body { position: fixed; inset: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); user-select: none; -webkit-user-select: none; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; -webkit-touch-callout: none; }
+button, a { font: inherit; color: inherit; touch-action: manipulation; }
+button:focus-visible, a:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.scene { position: fixed; inset: 0; display: none; overflow: hidden; }
+.scene.on { display: block; animation: sceneIn .5s cubic-bezier(.2, .8, .2, 1); }
+@keyframes sceneIn { from { opacity: 0; } }
+@keyframes blink { 50% { opacity: .3; } }
+.flash { position: fixed; inset: 0; z-index: 90; background: #fff; opacity: 0; pointer-events: none; }
+.flash.go { animation: flash .8s ease-out; }
+@keyframes flash { 0% { opacity: .9; } 100% { opacity: 0; } }
+.toast { position: fixed; left: 50%; top: calc(66px + env(safe-area-inset-top, 0px)); transform: translateX(-50%); z-index: 95; padding: 10px 16px; border-radius: 12px; background: rgba(10, 8, 16, .95); border: 1px solid var(--violet); font-size: 13px; max-width: calc(100% - 32px); text-align: center; }
+
+/* ---------- START ---------- */
+#start { background: radial-gradient(ellipse at 50% 60%, #1a0d33 0%, #07050c 70%); }
+#start .bg { position: absolute; inset: -30px; background: url(img/map.webp) center / cover; filter: blur(14px) brightness(.35) saturate(1.3); }
+#start .col { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding: 24px max(16px, env(safe-area-inset-right, 0px)) 24px max(16px, env(safe-area-inset-left, 0px)); text-align: center; }
+.logo { width: min(480px, 84vw);  filter: drop-shadow(0 0 18px rgba(155, 92, 255, .55)); }
+.eyebrow { margin: 0; font: 600 12px var(--font-latin); letter-spacing: .45em; padding-left: .45em; color: var(--dim); }
+.note { margin: 0; font-size: 12px; color: var(--dim); }
+.mb { --k: 165, 110, 255; position: relative; height: 64px; width: min(320px, 80vw); border: 0; padding: 0 14% 0 16%; background: none; cursor: pointer; display: flex; align-items: center; gap: 12px; text-align: left; color: #f6ecff; text-decoration: none; }
+.mb::before { content: ""; position: absolute; inset: 0; transform: skewX(-18deg); border: 1.5px solid #fff; border-radius: 4px; background: linear-gradient(90deg, rgba(var(--k), .6), rgba(var(--k), .25) 60%, rgba(20, 8, 36, .8)); box-shadow: 0 0 22px rgba(var(--k), .85), inset 0 0 18px rgba(255, 255, 255, .2); }
+.mb > * { position: relative; }
+.mb svg { width: 26px; height: 26px; flex: none; stroke: #fff; fill: none; stroke-width: 1.8; stroke-linejoin: round; }
+.mb .en { display: block; font: 700 26px/1 var(--font-menu); letter-spacing: .08em; text-shadow: 0 0 8px rgba(var(--k), .8); }
+.mb .jp { display: block; margin-top: 3px; font: 700 12px/1 var(--font-body); color: rgba(255, 255, 255, .75); letter-spacing: .12em; }
+.mb.pulse::before { animation: pulse 2s ease-in-out infinite; }
+@keyframes pulse { 50% { box-shadow: 0 0 36px rgba(var(--k), 1), inset 0 0 22px rgba(255, 255, 255, .3); } }
+
+/* ---------- top bar ---------- */
+.topbar { position: absolute; z-index: 10; left: 0; right: 0; top: 0; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: calc(10px + env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) 10px max(12px, env(safe-area-inset-left, 0px)); background: linear-gradient(180deg, rgba(5, 3, 12, .9), transparent); pointer-events: none; }
+.topbar > * { pointer-events: auto; }
+.back, .snd, .zb { border: 1px solid rgba(201, 198, 214, .45); background: rgba(8, 5, 18, .8); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); cursor: pointer; }
+.back { display: flex; align-items: center; gap: 8px; height: 42px; padding: 0 14px 0 10px; border-radius: 12px; font: 700 13px var(--font-body); }
+.back svg, .snd svg, .zb svg { width: 20px; height: 20px; stroke: #fff; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.place { text-align: center; min-width: 0; }
+.place b { display: block; font: 800 clamp(13px, 3.4vw, 17px)/1.1 var(--font-latin); letter-spacing: .22em; color: var(--ice); text-shadow: 0 0 10px rgba(155, 92, 255, .8); white-space: nowrap; }
+.place small { display: block; margin-top: 3px; font: 700 11px var(--font-body); color: var(--dim); letter-spacing: .15em; }
+.right { display: flex; align-items: center; gap: 8px; }
+.snd { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; padding: 0; }
+.snd .off { display: none; }
+.snd[aria-pressed="false"] .on { display: none; }
+.snd[aria-pressed="false"] .off { display: inline; }
+.coins { display: flex; align-items: center; gap: 8px; height: 42px; padding: 0 12px 0 10px; border-radius: 999px; background: rgba(8, 5, 18, .8); border: 1px solid rgba(242, 193, 78, .55); }
+.coin-ic { width: 20px; height: 20px; flex: none; background: linear-gradient(135deg, #fff6d0, var(--gold) 45%, #b9801a); clip-path: polygon(50% 0, 100% 38%, 82% 100%, 18% 100%, 0 38%); filter: drop-shadow(0 0 4px var(--gold)); }
+.coins .lb { font: 700 10px/1.1 var(--font-body); color: var(--dim); }
+.coins .val { font: 700 17px/1 var(--font-num); color: #fff; min-width: 2ch; text-align: right; font-variant-numeric: tabular-nums; }
+@media (max-width: 420px) { .coins .lb, .back span, .place small { display: none; } .back { padding: 0 10px; } }
+
+/* ---------- MAP: one big city in front, its neighbours behind (3D carousel on the sea) ---------- */
+#map { background: #03020a; }
+canvas#water { position: absolute; inset: 0; width: 100%; height: 100%; }
+#map .fog { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgba(3, 2, 10, .7) 0%, transparent 14%), radial-gradient(ellipse at 50% 55%, transparent 50%, rgba(3, 2, 10, .6) 100%); }
+.stage { position: absolute; left: 0; right: 0; top: calc(58px + env(safe-area-inset-top, 0px)); bottom: var(--foot, 190px); perspective: 1400px; touch-action: pan-y; cursor: grab; overflow: hidden; }
+.stage.drag { cursor: grabbing; }
+.ci { position: absolute; left: 50%; top: 50%; width: var(--fw); margin-left: calc(var(--fw) / -2); border: 0; padding: 0; background: none; cursor: pointer; transform-style: preserve-3d; transition: transform .7s cubic-bezier(.25, .9, .25, 1), opacity .7s, filter .7s; will-change: transform; }
+.ci .float { display: block; position: relative; animation: bob 6s ease-in-out infinite; animation-delay: var(--d); }
+@keyframes bob { 50% { transform: translateY(-8px); } }
+.ci .art { position: relative; z-index: 2; display: block; }
+.ci .art img, .ci .art svg { display: block; width: 100%; height: auto; }
+.ci.pic .art > img:first-child { filter: drop-shadow(0 0 10px var(--c)) drop-shadow(0 14px 18px rgba(0, 0, 0, .85)) brightness(.82); }
+/* neon: the city's lights sit on their own layers and flicker on and off */
+.ci .art .lt { position: absolute; left: 0; top: 0; width: 100%; height: auto; mix-blend-mode: screen; opacity: .6; pointer-events: none; }
+.ci .art .lt.la { animation: neonA var(--na, 4.3s) linear infinite; animation-delay: var(--nd, 0s); }
+.ci .art .lt.lb { animation: neonB var(--nb, 5.9s) linear infinite; animation-delay: calc(var(--nd, 0s) * 1.7 - 1.3s); }
+.ci.front .art .lt { filter: brightness(1.35) saturate(1.2); }
+.ci.front.pic .art > img:first-child { animation: glow 3.4s ease-in-out infinite; }
+@keyframes glow { 50% { filter: drop-shadow(0 0 22px var(--c)) drop-shadow(0 14px 18px rgba(0, 0, 0, .85)) brightness(.95); } }
+@keyframes neonA { 0% { opacity: .25; } 6% { opacity: 1; } 7% { opacity: .15; } 8% { opacity: 1; } 40% { opacity: .9; } 55% { opacity: .35; } 70% { opacity: 1; } 71% { opacity: .2; } 72.5% { opacity: 1; } 100% { opacity: .25; } }
+@keyframes neonB { 0% { opacity: 1; } 22% { opacity: .85; } 23% { opacity: .1; } 24% { opacity: .95; } 25.5% { opacity: .2; } 27% { opacity: 1; } 60% { opacity: .3; } 80% { opacity: 1; } 100% { opacity: 1; } }
+.ci.locked .art .lt { display: none; }
+.ci .seal { position: absolute; left: -2%; top: -4%; width: 104%; height: auto; pointer-events: none; animation: noise 2.6s steps(1) infinite; }
+.ci .art svg { overflow: visible; filter: drop-shadow(0 0 8px color-mix(in srgb, var(--c) 70%, transparent)) drop-shadow(0 12px 16px rgba(0, 0, 0, .85)); }
+.ci .refl { position: absolute; left: 0; right: 0; top: 76%; z-index: 1; transform: scaleY(-.5); transform-origin: top; opacity: .3; filter: blur(2.5px) saturate(1.3); -webkit-mask-image: linear-gradient(0deg, rgba(0, 0, 0, .9), transparent 70%); mask-image: linear-gradient(0deg, rgba(0, 0, 0, .9), transparent 70%); pointer-events: none; }
+.ci .refl img, .ci .refl svg { display: block; width: 100%; height: auto; }
+.ci .glow { position: absolute; z-index: 0; left: 8%; right: 8%; top: 56%; aspect-ratio: 4 / 1; border-radius: 50%; background: radial-gradient(ellipse, color-mix(in srgb, var(--c) 45%, transparent), transparent 70%); pointer-events: none; }
+.ci .ripple { position: absolute; z-index: 0; left: 4%; right: 4%; top: 56%; aspect-ratio: 4 / 1; border-radius: 50%; border: 2px solid var(--c); opacity: 0; pointer-events: none; }
+.ci.front .ripple { animation: ripple 3.2s ease-out infinite; }
+@keyframes ripple { 0% { opacity: .6; transform: scale(.7); } 100% { opacity: 0; transform: scale(1.25); } }
+.ci .tag { position: absolute; z-index: 3; left: 50%; bottom: 4%; transform: translateX(-50%); padding: 4px 12px; border-radius: 999px; background: rgba(6, 4, 16, .88); border: 1px solid var(--c); font: 700 13px var(--font-body); white-space: nowrap; color: #fff; transition: opacity .4s; }
+.ci.front .tag { opacity: 0; }
+.ci.locked .art, .ci.locked .refl { filter: grayscale(.9) brightness(.5); }
+.ci.locked.front .art, .ci.locked.front .refl { filter: grayscale(.55) brightness(.85); }
+.ci.locked .glow { opacity: .3; }
+.ci:focus-visible { outline: none; }
+.ci:focus-visible .art { outline: 2px solid #fff; outline-offset: 4px; border-radius: 12px; }
+.arrow { position: absolute; z-index: 9; top: calc(50% - 10px); width: 48px; height: 48px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, .35); background: rgba(8, 5, 18, .75); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); display: grid; place-items: center; cursor: pointer; padding: 0; }
+.arrow svg { width: 22px; height: 22px; stroke: #fff; fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.arrow.l { left: max(12px, env(safe-area-inset-left, 0px)); }
+.arrow.r { right: max(12px, env(safe-area-inset-right, 0px)); }
+.arrow:hover { border-color: #fff; }
+/* the selected city's name card and actions */
+.foot { position: absolute; z-index: 9; left: 0; right: 0; bottom: 0; padding: 0 max(14px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(14px, env(safe-area-inset-left, 0px)); display: grid; justify-items: center; gap: 10px; background: linear-gradient(0deg, rgba(3, 2, 10, .95) 40%, transparent); }
+.title-card { text-align: center; display: grid; gap: 4px; justify-items: center; }
+.title-card .eyebrow2 { font: 700 11px var(--font-num); letter-spacing: .25em; color: var(--cc, var(--ice)); }
+.title-card h2 { margin: 0; font: 900 clamp(24px, 6vw, 40px)/1.1 var(--font-body); letter-spacing: .04em; text-shadow: 0 0 18px var(--cc, var(--violet)); }
+.title-card .sub { font: 700 13px var(--font-body); color: var(--ice); }
+.chip { display: inline-block; padding: 3px 12px; border-radius: 999px; font: 700 11px var(--font-body); border: 1px solid; }
+.chip.locked { color: var(--dim); border-color: rgba(201, 198, 214, .4); }
+.chip.open { color: #fff; border-color: var(--cc); background: color-mix(in srgb, var(--cc) 30%, transparent); }
+.chip.cleared { color: #0b0716; background: var(--cc); border-color: var(--cc); }
+.acts { display: flex; gap: 8px; width: min(520px, 100%); }
+.acts button { flex: 1; height: 48px; border-radius: 12px; font: 800 14px var(--font-body); cursor: pointer; border: 1px solid #fff; background: linear-gradient(90deg, color-mix(in srgb, var(--cc) 70%, transparent), color-mix(in srgb, var(--cc) 25%, transparent)); box-shadow: 0 0 16px color-mix(in srgb, var(--cc) 50%, transparent); }
+.acts button.sec { flex: .6; border-color: rgba(201, 198, 214, .45); background: rgba(8, 5, 18, .8); box-shadow: none; }
+.acts button:disabled { opacity: .45; cursor: default; box-shadow: none; }
+.dots { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: center; }
+.dots button { width: 30px; height: 30px; border-radius: 50%; padding: 0; border: 1.5px solid rgba(200, 190, 240, .4); background: #14102a; color: var(--dim); font: 700 12px var(--font-num); cursor: pointer; }
+.dots button.open { border-color: var(--c); color: #fff; }
+.dots button.cleared { background: var(--c); border-color: var(--c); color: #0b0716; }
+.dots button.sel { outline: 2px solid #fff; outline-offset: 2px; }
+.dots .sep { width: 1px; height: 20px; background: rgba(255, 255, 255, .2); margin: 0 2px; }
+.dots .pill { width: auto; padding: 0 12px; border-radius: 999px; font: 700 11px var(--font-body); }
+.dots .pill.gz { border-color: #ff4d5e; color: #ffc0c8; }
+.dots .pill.gz.open { border-color: #c25cff; color: #fff; background: rgba(194, 92, 255, .3); }
+.dots .pill.home { border-color: #fff; color: #fff; background: linear-gradient(90deg, rgba(155, 92, 255, .7), rgba(8, 5, 18, .9)); }
+.dots .pill.sel { outline: 2px solid #fff; outline-offset: 2px; }
+.swirl { transform-box: fill-box; transform-origin: center; animation: spin 10s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.barrier { animation: noise 2.6s steps(1) infinite; }
+@keyframes noise { 0%, 100% { opacity: .95; } 31% { opacity: .5; } 33% { opacity: .95; } 62% { opacity: .7; } 64% { opacity: .95; } }
+.reset { position: absolute; z-index: 9; left: max(10px, env(safe-area-inset-left, 0px)); top: calc(62px + env(safe-area-inset-top, 0px)); padding: 5px 10px; border-radius: 999px; border: 1px solid rgba(201, 198, 214, .3); background: rgba(8, 5, 18, .7); color: var(--dim); font: 700 10px var(--font-body); cursor: pointer; }
+@media (max-width: 600px) { .arrow { width: 40px; height: 40px; } .dots { gap: 5px; } .dots button { width: 26px; height: 26px; font-size: 11px; } .dots .pill { padding: 0 9px; font-size: 10px; } .acts button { height: 44px; font-size: 13px; } }
+@media (max-height: 520px) { .title-card .sub, .title-card .eyebrow2 { display: none; } .title-card h2 { font-size: 20px; } .foot { gap: 6px; } .acts button { height: 38px; } .dots button { width: 24px; height: 24px; } .stage { top: calc(50px + env(safe-area-inset-top, 0px)); } .reset { display: none; } }
+/* ---------- OVERVIEW ---------- */
+#overview { background: #05040b; }
+.ov-sea { position: absolute; inset: -20px; background: url(img/sea.webp) center / cover; filter: brightness(.8); animation: drift 40s ease-in-out infinite alternate; }
+@keyframes drift { to { transform: translate(-14px, 8px) scale(1.04); } }
+.ov-wrap { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+#overview.pan { touch-action: pan-y; cursor: grab; }
+#overview.pan .ov-hint { display: block; left: 50%; right: auto; transform: translateX(-50%); bottom: calc(66px + env(safe-area-inset-bottom, 0px)); white-space: nowrap; }
+.ov-wrap.fly { transition: transform .8s cubic-bezier(.5, 0, .2, 1), opacity .8s; }
+.ov-wrap img { display: block; width: 100%; height: 100%; -webkit-user-drag: none;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 14%, #000 86%, transparent 100%), linear-gradient(90deg, transparent 0%, #000 10%, #000 90%, transparent 100%);
+  -webkit-mask-composite: source-in; mask-image: linear-gradient(180deg, transparent 0%, #000 14%, #000 86%, transparent 100%), linear-gradient(90deg, transparent 0%, #000 10%, #000 90%, transparent 100%); mask-composite: intersect; }
+.hs { position: absolute; transform: translate(-50%, -50%); border: 0; background: transparent; padding: 0; cursor: pointer; border-radius: 50%; }
+/* islands: the art itself is never tinted or glowed. State is shown with HUD corner brackets and the name plate,
+   and the touched island is picked out by dimming everything around it (a spotlight). */
+.hs .br { position: absolute; inset: 4% 2% 14%; pointer-events: none; --bc: rgba(200, 190, 240, .45); --bl: 16px;
+  background:
+    linear-gradient(var(--bc), var(--bc)) left top / var(--bl) 2px, linear-gradient(var(--bc), var(--bc)) left top / 2px var(--bl),
+    linear-gradient(var(--bc), var(--bc)) right top / var(--bl) 2px, linear-gradient(var(--bc), var(--bc)) right top / 2px var(--bl),
+    linear-gradient(var(--bc), var(--bc)) left bottom / var(--bl) 2px, linear-gradient(var(--bc), var(--bc)) left bottom / 2px var(--bl),
+    linear-gradient(var(--bc), var(--bc)) right bottom / var(--bl) 2px, linear-gradient(var(--bc), var(--bc)) right bottom / 2px var(--bl);
+  background-repeat: no-repeat; opacity: .75; transition: inset .3s, opacity .3s; }
+.hs.cleared .br { --bc: #f2c14e; opacity: .95; }
+.hs.open .br { --bc: var(--c); opacity: 1; animation: lockOn 2.2s ease-in-out infinite; animation-delay: var(--dl); }
+@keyframes lockOn { 0%, 100% { inset: 4% 2% 14%; } 50% { inset: 0% -2% 10%; } }
+.hs.locked .br { --bl: 10px; opacity: .45; }
+.hs:hover .br, .hs:focus-visible .br { --bc: #fff; --bl: 22px; inset: -2% -4% 8%; opacity: 1; animation: none; }
+.ov-spot { position: absolute; inset: 0; z-index: 2; pointer-events: none; opacity: 0; transition: opacity .35s;
+  background: radial-gradient(ellipse var(--sw, 20%) var(--sh, 20%) at var(--sx, 50%) var(--sy, 50%), transparent 0%, transparent 70%, rgba(3, 2, 10, .62) 100%); }
+.ov-spot.on { opacity: 1; }
+.ov-spot { -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 14%, #000 86%, transparent 100%), linear-gradient(90deg, transparent 0%, #000 10%, #000 90%, transparent 100%); -webkit-mask-composite: source-in; mask-image: linear-gradient(180deg, transparent 0%, #000 14%, #000 86%, transparent 100%), linear-gradient(90deg, transparent 0%, #000 10%, #000 90%, transparent 100%); mask-composite: intersect; }
+.hs .lbl .mk { margin-left: 6px; padding: 1px 6px; border-radius: 3px; font: 700 .72em/1.4 var(--font-num); letter-spacing: .12em; background: #f2c14e; color: #2a1600; }
+.hs .lbl .mk.nx { background: transparent; color: var(--c); border: 1px solid var(--c); }
+.hs .lbl .mk.lk { background: transparent; color: #a7a2c6; border: 1px solid rgba(200, 190, 240, .35); }
+.hs .lbl .st { color: #f2c14e; margin-right: 4px; }
+.hs.cleared .lbl { border-color: #f2c14e; }
+/* drifting fog that hides the picture's edges */
+.ov-fog { position: absolute; inset: -12% -8%; pointer-events: none; z-index: 2; }
+.ov-fog i { position: absolute; border-radius: 50%; background: radial-gradient(ellipse, rgba(78, 70, 100, .7) 0%, rgba(44, 38, 66, .45) 42%, transparent 70%); filter: blur(16px); animation: fogMove var(--t, 30s) ease-in-out infinite alternate; animation-delay: var(--d0, 0s); }
+@keyframes fogMove { from { transform: translate(var(--fx0, 0), var(--fy0, 0)) scale(1); } to { transform: translate(var(--fx1, 30px), var(--fy1, -10px)) scale(1.12); } }
+.ov-wrap .rim { display: none; }
+.hs:focus-visible { outline: none; }
+.hs .lbl { position: absolute; left: 50%; top: 100%; transform: translate(-50%, -60%); padding: 3px 10px; border-radius: 999px; background: rgba(6, 4, 16, .85); border: 1px solid var(--c); font: 700 var(--fs, 12px) var(--font-body); white-space: nowrap; color: #fff; box-shadow: 0 0 10px color-mix(in srgb, var(--c) 50%, transparent); pointer-events: none; }
+.hs .lbl i { font-style: normal; margin-right: 4px; color: var(--c); font-family: var(--font-num); }
+.hs.locked .lbl { color: var(--dim); border-color: rgba(200, 190, 240, .4); box-shadow: none; }
+.hs { z-index: 3; }
+.ov-home { position: absolute; z-index: 9; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 20px; border-radius: 999px; border: 1px solid #fff; background: linear-gradient(90deg, rgba(155, 92, 255, .75), rgba(8, 5, 18, .9)); font: 800 14px var(--font-body); cursor: pointer; box-shadow: 0 0 18px rgba(155, 92, 255, .6); }
+.ov-home svg { width: 18px; height: 18px; stroke: #fff; fill: none; stroke-width: 2; stroke-linejoin: round; }
+.ov-hint { position: absolute; z-index: 9; right: max(14px, env(safe-area-inset-right, 0px)); bottom: calc(24px + env(safe-area-inset-bottom, 0px)); margin: 0; font: 700 12px var(--font-body); color: var(--ice); animation: blink 2.4s ease-in-out infinite; }
+@media (max-width: 600px) { .ov-hint { display: none; } }
+
+/* info sheet: a side panel on wide screens, a bottom sheet on phones */
+.sheet { position: absolute; z-index: 20; right: max(12px, env(safe-area-inset-right, 0px)); top: calc(66px + env(safe-area-inset-top, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); width: min(380px, calc(100% - 24px)); display: none; flex-direction: column; border-radius: 16px; background: var(--panel); border: 1px solid var(--c, var(--line)); box-shadow: 0 0 40px rgba(0, 0, 0, .6), 0 0 24px color-mix(in srgb, var(--c, #9b5cff) 35%, transparent); overflow: hidden; }
+.sheet.on { display: flex; animation: slideIn .3s cubic-bezier(.2, .8, .2, 1); }
+@keyframes slideIn { from { transform: translateX(30px); opacity: 0; } }
+.sh-img { display: block; width: 100%; aspect-ratio: 16 / 8; object-fit: contain; flex: none; padding: 8px 12px 0; background: radial-gradient(ellipse at 50% 70%, color-mix(in srgb, var(--c) 30%, transparent), transparent 70%); filter: drop-shadow(0 0 8px var(--c)); }
+.sh-head { position: relative; padding: 16px 48px 14px 16px; background: linear-gradient(135deg, color-mix(in srgb, var(--c, #9b5cff) 40%, transparent), transparent 70%); border-bottom: 1px solid rgba(255, 255, 255, .1); }
+.sh-head .no { font: 700 11px var(--font-num); letter-spacing: .2em; color: var(--c, var(--ice)); }
+.sh-head h2 { margin: 4px 0 2px; font: 900 22px/1.2 var(--font-body); }
+.sh-head .sub { font: 700 12px var(--font-body); color: var(--dim); }
+.sh-head .x { position: absolute; right: 10px; top: 10px; width: 36px; height: 36px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, .25); background: rgba(0, 0, 0, .3); cursor: pointer; display: grid; place-items: center; padding: 0; }
+.sh-head .x svg { width: 18px; height: 18px; stroke: #fff; stroke-width: 2.2; fill: none; stroke-linecap: round; }
+.state { display: inline-block; margin-top: 8px; padding: 3px 10px; border-radius: 999px; font: 700 11px var(--font-body); border: 1px solid; }
+.state.locked { color: var(--dim); border-color: rgba(201, 198, 214, .4); }
+.state.open { color: #fff; border-color: var(--c); background: color-mix(in srgb, var(--c) 30%, transparent); }
+.state.cleared { color: #0b0716; background: var(--c); border-color: var(--c); }
+.sh-body { flex: 1; overflow-y: auto; padding: 14px 16px; display: grid; gap: 12px; align-content: start; user-select: text; -webkit-user-select: text; }
+.sh-body h3 { margin: 0 0 4px; font: 700 11px var(--font-num); letter-spacing: .18em; color: var(--c, var(--ice)); }
+.sh-body p { margin: 0; font-size: 13px; line-height: 1.75; }
+.sh-body ul { margin: 0; padding-left: 1.2em; font-size: 13px; line-height: 1.75; }
+.sh-foot { padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 8px; border-top: 1px solid rgba(255, 255, 255, .1); }
+.act { display: flex; align-items: center; justify-content: center; gap: 8px; height: 48px; border-radius: 12px; border: 1px solid #fff; background: linear-gradient(90deg, color-mix(in srgb, var(--c, #9b5cff) 70%, transparent), color-mix(in srgb, var(--c, #9b5cff) 25%, transparent)); font: 800 15px var(--font-body); cursor: pointer; text-decoration: none; box-shadow: 0 0 16px color-mix(in srgb, var(--c, #9b5cff) 50%, transparent); }
+.act:disabled { opacity: .45; cursor: default; box-shadow: none; }
+.act.ghost { height: 38px; border-color: rgba(201, 198, 214, .35); background: transparent; box-shadow: none; font-size: 12px; color: var(--dim); }
+@media (max-width: 700px) and (orientation: portrait) {
+  .sheet { left: 0; right: 0; top: auto; bottom: 0; width: auto; max-height: 64%; border-radius: 18px 18px 0 0; border-bottom: 0; }
+  .sh-img { aspect-ratio: 16 / 5; }
+  @keyframes slideIn { from { transform: translateY(40px); opacity: 0; } }
+}
+
+/* unlock moment */
+.unlock { position: fixed; inset: 0; z-index: 80; display: none; place-items: center; pointer-events: none; text-align: center; }
+.unlock.on { display: grid; animation: unlockIn 2.8s ease forwards; }
+.unlock b { display: block; font: 800 clamp(22px, 6vw, 44px)/1.2 var(--font-latin); letter-spacing: .18em; color: #fff; text-shadow: 0 0 12px var(--violet), 0 0 40px var(--violet); }
+.unlock small { display: block; margin-top: 10px; font: 700 14px var(--font-body); letter-spacing: .2em; color: var(--ice); }
+@keyframes unlockIn { 0% { opacity: 0; transform: scale(1.2); } 15%, 75% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+
+@media (max-width: 700px), (max-height: 500px) {
+  .status { padding: 7px 10px; gap: 5px; }
+  .status .legend { display: none; }
+  .status .t { font-size: 9px; letter-spacing: .12em; }
+  .locks i { width: 12px; height: 7px; }
+}
+@media (max-height: 500px) { .status .demo { display: none; } .zb { width: 36px; height: 36px; } }
+@media (prefers-reduced-motion: reduce) { .ci .art .lt, .ci.front.pic .art > img:first-child { animation: none !important; } .mb.pulse::before, .node.open .ring, .seg.lit, .swirl, .barrier, .radar { animation: none !important; } }
+</style>
+
+<!-- START -->
+<section class="scene on" id="start" aria-label="スタート">
+  <div class="bg"></div>
+  <div class="col">
+    <p class="eyebrow">NEON RUIN CITY</p>
+    <img class="logo" src="img/logo_purple.webp" alt="selectear セレクティア">
+    <button class="mb pulse" type="button" id="startBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12-7.5z"/></svg><span><span class="en">Start</span><span class="jp">外の世界へ</span></span></button>
+    <p class="note">♪ 音が出ます</p>
+  </div>
+</section>
+
+<!-- OVERVIEW: the whole outside world in one picture; tap a city to fly in -->
+<section class="scene" id="overview" aria-label="外の世界の全体図">
+  <div class="ov-sea"></div>
+  <div class="ov-wrap" id="ovWrap"><img id="ovImg" src="img/overview.webp" alt="外の世界の全体図。7つの都市が爆心地を囲んでいる" draggable="false"><span class="rim"></span><span class="ov-spot" id="ovSpot"></span>
+    <div class="ov-fog" aria-hidden="true">
+      <i style="left:-6%;top:-6%;width:44%;height:40%;--t:34s;--fx1:60px;--fy1:20px"></i>
+      <i style="right:-6%;top:-8%;width:46%;height:42%;--t:41s;--fx1:-70px;--fy1:24px;--d0:-9s"></i>
+      <i style="left:-8%;bottom:-8%;width:48%;height:44%;--t:38s;--fx1:70px;--fy1:-26px;--d0:-5s"></i>
+      <i style="right:-8%;bottom:-6%;width:46%;height:42%;--t:45s;--fx1:-64px;--fy1:-18px;--d0:-14s"></i>
+      <i style="left:28%;top:-14%;width:44%;height:28%;--t:36s;--fx1:-80px;--fy1:10px;--d0:-20s"></i>
+      <i style="left:26%;bottom:-16%;width:48%;height:30%;--t:43s;--fx1:90px;--fy1:-8px;--d0:-11s"></i>
+      <i style="left:-14%;top:30%;width:26%;height:44%;--t:32s;--fx1:40px;--fy1:30px;--d0:-7s"></i>
+      <i style="right:-14%;top:28%;width:26%;height:46%;--t:39s;--fx1:-40px;--fy1:-30px;--d0:-17s"></i>
+    </div></div>
+  <div class="topbar">
+    <button class="back" type="button" id="ovBack"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg><span>戻る</span></button>
+    <div class="place"><b>NEON RUIN CITY</b><small>外の世界</small></div>
+    <div class="right"><div class="coins" aria-label="有料コイン"><span class="coin-ic" aria-hidden="true"></span><span class="lb">有料<br>コイン</span><span class="val" id="coinVal2">0</span></div></div>
+  </div>
+  <button class="ov-home" type="button" id="ovHome"><svg viewBox="0 0 24 24"><path d="M4 21V9l8-6 8 6v12h-6v-7h-4v7z"/></svg>アジト</button>
+  <p class="ov-hint" id="ovHint">都市をタップ ／ 左右にドラッグで見回せます</p>
+</section>
+
+<!-- MAP -->
+<section class="scene" id="map" aria-label="外の世界のマップ">
+  <canvas id="water" aria-hidden="true"></canvas>
+  <div class="stage" id="stage" aria-roledescription="カルーセル" aria-label="都市を選ぶ"></div>
+  <div class="fog"></div>
+  <button class="arrow l" type="button" id="prev" aria-label="前の都市"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+  <button class="arrow r" type="button" id="next" aria-label="次の都市"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+  <div class="foot" id="foot">
+    <div class="title-card" id="card" aria-live="polite"></div>
+    <div class="acts" id="acts"></div>
+    <div class="dots" id="dots" aria-label="場所を選ぶ"></div>
+  </div>
+  <div class="topbar">
+    <button class="back" type="button" id="toStart"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg><span>全体図</span></button>
+    <div class="place"><b>NEON RUIN CITY</b><small>外の世界</small></div>
+    <div class="right">
+      <button class="snd" type="button" id="snd" aria-pressed="true" aria-label="BGMと環境音"><svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4z"/><path class="on" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/><path class="off" d="M16 9l6 6M22 9l-6 6"/></svg></button>
+      <div class="coins" aria-label="有料コイン"><span class="coin-ic" aria-hidden="true"></span><span class="lb">有料<br>コイン</span><span class="val" id="coinVal">0</span></div>
+    </div>
+  </div>
+  <button class="reset" type="button" id="resetDemo">進行リセット（デモ）</button>
+  <aside class="sheet" id="sheet" aria-live="polite"></aside>
+</section>
+
+
+<div class="unlock" id="unlock"><div><b>MEMORY UNLOCKED</b><small>バリアが消え、爆心地への橋が繋がった</small></div></div>
+<div class="flash" id="flash"></div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(() => {
+  "use strict";
+  /* standalone build: assets embedded once in window.__ASSETS; the published version loads files */
+  const ASSETS = window.__ASSETS || null;
+  const A = p => (ASSETS && ASSETS[p]) || p;
+  if (ASSETS) {
+    for (const el of document.querySelectorAll("[src]")) el.setAttribute("src", A(el.getAttribute("src")));
+    for (const s of document.querySelectorAll("style")) s.textContent = s.textContent.replace(/url\((img\/[^)]+)\)/g, (m, q) => `url(${A(q)})`);
+  }
+  const $ = id => document.getElementById(id);
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const store = {
+    get(k, d) { try { const v = JSON.parse(localStorage.getItem(k) || "null"); return v ?? d; } catch { return d; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+  };
+  const st = Object.assign({ bgm: true, sound: true, vol: 70, vib: true }, store.get("selectear_settings2", {}));
+  $("coinVal").textContent = (Number(store.get("selectear_coins", 0)) || 0).toLocaleString("ja-JP");
+  // the hideout is its own page
+  // links between the three pages; the standalone build links to the neighbouring .html files instead
+  // inside the combined game the map and hideout are layers of the home page: talk to it instead of opening tabs
+  const EMB = location.hash === "#embedded" || !!window.__EMBEDDED;
+  let away = EMB; // hidden behind another layer
+  const toParent = go => { try { parent.postMessage({ selectear: go }, "*"); } catch {} };
+  const PAGE = (url, file) => (window.__ASSETS ? file : url);
+  function openPage(href) { const a = document.createElement("a"); a.href = href; a.target = "_blank"; a.rel = "noopener"; document.body.append(a); a.click(); a.remove(); }
+  const HIDEOUT_URL = PAGE("https://claude.ai/artifact/3GSx5C75eQ4oDq7jjGWaa5", "selectear_hideout.html");
+
+  /* =========================================================
+     DATA — from the spec (all provisional there)
+     ========================================================= */
+  const CITIES = [
+    { no: 1, id: "sloth", name: "スリープ・ベッド", title: "月と怠惰の街", img: "img/city_sloth.webp", sin: "怠惰", c: "#48e1ff", district: "PARK 遊園地跡", where: "右（アジトの隣）・出発と帰還",
+      view: "壊れた観覧車と、無数のゲーム看板が並ぶ電脳遊戯街。",
+      gimmicks: ["眠りの霧（ブルーライト）：視界が悪く、一部のルートが隠されている。", "放置されたアーケード筐体を調べると、過去の記憶の断片（サブイベント）が見られる。"] },
+    { no: 2, id: "gluttony", name: "フレア・ファクトリー", title: "太陽と暴食の港", img: "img/city_gluttony.webp", sin: "暴食", c: "#ff9b3d", district: "PORT 港湾エリア", where: "右下",
+      view: "巨大なクレーンとコンテナ倉庫、廃市場が連なる湾岸地区。",
+      gimmicks: ["物資の残骸：壊れた自動販売機やコンテナから、カード生成用の素材が多く手に入る。", "人の記憶の罪達（雑魚敵）が徘徊しており、連戦になりやすい。"] },
+    { no: 3, id: "greed", name: "ゴールド・バンク", title: "金と強欲の国", img: "img/city_greed.webp", sin: "強慾", c: "#f2c14e", district: "高層ビル群", where: "下",
+      view: "紫と青のネオンが最も激しく輝く、かつての金融・ビジネス街。",
+      gimmicks: ["データチップの嵐：エリア内に散らばる「記憶のコイン」を集めることで、特殊なショップや隠しルートが解放される。"] },
+    { no: 4, id: "envy", name: "エンヴィー・スクエア", title: "機械と嫉妬の地", img: "img/city_envy.webp", sin: "嫉妬", c: "#4ce39a", district: "巨大モニター街", where: "左下",
+      view: "環状線の外側に広がる、割れた巨大ディスプレイと鏡張りの繁華街。",
+      gimmicks: ["ミラーリング現象：プレイヤーのデッキ構成をコピーしてくる敵が出現する。", "サブエリア候補：巨大駅をこの近辺のサブエリアとして配置可能。"] },
+    { no: 5, id: "lust", name: "ラヴ・ネオン", title: "嘘と色欲の都市", img: "img/city_lust.webp", sin: "色慾", c: "#ff6ec8", district: "FACTORY 工場跡〜歓楽街", where: "左上",
+      view: "妖しいピンクと紫の煙が立ち込める、幻覚と娯楽の迷宮エリア。",
+      gimmicks: ["幻惑のルート：正しい道を選ばないとスタート地点にループさせられる迷路ギミックがある。"] },
+    { no: 6, id: "wrath", name: "アンガー・ストリート", title: "戦と憤怒の監獄", img: "img/city_wrath.webp", sin: "憤怒", c: "#ff4d5e", district: "EAST 郊外周辺〜ドーム跡", where: "上",
+      view: "鉄骨がむき出しになり、火花と赤い警告灯が点滅する闘技場エリア。",
+      gimmicks: ["強制バトルゾーン：回復ポイントが少なく、強敵（大罪の守護者）との連続バトルが待ち受ける戦闘特化エリア。"] },
+    { no: 7, id: "pride", name: "プライド・ネオ", title: "経済と傲慢の城", img: "img/city_pride.webp", sin: "傲慢", c: "#a98bff", district: "CLINIC 医療区〜中枢議事堂", where: "右上",
+      view: "巨大な十字のマークが光る研究施設と、その奥にそびえる旧中枢機関。",
+      gimmicks: ["最深部の封印：ループと大崩落（ゼロ・デイ）の秘密が記録されたメインサーバーがある。ここを制圧すると一周が完成し、12時の怠惰から爆心地への橋が繋がる。"] }
+  ];
+
+  let scene = "start";
+  /* progress (demo): cities are cleared in order 1→7 */
+  let cleared = Math.max(0, Math.min(7, Number(store.get("selectear_progress", 0)) || 0));
+  const stateOf = i => i < cleared ? "cleared" : i === cleared ? "open" : "locked";
+  const STATE_JP = { locked: "未解放", open: "攻略可能", cleared: "制圧済み" };
+
+  /* =========================================================
+     BOARD: 3×3 islands on water. Bottom row 2 | 1 | 7, GROUND ZERO in the middle,
+     clockwise 1 → 2 → 3 → 4 → (top centre is open sea) → 5 → 6 → 7. アジト below 1.
+     ========================================================= */
+  const CELL = [[1, 2], [0, 2], [0, 1], [0, 0], [2, 0], [2, 1], [2, 2]];
+  const ROWSCALE = [.84, .92, 1];
+  const NS = "http://www.w3.org/2000/svg";
+  const esc = s => String(s).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+  // seeded random so each generic island always looks the same
+  const rng = seed => () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+  // an isometric slab with a few blocky buildings, for cities that have no illustration yet
+  function genericIsland(c, i) {
+    const r = rng(17 + i * 31), col = c.c;
+    const box = (x, y, a, h) => {
+      const b = a / 2;
+      const top = `${x - a},${y - h} ${x},${y - b - h} ${x + a},${y - h} ${x},${y + b - h}`;
+      const left = `${x - a},${y - h} ${x},${y + b - h} ${x},${y + b} ${x - a},${y}`;
+      const right = `${x},${y + b - h} ${x + a},${y - h} ${x + a},${y} ${x},${y + b}`;
+      let win = "";
+      for (let k = 0; k < Math.floor(h / 9); k++) if (r() > .35) win += `<rect x="${x + a * .25 + r() * a * .4}" y="${y - h + 6 + k * 9 + a * .05}" width="3" height="3" fill="${col}" opacity=".9"/>`;
+      for (let k = 0; k < Math.floor(h / 9); k++) if (r() > .55) win += `<rect x="${x - a * .75 + r() * a * .4}" y="${y - h + 8 + k * 9}" width="3" height="3" fill="${col}" opacity=".6"/>`;
+      return `<polygon points="${left}" fill="#0c0919"/><polygon points="${right}" fill="#151030"/><polygon points="${top}" fill="#221b40" stroke="${col}" stroke-opacity=".55" stroke-width=".8"/>${win}`;
+    };
+    const spots = [];
+    for (let k = 0; k < 9; k++) { const u = r() * 2 - 1, v = r() * 2 - 1; if (Math.abs(u) + Math.abs(v) < .9) spots.push([100 + u * 62, 74 + v * 22, 9 + r() * 9, 14 + r() * 42]); }
+    spots.sort((p, q) => p[1] - q[1]);
+    return `<svg viewBox="0 0 200 140" xmlns="${NS}" aria-hidden="true">
+      <polygon points="8,78 100,36 192,78 100,120" fill="#18122e" stroke="${col}" stroke-width="1.6"/>
+      <polygon points="8,78 100,120 100,138 8,96" fill="#0a0716"/>
+      <polygon points="100,120 192,78 192,96 100,138" fill="#110c24"/>
+      <polyline points="8,78 100,120 192,78" fill="none" stroke="${col}" stroke-width="2" opacity=".9"/>
+      <path d="M30 78L100 46L170 78" fill="none" stroke="${col}" stroke-opacity=".25"/><path d="M54 78L100 57L146 78L100 99Z" fill="none" stroke="${col}" stroke-opacity=".2"/>
+      ${spots.map(([x, y, a, h]) => box(x, y, a, h)).join("")}
+      <text x="100" y="${Math.min(...spots.map(s => s[1] - s[3])) - 6}" text-anchor="middle" font-size="22" font-weight="900" fill="#fff" stroke="${col}" stroke-width=".6" style="paint-order:stroke">${c.sin[0]}</text>
+    </svg>`;
+  }
+  function gzIsland(open) {
+    return `<svg viewBox="0 0 200 140" xmlns="${NS}" aria-hidden="true">
+      <defs><radialGradient id="cr" cx="50%" cy="45%" r="55%"><stop offset="0%" stop-color="#ffe6ff"/><stop offset="22%" stop-color="#c25cff"/><stop offset="60%" stop-color="#3a1066"/><stop offset="100%" stop-color="#0d0618"/></radialGradient></defs>
+      <ellipse cx="100" cy="92" rx="94" ry="40" fill="#0a0716"/><ellipse cx="100" cy="82" rx="94" ry="40" fill="#1a1230" stroke="#c9b8ff" stroke-opacity=".5"/>
+      <ellipse cx="100" cy="82" rx="74" ry="30" fill="none" stroke="#d9e6ff" stroke-width="3" stroke-dasharray="7 5" opacity=".6"/>
+      <ellipse cx="100" cy="80" rx="56" ry="22" fill="url(#cr)"/>
+      <g class="swirl"><ellipse cx="100" cy="78" rx="34" ry="13" fill="none" stroke="rgba(255,220,255,.6)" stroke-width="2" stroke-dasharray="40 20"/></g>
+      <path d="M100 76C96 40 104 30 100 6" stroke="#e6b3ff" stroke-width="3" opacity=".55" fill="none" filter="url(#bl)"/>
+      ${open ? "" : `<g class="barrier"><ellipse cx="100" cy="62" rx="78" ry="52" fill="rgba(255,77,94,.07)" stroke="#ff4d5e" stroke-width="2.5" stroke-dasharray="10 5"/></g>`}
+      <filter id="bl"><feGaussianBlur stdDeviation="3"/></filter>
+    </svg>`;
+  }
+  function hideIsland() {
+    return `<svg viewBox="0 0 200 140" xmlns="${NS}" aria-hidden="true">
+      <polygon points="12,80 100,42 188,80 100,118" fill="#1d1438" stroke="#fff" stroke-width="1.6"/>
+      <polygon points="12,80 100,118 100,134 12,96" fill="#0a0716"/><polygon points="100,118 188,80 188,96 100,134" fill="#120c26"/>
+      <polygon points="56,78 100,59 144,78 100,97" fill="#2a1e52"/>
+      <polygon points="56,78 100,97 100,70 56,51" fill="#16102c"/><polygon points="100,97 144,78 144,51 100,70" fill="#211741"/>
+      <polygon points="52,52 100,30 148,52 100,74" fill="#3a2a6e" stroke="#b9a2ff" stroke-width="1"/>
+      <path d="M100 30L100 18" stroke="#fff" stroke-width="2"/><circle cx="100" cy="16" r="3" fill="#fff"/>
+      ${[0, 1, 2].map(k => `<rect x="${108 + k * 11}" y="${74 - k * 5}" width="5" height="8" fill="#d6c7ff"/><rect x="${66 + k * 11}" y="${60 + k * 5}" width="5" height="8" fill="#9b7cff"/>`).join("")}
+    </svg>`;
+  }
+  /* =========================================================
+     CAROUSEL: the ring of places, clockwise. The selected one is big in front,
+     the one before and after sit behind it on the left and right.
+     Ring: アジト → 1 … 7 → GROUND ZERO → (back to アジト)
+     ========================================================= */
+  const PLACES = [{ kind: "home" }, ...CITIES.map((c, i) => ({ kind: "city", i })), { kind: "gz" }];
+  const stage = $("stage");
+  let sel = 1 + Math.min(cleared, 6), items = [];
+  const placeColor = p => p.kind === "city" ? CITIES[p.i].c : p.kind === "gz" ? (cleared >= 7 ? "#c25cff" : "#ff4d5e") : "#b9a2ff";
+  const placeName = p => p.kind === "city" ? CITIES[p.i].name : p.kind === "gz" ? "GROUND ZERO" : "HIDEOUT アジト";
+  function build() {
+    stage.innerHTML = ""; items = PLACES.map((p, k) => {
+      const d = document.createElement("button"); d.type = "button"; d.className = "ci";
+      let inner, pic = false, state = "";
+      let refl = null;
+      if (p.kind === "city") {
+        const c = CITIES[p.i]; state = stateOf(p.i); pic = !!c.img;
+        if (pic) {
+          const lt = c.img.replace(".webp", "");
+          refl = `<img src="${A(c.img)}" alt="" draggable="false">`;
+          inner = refl + `<img class="lt la" src="${A(lt + "_la.webp")}" alt="" draggable="false"><img class="lt lb" src="${A(lt + "_lb.webp")}" alt="" draggable="false">`;
+        } else inner = genericIsland(c, p.i);
+      }
+      else if (p.kind === "gz") {
+        const open = cleared >= 7; state = open ? "open" : "gz sealed"; pic = true;
+        refl = `<img src="${A("img/city_gz.webp")}" alt="" draggable="false">`;
+        inner = refl + `<img class="lt la" src="${A("img/city_gz_la.webp")}" alt="" draggable="false"><img class="lt lb" src="${A("img/city_gz_lb.webp")}" alt="" draggable="false">` +
+          (open ? "" : `<svg class="seal" viewBox="0 0 200 120" aria-hidden="true"><ellipse cx="100" cy="58" rx="92" ry="52" fill="rgba(255,77,94,.06)" stroke="#ff4d5e" stroke-width="2" stroke-dasharray="10 6"/><ellipse cx="100" cy="58" rx="80" ry="44" fill="none" stroke="#ff4d5e" stroke-width="1" opacity=".5"/></svg>`);
+      }
+      else {
+        pic = true; refl = `<img src="${A("img/city_hideout.webp")}" alt="" draggable="false">`;
+        inner = refl + `<img class="lt la" src="${A("img/city_hideout_la.webp")}" alt="" draggable="false"><img class="lt lb" src="${A("img/city_hideout_lb.webp")}" alt="" draggable="false">`;
+      }
+      d.classList.add(...[pic ? "pic" : "", ...state.split(" ")].filter(Boolean));
+      d.style.setProperty("--c", placeColor(p)); d.style.setProperty("--d", (-k * .8) + "s");
+      // each place's neon gets its own speed and starting point, so they never flash together
+      d.style.setProperty("--na", (3.6 + (k * 0.73) % 2.2).toFixed(2) + "s"); d.style.setProperty("--nb", (5 + (k * 1.21) % 2.6).toFixed(2) + "s");
+      d.style.setProperty("--nd", (-(k * 2.37) % 5).toFixed(2) + "s");
+      d.setAttribute("aria-label", placeName(p));
+      d.innerHTML = `<span class="float"><span class="glow"></span><span class="ripple"></span><span class="art">${inner}</span><span class="refl" aria-hidden="true">${refl || inner}</span></span><span class="tag">${p.kind === "city" ? CITIES[p.i].no + " " : ""}${esc(placeName(p))}</span>`;
+      d.addEventListener("click", () => { if (dragMoved) return; if (k === sel) openDetail(); else go(k); });
+      stage.append(d); return d;
+    });
+    position(); paintFoot();
+  }
+  function position() {
+    const W = innerWidth, sh = stage.clientHeight, n = PLACES.length, portrait = W / sh < 1;
+    // front size: as big as the stage allows (illustrations are 16:9, block islands 10:7)
+    const fw = Math.min(W * (portrait ? .8 : .56), sh * (portrait ? .62 : .82) / .62);
+    stage.style.setProperty("--fw", fw + "px");
+    items.forEach((el, k) => {
+      let o = k - sel; if (o > n / 2) o -= n; if (o < -n / 2) o += n;
+      const a = Math.abs(o), side = Math.sign(o);
+      const x = side * (a === 0 ? 0 : a === 1 ? (portrait ? W * .3 : fw * .8) : (portrait ? W * .5 : fw * 1.2));
+      const y = a === 0 ? (portrait ? sh * .1 : 0) : a === 1 ? -sh * (portrait ? .2 : .14) : -sh * .26;
+      const s = a === 0 ? 1 : a === 1 ? (portrait ? .55 : .5) : .3;
+      const rot = a === 0 ? 0 : -side * 22;
+      const art = el.querySelector(".art"), ah = art.offsetHeight || fw * .6;
+      el.style.transform = `translate(${x}px, ${y - ah * .55}px) translateZ(${-a * 160}px) rotateY(${rot}deg) scale(${s})`;
+      el.style.opacity = a === 0 ? 1 : a === 1 ? .95 : a === 2 ? .3 : 0;
+      el.style.filter = a === 0 ? "none" : a === 1 ? "brightness(.9)" : "brightness(.5) blur(1.5px)";
+      el.style.zIndex = 10 - a; el.style.pointerEvents = a <= 1 ? "auto" : "none";
+      el.classList.toggle("front", a === 0); el.tabIndex = a <= 1 ? 0 : -1;
+    });
+  }
+  function go(k) {
+    const n = PLACES.length; k = (k + n) % n; if (k === sel) return;
+    sel = k; se("switch"); position(); paintFoot();
+  }
+  function paintFoot() {
+    const p = PLACES[sel], cc = placeColor(p), foot = $("foot"); foot.style.setProperty("--cc", cc);
+    let eyebrow, title, sub, chip, acts;
+    if (p.kind === "city") {
+      const c = CITIES[p.i], s = stateOf(p.i);
+      eyebrow = `CITY ${c.no} / 7 ・ ${c.sin}`; title = c.name; sub = c.title || `大罪：${c.sin} ・ ${c.district}`;
+      chip = `<span class="chip ${s}">${STATE_JP[s]}</span>`;
+      acts = `<button type="button" class="sec" data-a="detail">詳しく</button><button type="button" data-a="go" ${s === "locked" ? "disabled" : ""}>${s === "cleared" ? "もう一度探索する" : s === "locked" ? `${esc(CITIES[p.i - 1].name)}の攻略で解放` : "攻略に出発する"}</button>${s === "open" ? '<button type="button" class="sec" data-a="demo">制圧（デモ）</button>' : ""}`;
+    } else if (p.kind === "gz") {
+      const done = cleared >= 7;
+      eyebrow = "FINAL DESTINATION"; title = "GROUND ZERO"; sub = `??? ・ 記憶のロック ${cleared}/7 解除`;
+      chip = `<span class="chip ${done ? "open" : "locked"}">${done ? "侵入可能" : "バリアで封鎖中"}</span>`;
+      acts = `<button type="button" class="sec" data-a="detail">詳しく</button><button type="button" data-a="gz" ${done ? "" : "disabled"}>${done ? "爆心地へ侵入する" : "7都市の攻略で解放"}</button>`;
+    } else {
+      eyebrow = "HOME BASE"; title = "HIDEOUT"; sub = `アジト ・ 広い屋敷 ・ 電脳世界の入口`;
+      chip = `<span class="chip open">拠点</span>`;
+      acts = `<button type="button" class="sec" data-a="detail">詳しく</button><button type="button" data-a="home">アジトに帰る</button>`;
+    }
+    $("card").innerHTML = `<span class="eyebrow2">${esc(eyebrow)}</span><h2>${esc(title)}</h2><span class="sub">${esc(sub)}</span>${chip}`;
+    $("acts").innerHTML = acts;
+    for (const b of $("acts").querySelectorAll("button")) b.addEventListener("click", () => act(b.dataset.a));
+    const dots = PLACES.map((q, k) => {
+      if (q.kind === "home") return `<button type="button" class="pill home ${k === sel ? "sel" : ""}" data-k="${k}">アジト</button><span class="sep"></span>`;
+      if (q.kind === "gz") return `<span class="sep"></span><button type="button" class="pill gz ${cleared >= 7 ? "open" : ""} ${k === sel ? "sel" : ""}" data-k="${k}">GZ</button>`;
+      const c = CITIES[q.i]; return `<button type="button" class="${stateOf(q.i)} ${k === sel ? "sel" : ""}" style="--c:${c.c}" data-k="${k}" aria-label="${c.no} ${esc(c.name)}">${c.no}</button>`;
+    }).join("");
+    $("dots").innerHTML = dots;
+    for (const b of $("dots").querySelectorAll("[data-k]")) b.addEventListener("click", () => go(+b.dataset.k));
+  }
+  function act(a) {
+    const p = PLACES[sel];
+    if (a === "detail") return openDetail();
+    if (a === "go") { decide(); toast("バトルと探索は準備中です"); }
+    if (a === "demo") clearCity(p.i);
+    if (a === "gz") { decide(); toast("GROUND ZERO は準備中です"); }
+    if (a === "home") { decide(); if (EMB) toParent("home"); else openPage(HIDEOUT_URL); }
+  }
+  function openDetail() { const p = PLACES[sel]; if (p.kind === "city") openCity(p.i); else if (p.kind === "gz") openGZ(); else openHideout(); }
+  function draw() { build(); }
+
+  // swipe / drag, arrows, keys, wheel
+  let dragX = null, dragMoved = false;
+  stage.addEventListener("pointerdown", e => { dragX = e.clientX; dragMoved = false; });
+  addEventListener("pointermove", e => { if (dragX == null) return; if (Math.abs(e.clientX - dragX) > 10) { dragMoved = true; stage.classList.add("drag"); } });
+  addEventListener("pointerup", e => { if (dragX == null) return; const dx = e.clientX - dragX; dragX = null; stage.classList.remove("drag"); if (Math.abs(dx) > 40) go(sel + (dx < 0 ? 1 : -1)); setTimeout(() => { dragMoved = false; }, 0); });
+  $("prev").addEventListener("click", () => go(sel - 1));
+  $("next").addEventListener("click", () => go(sel + 1));
+  let wheelT = 0; stage.addEventListener("wheel", e => { e.preventDefault(); const t = Date.now(); if (t - wheelT < 450) return; wheelT = t; go(sel + ((e.deltaY || e.deltaX) > 0 ? 1 : -1)); }, { passive: false });
+  addEventListener("keydown", e => { if (scene !== "map" || $("sheet").classList.contains("on")) return; if (e.key === "ArrowLeft") go(sel - 1); if (e.key === "ArrowRight") go(sel + 1); });
+  function fitFoot() { const f = $("foot"); $("map").style.setProperty("--foot", (f.offsetHeight + 6) + "px"); }
+  let rt = 0; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { if (scene === "map") { fitFoot(); position(); } }, 120); });
+  new ResizeObserver(() => { if (scene === "map") { fitFoot(); position(); } }).observe($("foot"));
+
+  /* background: the stormy sea picture, slowly drifting, with a glow in the selected place's colour,
+     light streaks on the water and floating bokeh */
+  const wv = $("water"), wg = wv.getContext("2d"); let ww = 0, wh = 0;
+  function wsize() { const r = Math.min(devicePixelRatio || 1, 2); ww = innerWidth; wh = innerHeight; wv.width = ww * r; wv.height = wh * r; wg.setTransform(r, 0, 0, r, 0, 0); }
+  wsize(); addEventListener("resize", wsize);
+  const seaImg = new Image(); seaImg.src = A("img/sea.webp");
+  const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+  let tint = [155, 92, 255];
+  const streaks = Array.from({ length: 90 }, () => ({ x: Math.random(), y: Math.random(), l: 10 + Math.random() * 60, s: .05 + Math.random() * .2, a: .05 + Math.random() * .14, hue: Math.random() < .5 ? 0 : 1 }));
+  const bokeh = Array.from({ length: 26 }, () => ({ x: Math.random(), y: Math.random(), r: 2 + Math.random() * 7, v: .00008 + Math.random() * .00025, p: Math.random() * 6.28 }));
+  (function wave(t = 0) {
+    if (scene === "map") {
+      const target = hex(placeColor(PLACES[sel] || PLACES[1]));
+      tint = tint.map((c, i) => c + (target[i] - c) * .03);
+      const T = tint.map(Math.round).join(",");
+      wg.fillStyle = "#05040b"; wg.fillRect(0, 0, ww, wh);
+      if (seaImg.complete && seaImg.naturalWidth) {
+        const r = seaImg.naturalWidth / seaImg.naturalHeight, z = 1.08 + .03 * Math.sin(t / 9000);
+        let w = ww * z, h = w / r; if (h < wh * z) { h = wh * z; w = h * r; }
+        wg.globalAlpha = .95; wg.drawImage(seaImg, (ww - w) / 2 + Math.sin(t / 7000) * 14, (wh - h) / 2 + Math.cos(t / 9000) * 8, w, h); wg.globalAlpha = 1;
+      }
+      // colour glow behind the front island
+      const gx = ww / 2, gy = wh * .42, gr = Math.max(ww, wh) * .55;
+      const g = wg.createRadialGradient(gx, gy, 0, gx, gy, gr); g.addColorStop(0, `rgba(${T},.32)`); g.addColorStop(.5, `rgba(${T},.1)`); g.addColorStop(1, `rgba(${T},0)`);
+      wg.fillStyle = g; wg.fillRect(0, 0, ww, wh);
+      for (const s of streaks) {
+        const yy = s.y * wh, persp = .3 + s.y;
+        s.x += s.s / ww * persp; if (s.x > 1.05) s.x = -.05;
+        const wob = Math.sin(t / 900 + s.y * 40) * 2;
+        wg.strokeStyle = s.hue ? `rgba(${T},${s.a * persp})` : `rgba(190,190,230,${s.a * persp * .7})`; wg.lineWidth = 1 + persp;
+        wg.beginPath(); wg.moveTo(s.x * ww, yy + wob); wg.lineTo(s.x * ww + s.l * persp, yy + wob); wg.stroke();
+      }
+      for (const b of bokeh) { b.y -= b.v * 16; if (b.y < -.05) { b.y = 1.05; b.x = Math.random(); } const a = .08 + .08 * Math.sin(t / 1300 + b.p); const bg = wg.createRadialGradient(b.x * ww, b.y * wh, 0, b.x * ww, b.y * wh, b.r * 2); bg.addColorStop(0, `rgba(${T},${a * 2})`); bg.addColorStop(1, `rgba(${T},0)`); wg.fillStyle = bg; wg.beginPath(); wg.arc(b.x * ww, b.y * wh, b.r * 2, 0, 6.283); wg.fill(); }
+    }
+    requestAnimationFrame(wave);
+  })();
+
+  /* =========================================================
+     INFO SHEET
+     ========================================================= */
+  const closeIco = '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+  function sheet(color, html) { const s = $("sheet"); s.style.setProperty("--c", color); s.innerHTML = html; s.classList.add("on"); s.querySelector(".x").addEventListener("click", closeSheet); }
+  function closeSheet() { $("sheet").classList.remove("on"); }
+  function openCity(i) {
+    const c = CITIES[i], s = stateOf(i); decide();
+    sheet(c.c, `${c.img ? `<img class="sh-img" src="${A(c.img)}" alt="${esc(c.title)}の景色">` : ""}<div class="sh-head"><span class="no">CITY ${c.no} / 7</span><h2>${esc(c.name)}</h2><div class="sub">${c.title ? esc(c.title) + " ・ 大罪：" + esc(c.sin) : "大罪：" + esc(c.sin) + " ・ " + esc(c.district)}</div><span class="state ${s}">${STATE_JP[s]}</span><button class="x" type="button" aria-label="閉じる">${closeIco}</button></div>
+      <div class="sh-body">${c.img ? "" : `<div><h3>LANDMARK — ランドマーク・景観</h3><p>${esc(c.view)}</p></div>
+      <div><h3>GIMMICK — ギミック・探索要素</h3><ul>${c.gimmicks.map(g => `<li>${esc(g)}</li>`).join("")}</ul></div>`}
+      ${s === "locked" ? `<p style="color:var(--dim)">ひとつ前の都市（${esc(CITIES[i - 1].name)}）を攻略すると解放されます。</p>` : ""}</div>
+      <div class="sh-foot"><button class="act" type="button" id="goCity" ${s === "locked" ? "disabled" : ""}>${s === "cleared" ? "もう一度探索する" : "攻略に出発する"}</button>${s === "open" ? '<button class="act ghost" type="button" id="demoClear">攻略済みにする（デモ）</button>' : ""}</div>`);
+    const go = $("goCity"); if (go && !go.disabled) go.addEventListener("click", () => { decide(); toast("バトルと探索は準備中です"); });
+    const dc = $("demoClear"); if (dc) dc.addEventListener("click", () => clearCity(i));
+  }
+  function openGZ() {
+    const done = cleared >= 7; decide();
+    sheet(done ? "#c25cff" : "#ff4d5e", `<div class="sh-head"><span class="no">FINAL DESTINATION</span><h2>GROUND ZERO</h2><div class="sub">爆心地 ・ マップ中心（東京の中心）</div><span class="state ${done ? "open" : "locked"}" style="--c:#c25cff">${done ? "侵入可能" : "封鎖中"}</span><button class="x" type="button" aria-label="閉じる">${closeIco}</button></div>
+      <div class="sh-body"><div><h3>VIEW — 外観</h3><p>東京の中心にぽっかりと空いた巨大なクレーターと、紫色のエネルギーが渦巻く領域。高速道路のような環状線（かつての首都高都心環状線）が取り囲む。</p></div>
+      <div><h3>LOCK — 封鎖</h3><p>強力なバリア（干渉ノイズ）で閉ざされている。七つの大罪の都市をすべて攻略し、記憶のロックを解除すると入れる。</p></div>
+      <div><h3>ENTRANCE — 入り口</h3><p>7都市を一周し、怠惰（${esc(CITIES[0].name)}）に戻ると、そこから爆心地への橋が繋がる。</p></div>
+      <p>記憶のロック：<b>${cleared} / 7</b> 解除</p></div>
+      <div class="sh-foot"><button class="act" type="button" id="goGZ" ${done ? "" : "disabled"}>${done ? "爆心地へ侵入する" : "まだ入れない"}</button></div>`);
+    if (done) $("goGZ").addEventListener("click", () => { decide(); toast("GROUND ZERO は準備中です"); });
+  }
+  function openHideout() {
+    decide();
+    sheet("#9b5cff", `<div class="sh-head"><span class="no">HOME BASE</span><h2>HIDEOUT（アジト）</h2><div class="sub">広い屋敷 ・ ${esc(CITIES[0].name)}のすぐ下</div><span class="state open" style="--c:#9b5cff">拠点</span><button class="x" type="button" aria-label="閉じる">${closeIco}</button></div>
+      <div class="sh-body"><p>プレイヤーの拠点である広い屋敷。外の世界への出発点で、電脳世界への入り口でもある。ホーム画面への帰還ポイント。</p>
+      <div><h3>WHAT YOU CAN DO — アジトでできること</h3><ul><li>デッキ構築</li><li>記憶の解放（スキルツリー）</li><li>相棒との会話</li><li>電脳世界へ入る（インターネット対戦・CPU対戦など）</li></ul></div></div>
+      <div class="sh-foot"><a class="act" href="${HIDEOUT_URL}" target="_blank" rel="noopener" id="goHide">アジトに帰る</a></div>`);
+    $("goHide").addEventListener("click", e => { decide(); if (EMB) { e.preventDefault(); closeSheet(); toParent("home"); } });
+  }
+  function clearCity(i) {
+    if (i !== cleared) return;
+    cleared++; store.set("selectear_progress", cleared); gameStartSE(); buzz([30, 30, 60]);
+    closeSheet(); sel = cleared >= 7 ? PLACES.length - 1 : 1 + cleared; draw();
+    if (cleared >= 7) { flash(); const u = $("unlock"); u.classList.remove("on"); void u.offsetWidth; u.classList.add("on"); toast("7都市を一周した。爆心地への橋が繋がった"); }
+    else toast(`${CITIES[i].name} を制圧。${CITIES[cleared].name} が解放された`);
+  }
+  $("resetDemo").addEventListener("click", () => { back(); cleared = 0; sel = 1; store.set("selectear_progress", 0); closeSheet(); draw(); toast("進行をリセットしました"); });
+
+  /* =========================================================
+     SOUND: map music + city ambience (same files as before)
+     ========================================================= */
+  let ac = null, master = null;
+  function audio() { try { if (!ac) { ac = new (window.AudioContext || window.webkitAudioContext)(); master = ac.createGain(); master.connect(ac.destination); } master.gain.value = st.vol / 100; if (ac.state === "suspended") ac.resume(); return ac; } catch { return null; } }
+  function tone(f, d, type = "square", v = .1, delay = 0) { if (!st.sound || !audio()) return; try { const t = ac.currentTime + delay, o = ac.createOscillator(), g = ac.createGain(); o.type = type; o.frequency.setValueAtTime(f, t); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g).connect(master); o.start(t); o.stop(t + d + .02); } catch {} }
+  // uploaded effects: fly = tapping an island on the overview, decide = main buttons,
+  // switch = moving the 3D view to another place, tap = small buttons and going back
+  const SE = {}; for (const k of ["fly", "decide", "switch", "tap"]) { SE[k] = new Audio(A(`se_${k}.mp3`)); SE[k].preload = "auto"; }
+  function se(k) { if (!st.sound) return; try { const a = SE[k].cloneNode(); a.volume = Math.min(1, st.vol / 100); const p = a.play(); if (p && p.catch) p.catch(() => {}); } catch {} }
+  const decide = () => se("decide");
+  const back = () => se("tap");
+  const seEl = new Audio(A("se_gamestart.mp3")); seEl.preload = "auto";
+  function gameStartSE() { if (!st.sound) return; try { const a = seEl.cloneNode(); a.volume = Math.min(1, st.vol / 100); const p = a.play(); if (p && p.catch) p.catch(() => {}); } catch {} }
+  const buzz = ms => { if (st.vib) try { navigator.vibrate && navigator.vibrate(ms); } catch {} };
+  function toast(t) { const e = $("toast"); e.textContent = t; e.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => e.hidden = true, 2400); }
+  function flash() { const f = $("flash"); f.classList.remove("go"); void f.offsetWidth; f.classList.add("go"); }
+  const fadeGain = (g, v, sec) => { const now = ac.currentTime; g.cancelScheduledValues(now); g.setValueAtTime(Math.max(g.value, .0001), now); g.exponentialRampToValueAtTime(Math.max(v, .0001), now + sec); };
+  const music = (() => {
+    const el = new Audio(A("map_bgm.mp3")); el.loop = true; el.preload = "auto"; el.setAttribute("playsinline", "");
+    let gain = null, on = false, t = 0;
+    function route() { if (gain || !audio()) return; try { const s = ac.createMediaElementSource(el); gain = ac.createGain(); gain.gain.value = .0001; s.connect(gain).connect(master); } catch { gain = null; } }
+    return {
+      start() { if (on) return; on = true; clearTimeout(t); route(); const p = el.play(); if (p && p.catch) p.catch(() => { on = false; }); if (gain) fadeGain(gain.gain, .75, 1.5); else el.volume = .75; },
+      stop() { if (!on) return; on = false; if (gain) fadeGain(gain.gain, 0, .8); t = setTimeout(() => { if (!on) el.pause(); }, 900); }
+    };
+  })();
+  const ambience = (() => {
+    let buf = null, loading = false, src = null, gain = null, want = false;
+    function load() { if (buf || loading || !audio()) return; loading = true; fetch(A("city_ambience.mp3")).then(r => r.arrayBuffer()).then(b => new Promise((ok, ng) => ac.decodeAudioData(b, ok, ng))).then(b => { buf = b; if (want) { want = false; api.start(); } }).catch(() => { loading = false; }); }
+    const api = {
+      start() { if (!audio()) return; if (!buf) { want = true; load(); return; } if (src) return; gain = gain || (() => { const g = ac.createGain(); g.gain.value = .0001; g.connect(master); return g; })(); src = ac.createBufferSource(); src.buffer = buf; src.loop = true; src.connect(gain); src.start(); fadeGain(gain.gain, .4, 1.5); },
+      stop() { want = false; if (!src) return; const s = src; src = null; fadeGain(gain.gain, 0, .8); setTimeout(() => { try { s.stop(); } catch {} }, 900); }
+    };
+    return api;
+  })();
+  function syncMusic() {
+    const on = st.bgm && !document.hidden && !away && (scene === "map" || scene === "overview");
+    if (on) { music.start(); ambience.start(); } else { music.stop(); ambience.stop(); }
+    $("snd").setAttribute("aria-pressed", String(st.bgm));
+  }
+  document.addEventListener("visibilitychange", syncMusic);
+  $("snd").addEventListener("click", () => { audio(); st.bgm = !st.bgm; syncMusic(); try { const all = JSON.parse(localStorage.getItem("selectear_settings2") || "{}"); all.bgm = st.bgm; localStorage.setItem("selectear_settings2", JSON.stringify(all)); } catch {} });
+
+  /* =========================================================
+     OVERVIEW: tap spots in % of the overview picture (1670 × 941)
+     ========================================================= */
+  const OV_RATIO = 1670 / 941;
+  const OV_SPOTS = [ // place index in PLACES, x, y, hit size (% of picture width)
+    [1, 26, 16, 22], [7, 75, 17, 22], [2, 14, 42, 22], [6, 85, 44, 22], [3, 19, 71, 23], [4, 50, 82, 26], [5, 82, 72, 23], [8, 50, 44, 26]
+  ];
+  $("coinVal2").textContent = $("coinVal").textContent;
+  function ovLayout() {
+    const wrap = $("ovWrap"), W = innerWidth, H = innerHeight, top = 58, bot = 70;
+    let w = W, h = W / OV_RATIO; const avail = H - top - bot;
+    if (h > avail) { h = avail; w = h * OV_RATIO; }
+    // phones held upright: let the picture run wider than the screen so the islands stay readable
+    if (W / H < .8) { w = Math.min(W * 1.9, avail * OV_RATIO); h = w / OV_RATIO; }
+    wrap.style.width = w + "px"; wrap.style.height = h + "px"; wrap.style.top = (top + avail / 2) + "px";
+    ovMax = Math.max(0, (w - W) / 2); ovX = Math.max(-ovMax, Math.min(ovMax, ovX)); wrap.style.left = `calc(50% + ${ovX}px)`;
+    $("overview").classList.toggle("pan", ovMax > 0);
+    wrap.style.setProperty("--fs", Math.max(10, Math.min(14, w * .011)) + "px");
+    wrap.querySelectorAll(".hs").forEach(b => { const sz = +b.dataset.s / 100 * w; b.style.width = sz + "px"; b.style.height = sz * .62 + "px"; });
+  }
+  function ovBuild() {
+    const wrap = $("ovWrap"); wrap.querySelectorAll(".hs").forEach(n => n.remove());
+    for (const [k, x, y, sz] of OV_SPOTS) {
+      const p = PLACES[k], b = document.createElement("button"); b.type = "button"; b.className = "hs"; b.dataset.s = sz;
+      const stt = p.kind === "city" ? stateOf(p.i) : p.kind === "gz" ? (cleared >= 7 ? "open" : "locked") : "open";
+      const locked = stt === "locked";
+      b.classList.add(stt); b.style.setProperty("--dl", (-(k * 1.37) % 4) + "s"); b.style.left = x + "%"; b.style.top = y + "%"; b.style.setProperty("--c", placeColor(p));
+      const mark = stt === "cleared" ? '<b class="mk">CLEAR</b>' : stt === "open" && p.kind === "city" ? '<b class="mk nx">NEXT</b>' : stt === "locked" ? '<b class="mk lk">LOCK</b>' : "";
+      const label = (p.kind === "city" ? `<i>${CITIES[p.i].no}</i>${esc(CITIES[p.i].name)}` : "GROUND ZERO") + mark;
+      b.setAttribute("aria-label", (p.kind === "city" ? CITIES[p.i].no + " " + CITIES[p.i].name : "GROUND ZERO") + (locked ? "（未解放）" : ""));
+      b.innerHTML = `<span class="br" aria-hidden="true"></span><span class="lbl">${stt === "cleared" ? '<span class="st">★</span>' : ""}${label}</span>`;
+      const spot = on => { const sp = $("ovSpot"); if (on) { sp.style.setProperty("--sx", x + "%"); sp.style.setProperty("--sy", y + "%"); sp.style.setProperty("--sw", sz * .75 + "%"); sp.style.setProperty("--sh", sz * .75 * OV_RATIO * .62 + "%"); } sp.classList.toggle("on", on); };
+      b.addEventListener("pointerenter", () => spot(true)); b.addEventListener("pointerleave", () => spot(false));
+      b.addEventListener("focus", () => spot(true)); b.addEventListener("blur", () => spot(false));
+      b.addEventListener("click", () => { if (!ovMoved) flyTo(k, x, y); });
+      wrap.append(b);
+    }
+    ovLayout();
+  }
+  // zoom into the tapped island, then open the 3D view with that place in front
+  function flyTo(k, x, y) {
+    if (flying) return; flying = true; se("fly");
+    const wrap = $("ovWrap"); wrap.classList.add("fly");
+    const w = wrap.offsetWidth, h = wrap.offsetHeight;
+    wrap.style.transform = `translate(-50%, -50%) translate(${(50 - x) / 100 * w * 2.4}px, ${(50 - y) / 100 * h * 2.4}px) scale(2.4)`; wrap.style.opacity = ".2";
+    setTimeout(() => { sel = k; show("map"); flash(); wrap.classList.remove("fly"); wrap.style.transform = ""; wrap.style.opacity = ""; flying = false; }, reduce ? 0 : 650);
+  }
+  let flying = false, ovX = 0, ovMax = 0, ovDrag = null, ovMoved = false;
+  // phones held upright: drag the picture sideways to see the islands at the edges
+  $("overview").addEventListener("pointerdown", e => { if (!ovMax) return; ovDrag = { x: e.clientX, o: ovX }; ovMoved = false; });
+  addEventListener("pointermove", e => { if (!ovDrag) return; const dx = e.clientX - ovDrag.x; if (Math.abs(dx) > 8) ovMoved = true; if (ovMoved) { ovX = Math.max(-ovMax, Math.min(ovMax, ovDrag.o + dx)); $("ovWrap").style.left = `calc(50% + ${ovX}px)`; } });
+  addEventListener("pointerup", () => { ovDrag = null; setTimeout(() => { ovMoved = false; }, 0); });
+  $("ovBack").addEventListener("click", () => { back(); if (EMB) toParent("home"); else show("start"); });
+  $("ovHome").addEventListener("click", () => flyTo(0, 50, 100));
+  addEventListener("resize", () => { if (scene === "overview") ovLayout(); });
+
+  /* scenes */
+  function show(id) {
+    $("toast").hidden = true; for (const s of ["start", "overview", "map"]) $(s).classList.toggle("on", s === id); scene = id;
+    if (id === "overview") ovBuild();
+    if (id === "map") { draw(); fitFoot(); position(); }
+    syncMusic();
+  }
+  $("startBtn").addEventListener("click", () => { audio(); if (st.bgm) { music.start(); ambience.start(); } gameStartSE(); buzz([30, 30, 60]); flash(); setTimeout(() => show("overview"), reduce ? 0 : 250); });
+  $("toStart").addEventListener("click", () => { back(); closeSheet(); show("overview"); });
+  // embedded: the home page says when this layer is shown or hidden; skip the start screen
+  if (EMB) {
+    $("ovBack").querySelector("span").textContent = "ホーム";
+    addEventListener("message", e => {
+      if (e.source !== parent || !e.data) return;
+      if (e.data.selectear === "enter") { away = false; audio(); if (scene === "start") show("overview"); else syncMusic(); }
+      if (e.data.selectear === "leave") { away = true; closeSheet(); syncMusic(); }
+    });
+    // audio may need a tap inside this frame first
+    addEventListener("pointerdown", () => { if (!away) { audio(); syncMusic(); } }, true);
+  }
+  addEventListener("keydown", e => {
+    if (e.key === "Escape") { if ($("sheet").classList.contains("on")) closeSheet(); else if (scene === "map") show("overview"); else if (scene === "overview") show("start"); }
+    if (scene === "start" && (e.key === "Enter" || e.key === " ") && document.activeElement !== $("startBtn")) { e.preventDefault(); $("startBtn").click(); }
+  });
+})();
+</script>
