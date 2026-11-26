@@ -509,7 +509,7 @@ canvas.spark { position: absolute; inset: 0; width: 100%; height: 100%; z-index:
     heal: { en: "HEAL", jp: "ヒール", c: "#ff6ec8", bg: "img/st_heal.webp" },
     spd: { en: "SPEED", jp: "スピード", c: "#3ddc84", bg: "img/st_spd.webp" }
   };
-  // the 16 SELECTEAR members (full names, HP from the character sheet; type and battle style from the type table; 西田 has no card yet)
+  // the 16 SELECTEAR members (full names, HP from the character sheet; type and battle style from the type table; all 17 members)
   // [id, full name, reading, type, battle style, HP, ability, intercom line]
   const ROSTER = [
     ["kazano", "風野 桐嗚", "かざの きりお", "sup", "プラスドロー（手札使い）", 11, "乞食：アイテムを2枚引く（HP3以下なら3枚）", "どうもー！ 製作者兼、案内役でーす！ 開けて開けて！"],
@@ -527,6 +527,7 @@ canvas.spark { position: absolute; inset: 0; width: 100%; height: 100%; z-index:
     ["ohashi", "大橋 央玲", "おおはし ひろあ", "spd", "エスケープ（夜逃げ屋）", 9, "夜逃：借金して◆+2。取り立て前に飛ぶ", "ねえ、このあと時間ある？"],
     ["ushida", "牛田 苺花", "うしだ いちか", "atk", "スケープゴート（巻き込み屋）", 9, "醒：自分以外の全員に1ダメージ", "押したの自分じゃないです。自分は悪くないんで。"],
     ["chou", "チョウ・ヤン", "チョウ・ヤン", "atk", "ドン（マフィアのボス）", 12, "龍炎：HPがいちばん低い敵に2ダメージ", "……シマを広げに来た。開けろ。"],
+    ["nishida", "西田 晃季", "にしだ こうき", "sup", "ギャンブラー（賭博師）", 13, "賭狂：1〜9のルーレット。7なら◆+7、外れたら借金+1", "次は7が来る。……開けてくれたら倍にして返すって。"],
     ["ogawa", "小川 結菜", "おがわ ゆうな", "heal", "ヒーラー（推し活）", 9, "蝶の加護：いちばん弱った仲間を2回復", "推し以外興味ないので✌ ……でも開けて？"]
   ].map(([id, name, kana, type, style, hp, abil, line]) => ({ id, name, kana, type, style, hp, abil, line, img: `img/f_${id}.webp` }));
   const byType = t => ROSTER.filter(r => r.type === t);
@@ -745,17 +746,17 @@ canvas.spark { position: absolute; inset: 0; width: 100%; height: 100%; z-index:
     const my = ++runId, m = team[si], live = () => my === runId, rb = isRainbow(m);
     sumStage = "anim"; $("sumCue").textContent = ""; const c = $("card3d"), sm = $("summon"), tag = $("attrTag");
     holoSE(false);
-    if (rb) {
-      se("attr"); retrig(c, "rainbow"); retrig(sm, "cutbg"); flash();
-      c.style.setProperty("--tc", "#c25cff"); sm.style.setProperty("--tc", "#c25cff");
-      $("sumBg").style.backgroundImage = `url(${A("img/st_oshi.webp")})`; $("cardBack").style.backgroundImage = `url(${A("img/back_oshi.webp")})`;
+    // every card: the attribute background turns rainbow when it is confirmed
+    se("confirm"); buzz([30, 20, 60]); flash(); retrig(sm, "cutbg");
+    $("sumBg").style.backgroundImage = `url(${A("img/st_oshi.webp")})`; sm.style.setProperty("--tc", "#c25cff");
+    const r = c.getBoundingClientRect(); burstAt(r.left + r.width / 2, r.top + r.height / 2, ["#ff4d5e", "#f2c14e", "#3ddc84", "#4f8cff", "#c25cff", "#fff"], 140, 14);
+    if (rb) { // チョウ・ヤン and 小川 結菜: the card itself turns rainbow too
+      retrig(c, "rainbow"); c.style.setProperty("--tc", "#c25cff");
+      $("cardBack").style.backgroundImage = `url(${A("img/back_oshi.webp")})`;
       if (tag) tag.textContent = "✦ RAINBOW ✦";
-      const r = c.getBoundingClientRect(); burstAt(r.left + r.width / 2, r.top + r.height / 2, ["#ff4d5e", "#f2c14e", "#3ddc84", "#4f8cff", "#c25cff", "#fff"], 160, 16);
-      await wait(850); if (!live()) return;
     }
-    se("confirm"); buzz([30, 20, 60]);
     c.classList.remove("holo"); c.classList.add("solid"); retrig(c, "materialize");
-    await wait(600); if (!live()) return;
+    await wait(rb ? 900 : 600); if (!live()) return;
     sumStage = "card"; $("sumCue").textContent = "タップで表にする";
   }
   // tap 3 → the card turns face up ④, then the cut-in ⑥ with the name and the attribute
