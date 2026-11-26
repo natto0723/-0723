@@ -275,6 +275,25 @@ canvas.spark { position: absolute; inset: 0; width: 100%; height: 100%; z-index:
 .cutin { position: absolute; z-index: 12; inset: 0; pointer-events: none; display: none; }
 .cutin.on { display: block; }
 .battleLayer { position: fixed; inset: 0; z-index: 200; background: #0a0810; }
+.ghud { position: fixed; z-index: 60; top: calc(10px + env(safe-area-inset-top, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); display: flex; gap: 8px; align-items: center; }
+.gico { width: 42px; height: 42px; padding: 0; display: grid; place-items: center; border-radius: 12px; border: 1px solid rgba(201, 198, 214, .45); background: rgba(8, 5, 18, .85); cursor: pointer; }
+.gico svg { width: 22px; height: 22px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.gst { height: 42px; max-width: 34vw; display: inline-flex; align-items: center; gap: 6px; padding: 0 12px 0 10px; border-radius: 999px; border: 1px solid rgba(176, 92, 255, .7); background: rgba(8, 5, 18, .85); font: 700 11px var(--font-num); color: #fff; cursor: pointer; box-shadow: 0 0 10px rgba(176, 92, 255, .3); }
+.gst span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gst .eq { display: inline-flex; align-items: flex-end; gap: 2px; height: 12px; flex: none; } .gst .eq i { width: 3px; height: 30%; border-radius: 1px; background: #b05cff; }
+.gst.on .eq i { animation: geq .9s ease-in-out infinite; } .gst.on .eq i:nth-child(2) { animation-delay: .2s; } .gst.on .eq i:nth-child(3) { animation-delay: .4s; }
+@keyframes geq { 50% { height: 100%; } }
+.gpop { position: fixed; z-index: 61; top: calc(60px + env(safe-area-inset-top, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); width: min(300px, calc(100% - 24px)); padding: 12px; border-radius: 14px; background: rgba(13, 10, 26, .97); border: 1px solid var(--line); box-shadow: 0 10px 40px rgba(0, 0, 0, .6), 0 0 26px rgba(155, 92, 255, .3); display: grid; gap: 8px; }
+.gpop h4 { margin: 0; font: 800 12px var(--font-latin); letter-spacing: .25em; color: var(--ice); }
+.glist { display: grid; gap: 6px; }
+.glist button, .gitem { display: flex; align-items: center; gap: 8px; width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(201, 198, 214, .3); background: rgba(255, 255, 255, .03); font: 700 13px var(--font-body); text-align: left; cursor: pointer; }
+.glist button[aria-pressed="true"] { border-color: #b05cff; background: rgba(176, 92, 255, .2); }
+.gitem:hover, .glist button:hover { border-color: #fff; }
+.grow { display: flex; align-items: center; gap: 10px; font-size: 13px; } .grow span { flex: none; } .grow input { flex: 1; accent-color: #9b5cff; }
+.grow button { padding: 7px 12px; border-radius: 10px; border: 1px solid var(--line); background: transparent; font: 700 12px var(--font-body); cursor: pointer; }
+.gtog { margin-left: auto; min-width: 64px; } .gtog.on { background: #9b5cff; border-color: #9b5cff; color: #fff; }
+.topbar > span[style] { width: 150px !important; }
+@media (max-width: 600px) { .gst { width: 42px; padding: 0; justify-content: center; } .gst span:last-child { display: none; } .topbar > span[style] { width: 142px !important; } .btn-s { padding: 0 10px; white-space: nowrap; } }
 .battleLayer iframe { width: 100%; height: 100%; border: 0; display: block; }
 .battleLayer.in { animation: blIn .5s ease-out; }
 @keyframes blIn { from { opacity: 0; transform: scale(1.04); filter: brightness(2); } }
@@ -503,6 +522,24 @@ canvas.spark { position: absolute; inset: 0; width: 100%; height: 100%; z-index:
 
 <div class="flash" id="flash"></div>
 <div class="toast" id="toast" role="status" hidden></div>
+<!-- ♪ ⚙ ☰ : always on screen -->
+<div class="ghud" id="ghud">
+  <button type="button" class="gst" id="gStBtn" aria-label="サウンドトラック"><span class="eq"><i></i><i></i><i></i></span><span id="gStName">BGM</span></button>
+  <button type="button" class="gico" id="gSetBtn" aria-label="設定"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+  <button type="button" class="gico" id="gMenuBtn" aria-label="メニュー"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+</div>
+<div class="gpop" id="gStPop" hidden role="dialog" aria-label="サウンドトラック"><h4>SOUNDTRACK</h4><div id="gStList" class="glist"></div><div class="grow"><button type="button" id="gStPlay">⏸ 止める</button><span>BGM</span><input type="range" id="gBgmVol" min="0" max="100" step="5"></div></div>
+<div class="gpop" id="gSetPop" hidden role="dialog" aria-label="設定"><h4>SETTINGS</h4>
+  <div class="grow"><span>音量</span><input type="range" id="gVol" min="0" max="100" step="5"></div>
+  <div class="grow"><span>効果音</span><button type="button" class="gtog" id="gSnd"></button></div>
+  <div class="grow"><span>振動（対応端末）</span><button type="button" class="gtog" id="gVib"></button></div>
+</div>
+<div class="gpop" id="gMenuPop" hidden role="menu" aria-label="メニュー"><h4>MENU</h4>
+  <button type="button" class="gitem" data-g="home">🏠 セレクティア（ホーム）へ</button>
+  <button type="button" class="gitem" data-g="holo">✦ ホログラム選択へ</button>
+  <button type="button" class="gitem" data-g="menu">🎰 ガチャ選択へ</button>
+  <button type="button" class="gitem" data-g="dev">🛠 開発者モード</button>
+</div>
 <!-- battle / developer mode: the battle engine, effects and sounds from the old SELECTEAR build -->
 <div class="battleLayer" id="battleLayer" hidden><iframe id="battleFrame" title="バトル" allow="autoplay"></iframe></div>
 
@@ -844,19 +881,23 @@ canvas.spark { position: absolute; inset: 0; width: 100%; height: 100%; z-index:
     $("redraw").disabled = locked; $("lockMsg").hidden = !locked;
   }
   /* BGM for the hologram select and the gacha (Relative brilliance) */
-  const BGM = new Audio(A("bgm_relative.mp3")); BGM.loop = true; BGM.preload = "auto"; window.__bgm = BGM;
+  const TRACKS = [["relative", "Relative brilliance", "bgm_relative.mp3"], ["37564", "37564", "bgm_37564.mp3"], ["404", "404:フリーズコード", "bgm_404.mp3"], ["haguruma", "動き出す歯車", "bgm_haguruma.mp3"], ["cyber", "cyber", "bgm_cyber.mp3"]];
+  const gb = Object.assign({ track: "relative", on: true, level: 60 }, store.get("selectear_gacha_bgm", {}));
+  const trackOf = id => TRACKS.find(t => t[0] === id) || TRACKS[0];
+  const BGM = new Audio(A(trackOf(gb.track)[2])); BGM.loop = true; BGM.preload = "auto"; window.__bgm = BGM;
   let inBattle = false, duck = false;
-  function bgmVol() { BGM.volume = Math.max(0, Math.min(1, st.vol / 100 * .45 * (duck ? .3 : 1))); }
-  function bgmPlay() { if (!st.sound || inBattle) return; bgmVol(); if (BGM.paused) { const p = BGM.play(); if (p && p.catch) p.catch(() => {}); } }
+  function bgmVol() { BGM.volume = Math.max(0, Math.min(1, st.vol / 100 * gb.level / 100 * .75 * (duck ? .3 : 1))); }
+  function bgmPlay() { if (!st.sound || inBattle || !gb.on) return; bgmVol(); if (BGM.paused) { const p = BGM.play(); if (p && p.catch) p.catch(() => {}); } }
   document.addEventListener("pointerdown", bgmPlay, { capture: true });
   bgmPlay();
   let backTo = "holo";
   function openBattle(hash, from) {
     backTo = from; holoSE(false); inBattle = hash !== "dev"; if (inBattle) BGM.pause();   // developer mode: the music keeps going
+    $("ghud").hidden = true; closePops();   // the battle page has its own ♪ ⚙ ☰
     const L = $("battleLayer"), f = $("battleFrame");
     f.src = A("battle.html") + "#" + hash; L.hidden = false; retrig(L, "in");
   }
-  function closeBattle() { const L = $("battleLayer"); L.hidden = true; $("battleFrame").src = "about:blank"; inBattle = false; show(backTo); bgmPlay(); }
+  function closeBattle() { const L = $("battleLayer"); L.hidden = true; $("battleFrame").src = "about:blank"; inBattle = false; $("ghud").hidden = false; show(backTo); bgmPlay(); }
   addEventListener("message", e => { if (!e.data) return; if (e.data.selectear === "battleBack") closeBattle(); if (e.data.selectear === "bgm") { inBattle = true; BGM.pause(); } });
   $("toBattle").addEventListener("click", () => { se("decide"); openBattle("battle=" + team.map(m => m.id).join(","), "result"); });
   $("redraw").addEventListener("click", () => { if ($("redraw").disabled) return; mode = lastMode; paintMode(); $("drawBtn").click(); });
@@ -872,7 +913,39 @@ canvas.spark { position: absolute; inset: 0; width: 100%; height: 100%; z-index:
   $("toHome0").addEventListener("click", () => $("toHome").click());
 
   /* back to home (works when this page is inside the combined game) */
-  $("toHome").addEventListener("click", () => { se("tap"); try { if (parent !== window) { parent.postMessage({ selectear: "home" }, "*"); return; } } catch {} toast("ホームと合わせると戻れるようになります"); });
+  // ホーム → the セレクティア page (title / home); inside the combined build it closes this layer instead
+  const SELECTEAR_URL = "https://claude.ai/code/artifact/59e313fd-d99c-4229-89b6-0b1b5013bb6a?org=fbb61ded-8a86-46a4-9e4e-23e7d987a18e";
+  function goSite(url) { try { window.top.location.href = url; return; } catch {} const a = document.createElement("a"); a.href = url; a.target = "_blank"; a.rel = "noopener"; document.body.append(a); a.click(); a.remove(); }
+  function goHome() { se("tap"); let inCombined = false; try { inCombined = parent !== window && parent.location.origin === location.origin; } catch {} if (inCombined) { parent.postMessage({ selectear: "home" }, "*"); return; } goSite(SELECTEAR_URL); }
+  $("toHome").addEventListener("click", goHome);
+  /* ---------- ♪ ⚙ ☰ ---------- */
+  const POPS = ["gStPop", "gSetPop", "gMenuPop"];
+  function closePops() { for (const id of POPS) $(id).hidden = true; }
+  function togglePop(id) { const was = !$(id).hidden; closePops(); if (!was) { $(id).hidden = false; paintHud(); } }
+  const saveGb = () => store.set("selectear_gacha_bgm", gb), saveSt2 = () => store.set("selectear_settings2", st);
+  function paintHud() {
+    $("gStName").textContent = trackOf(gb.track)[1]; $("gStBtn").classList.toggle("on", !BGM.paused);
+    $("gStList").innerHTML = TRACKS.map(([id, n], i) => `<button type="button" data-tr="${id}" aria-pressed="${id === gb.track}">${id === gb.track && !BGM.paused ? "♪" : String(i + 1).padStart(2, "0")} ${n}</button>`).join("");
+    $("gStList").querySelectorAll("[data-tr]").forEach(b => b.onclick = () => { gb.track = b.dataset.tr; gb.on = true; saveGb(); BGM.src = A(trackOf(gb.track)[2]); bgmPlay(); paintHud(); });
+    $("gStPlay").textContent = BGM.paused ? "▶ 流す" : "⏸ 止める"; $("gBgmVol").value = gb.level; $("gVol").value = st.vol;
+    for (const [id, k] of [["gSnd", "sound"], ["gVib", "vib"]]) { $(id).textContent = st[k] ? "ON" : "OFF"; $(id).classList.toggle("on", !!st[k]); }
+  }
+  BGM.addEventListener("play", paintHud); BGM.addEventListener("pause", paintHud);
+  $("gStBtn").onclick = e => { e.stopPropagation(); se("tap"); togglePop("gStPop"); };
+  $("gSetBtn").onclick = e => { e.stopPropagation(); se("tap"); togglePop("gSetPop"); };
+  $("gMenuBtn").onclick = e => { e.stopPropagation(); se("tap"); togglePop("gMenuPop"); };
+  for (const id of POPS) $(id).addEventListener("pointerdown", e => e.stopPropagation());
+  document.addEventListener("pointerdown", e => { if (!e.target.closest(".gpop, .ghud")) closePops(); });
+  $("gStPlay").onclick = () => { if (BGM.paused) { gb.on = true; bgmPlay(); } else { gb.on = false; BGM.pause(); } saveGb(); paintHud(); };
+  $("gBgmVol").oninput = () => { gb.level = +$("gBgmVol").value; bgmVol(); saveGb(); };
+  $("gVol").oninput = () => { st.vol = +$("gVol").value; bgmVol(); saveSt2(); };
+  $("gSnd").onclick = () => { st.sound = !st.sound; saveSt2(); if (!st.sound) BGM.pause(); else bgmPlay(); paintHud(); };
+  $("gVib").onclick = () => { st.vib = !st.vib; saveSt2(); paintHud(); };
+  for (const b of document.querySelectorAll("[data-g]")) b.onclick = () => {
+    const g = b.dataset.g; closePops();
+    if (g === "home") goHome(); else if (g === "holo") { se("tap"); show("holo"); } else if (g === "menu") { se("tap"); show("menu"); } else if (g === "dev") { se("fly"); openBattle("dev", "holo"); }
+  };
+  paintHud();
   addEventListener("keydown", e => { if (e.key !== "Escape") return; if ($("menu").classList.contains("on")) show("holo"); else if (!$("holo").classList.contains("on")) toResult(); });
 })();
 </script>

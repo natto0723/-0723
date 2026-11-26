@@ -156,6 +156,13 @@ button:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
 .stpop .tr small { margin-left: auto; font: 600 10px var(--font-num); color: var(--muted); }
 .stpop .tr[aria-pressed="true"] { border-color: var(--purple); background: rgba(176, 92, 255, .18); }
 .stpop .row3 { display: flex; align-items: center; gap: 8px; font-size: 12px; } .stpop input { flex: 1; accent-color: var(--purple); }
+/* ☰ ⚙ and ♪ stay on screen in every state (battle, result, developer setup, motion) */
+.hud { position: fixed; z-index: 92; top: calc(var(--top) + 8px); right: max(10px, env(safe-area-inset-right, 0px)); display: flex; gap: 8px; }
+.hud .iconbtn { background: rgba(14, 10, 24, .88); box-shadow: 0 2px 10px rgba(0, 0, 0, .45); }
+.stfix { position: fixed; z-index: 92; right: max(10px, env(safe-area-inset-right, 0px)); bottom: calc(var(--bot) + 10px); background: rgba(14, 10, 24, .9); padding: 7px 12px 7px 10px; box-shadow: 0 2px 10px rgba(0, 0, 0, .45), 0 0 10px rgba(176, 92, 255, .3); }
+.top { padding-right: 100px; }
+.devset header { padding-right: 100px; }
+.drawer { z-index: 96 !important; } .scrim { z-index: 95 !important; } .modal { z-index: 97 !important; } .stpop { z-index: 97 !important; bottom: calc(var(--bot) + 56px) !important; }
 .peek { position: fixed; z-index: 3100; width: 180px; padding: 14px 12px 12px; border-radius: 14px; pointer-events: none; background: linear-gradient(165deg, color-mix(in srgb, var(--kc) 35%, #1a1426), #0f0b17 75%); border: 2px solid var(--kc); box-shadow: 0 10px 30px rgba(0, 0, 0, .6), 0 0 20px color-mix(in srgb, var(--kc) 60%, transparent); }
 .peek b { display: block; font-size: 15px; margin-bottom: 6px; } .peek p { margin: 0; font-size: 12px; line-height: 1.6; color: var(--silver); } .peek small { display: block; margin-top: 6px; font-size: 11px; color: var(--muted); }
 
@@ -333,7 +340,7 @@ button:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
   .card p { -webkit-line-clamp: 3; }
   .act { max-height: 27vh; }
 }
-@media (max-width: 899px) { #app.motion .act { max-height: 50vh; } }
+@media (max-width: 899px) { #app.motion .act { max-height: 40vh; } }
 .mpanel .mopts { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12px; }
 .mpanel .mopts .seg2 { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
 .mpanel .mopts .seg2 button { border: 0; border-radius: 0; padding: 6px 10px; font-size: 12px; } .mpanel .mopts .seg2 button[aria-pressed="true"] { background: rgba(255, 228, 92, .18); color: var(--yellow); }
@@ -352,8 +359,7 @@ button:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
   <div class="top">
     <span class="round" id="round"></span>
     <div class="order" id="order" aria-label="これからの順番"></div>
-    <button class="iconbtn" id="menuBtn" type="button" aria-label="ログと詳細"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
-    <button class="iconbtn" id="setBtn" type="button" aria-label="設定"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+
   </div>
   <div class="main">
     <div class="board xscope xfield" id="board">
@@ -363,12 +369,17 @@ button:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
     </div>
     <div class="dock">
       <div class="act" id="act"></div>
-      <div class="handwrap"><div class="handhead"><span id="handTitle">HAND</span><span class="r"><span id="deckInfo"></span><button type="button" class="stbtn" id="stBtn" aria-label="サウンドトラック"><span class="eq"><i></i><i></i><i></i></span><span id="stName">BGM</span></button></span></div><div class="hand" id="hand" aria-label="手札（ホイールかスワイプで送る）"></div></div>
+      <div class="handwrap"><div class="handhead"><span id="handTitle">HAND</span><span class="r"><span id="deckInfo"></span></span></div><div class="hand" id="hand" aria-label="手札（ホイールかスワイプで送る）"></div></div>
     </div>
   </div>
 </div>
 <div id="bgl" aria-hidden="true"></div>
 <div class="scrim" id="scrim" hidden></div>
+<div class="hud" id="hud">
+    <button class="iconbtn" id="menuBtn" type="button" aria-label="ログと詳細"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    <button class="iconbtn" id="setBtn" type="button" aria-label="設定"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+</div>
+<button type="button" class="stbtn stfix" id="stBtn" aria-label="サウンドトラック"><span class="eq"><i></i><i></i><i></i></span><span id="stName">BGM</span></button>
 <aside class="drawer" id="menu" aria-label="ログと詳細">
   <h2>メニュー <button type="button" data-close>閉じる</button></h2>
   <div class="tabs" role="tablist"><button type="button" data-tab="log" aria-selected="true">ログ</button><button type="button" data-tab="det" aria-selected="false">詳細</button><button type="button" data-tab="dev" aria-selected="false" id="devTab" hidden>開発</button></div>
@@ -1421,7 +1432,7 @@ function renderST() {
   $("stPlay").textContent = BGM.paused ? "▶ 流す" : "⏸ 止める";
   $("bgmVol").value = PREF.bgm;
 }
-BGM.addEventListener("play", renderST); BGM.addEventListener("pause", renderST);
+BGM.addEventListener("play", renderST); BGM.addEventListener("pause", renderST); renderST();
 $("stBtn").onclick = () => { sfx("click"); $("stPop").hidden = !$("stPop").hidden; renderST(); };
 $("stClose").onclick = () => { $("stPop").hidden = true; };
 $("stPlay").onclick = () => { if (BGM.paused) { PREF.bgmOn = true; bgmPlay(); } else { PREF.bgmOn = false; BGM.pause(); } savePref(); renderST(); };
@@ -1598,7 +1609,7 @@ const FX = {
 const UI = { mode: null, sel: null, pendingCard: null, pendingSkill: null, focus: 0, detail: null, resolve: null, tab: "log", busy: false };
 const humanTurn = () => S && S.winner === null && S.turnUid && !sideOf(ch(S.turnUid).side).cpu && UI.mode === "main";
 
-function render() { if (!S) return; renderTop(); renderBoard(); renderBanks(); renderDock(); renderHand(); if ($("menu").classList.contains("on")) renderDrawer(); }
+function render() { if (!S) return; renderTop(); renderBoard(); renderBanks(); renderDock(); renderHand(); sizeCards(); if ($("menu").classList.contains("on")) renderDrawer(); }
 function renderTop() {
   $("round").textContent = `R${S.round}`;
   const now = S.turnUid; const rest = upcoming();
@@ -1777,7 +1788,7 @@ function renderDrawer() {
   document.querySelectorAll("[data-tab]").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === UI.tab));
   $("devTab").hidden = !S || !S.dev;
   const body = $("dbody");
-  if (!S) { body.innerHTML = ""; return; }
+  if (!S) { body.innerHTML = `<p style="color:var(--muted)">ログと詳細は試合が始まると表示されます。</p>`; return; }
   if (UI.tab === "log") {
     body.innerHTML = `<div class="log">${S.log.slice(-200).map(l => `<p class="${l.cls}">${esc(l.t)}</p>`).join("")}</div>`;
     body.scrollTop = body.scrollHeight; return;

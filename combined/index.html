@@ -502,6 +502,8 @@ iframe.layer.on { display: block; animation: sceneIn .45s ease-out; }
   }
   // links between the three pages; the standalone build links to the neighbouring .html files instead
   const PAGE = (url, file) => (window.__ASSETS ? file : url);
+  const HAKONIWA_URL = "https://claude.ai/code/artifact/54c35743-4f57-42d3-8ced-5e018eeaacb5?org=fbb61ded-8a86-46a4-9e4e-23e7d987a18e";
+  function goSite(url) { try { window.top.location.href = url; return; } catch {} const a = document.createElement("a"); a.href = url; a.target = "_blank"; a.rel = "noopener"; document.body.append(a); a.click(); a.remove(); }
   function openPage(href) { const a = document.createElement("a"); a.href = href; a.target = "_blank"; a.rel = "noopener"; document.body.append(a); a.click(); a.remove(); }
   const MAP_URL = PAGE("https://claude.ai/artifact/S3nJDwsvuc8SdeXZjbYr2f", "selectear_map.html");
   /* the map and the hideout are full-screen layers inside this page (map.html / hideout.html next to it) */
@@ -534,7 +536,8 @@ iframe.layer.on { display: block; animation: sceneIn .45s ease-out; }
     if (a === "selectear") gameStartSE(); else decide();
     buzz(15); closeTalk();
     if (a === "story") { se("fly"); openLayer("map"); return; }
-    if (a === "selectear" || a === "gacha") { openLayer("hideout"); return; }
+    // START / Gacha → the 箱庭 page (gacha and battle); the pages are linked, not merged yet
+    if (a === "selectear" || a === "gacha") { goSite(HAKONIWA_URL); return; }
     openSoon(a);
   });
   $("coinPlus").addEventListener("click", () => { audio(); decide(); openSoon("shop"); });
